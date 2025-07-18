@@ -4,52 +4,49 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen } from '../screens/LoginScreen';
 import { OccurrencesListScreen } from '../screens/OccurrencesListScreen';
 import { OccurrenceDetailScreen } from '../screens/OccurrenceDetailScreen';
+import { RelatorioScreen } from '../screens/RelatorioScreen';
+import { Button } from '../components/Button';
+import { View } from 'react-native';
 
 export type RootStackParamList = {
-    Login: undefined;
-    OccurrencesList: undefined;
-    OccurrenceDetail: { id: string };
+  Login: undefined;
+  OccurrencesList: undefined;
+  OccurrenceDetail: { id: string };
+  Relatorio: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator: React.FC = () => {
-    const [isLogged, setIsLogged] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-    if (!isLogged) {
-        return <LoginScreen onLogin={() => setIsLogged(true)} />;
-    }
+  if (!token) {
+    return <LoginScreen onLogin={setToken} />;
+  }
 
-    if (selectedId) {
-        return <OccurrenceDetailScreen id={selectedId} onBack={() => setSelectedId(null)} />;
-    }
-
-    return <OccurrencesListScreen onSelect={setSelectedId} />;
-
-    // Para navegação com React Navigation, descomente abaixo e ajuste as telas:
-    /*
-    return (
-      <NavigationContainer>
-        <Stack.Navigator>
-          {!isLogged ? (
-            <Stack.Screen name="Login" options={{ headerShown: false }}>
-              {() => <LoginScreen onLogin={() => setIsLogged(true)} />}
-            </Stack.Screen>
-          ) : (
-            <>
-              <Stack.Screen name="OccurrencesList" options={{ title: 'Ocorrências' }}>
-                {() => <OccurrencesListScreen onSelect={id => navigation.navigate('OccurrenceDetail', { id })} />}
-              </Stack.Screen>
-              <Stack.Screen name="OccurrenceDetail" options={{ title: 'Detalhes' }}>
-                {({ route, navigation }) => (
-                  <OccurrenceDetailScreen id={route.params.id} onBack={() => navigation.goBack()} />
-                )}
-              </Stack.Screen>
-            </>
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="OccurrencesList" options={{ title: 'Ocorrências' }}>
+          {({ navigation }) => (
+            <View style={{ flex: 1 }}>
+              <OccurrencesListScreen onSelect={id => setSelectedId(id)} />
+              <Button
+                title="Analisar Relatório"
+                onPress={() => navigation.navigate('Relatorio')}
+                style={{ margin: 16 }}
+              />
+            </View>
           )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
-    */
+        </Stack.Screen>
+        <Stack.Screen name="OccurrenceDetail" options={{ title: 'Detalhes da Ocorrência' }}>
+          {() => selectedId ? <OccurrenceDetailScreen id={selectedId} onBack={() => setSelectedId(null)} /> : null}
+        </Stack.Screen>
+        <Stack.Screen name="Relatorio" options={{ title: 'Análise de Relatório' }}>
+          {() => <RelatorioScreen token={token} />}
+        </Stack.Screen>
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }; 

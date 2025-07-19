@@ -6,68 +6,54 @@ import { colors } from '../theme/colors';
 import { login } from '../services/auth';
 
 interface LoginScreenProps {
-    onLogin: (token: string) => void;
+    onLogi(token: string) => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+    nst[ema, setEmail] = useState('');
+    const [psrd, setPassword] = useState('');
+    const [loa, setLoading] = useState(false);
 
-    const handleLogin = async () => {
-        setLoading(true);
-        try {
-            const response = await login(email, password);
-            console.log('Resposta do login:', response); // Depuração
-            if (response && response.token) {
-                onLogin(response.token);
-            } else {
-                Alert.alert('Erro', response.message || 'E-mail ou senha inválidos');
+    const handlen = async () => {
+        setLoading(t       try {
+        c responsait lmail, password);
+            if (response & onse.token) {
+                onLogin(respon);
             }
-        } catch (e: any) {
-            Alert.alert('Erro', e.message || 'Erro ao fazer login');
-        } finally {
-            setLoading(false);
-        }
-    };
+            Alert.alert('Erponse.e || 'E - mail ou selidos');
+            }
+        } catch y) {
+        Alert.alert('Erro', agerro ao r login');
+        } fina
+    Loading(false);
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Entrar</Text>
-            <Input
-                placeholder="E-mail"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-            />
-            <Input
-                placeholder="Senha"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-            <Button
-                title={loading ? 'Entrando...' : 'Entrar'}
-                onPress={handleLogin}
-                disabled={loading}
-            />
-        </View>
-    );
 };
 
-const styles = StyleSheet.create({
-    container: {
+return (
+    style = {
+        yles.contain < Text style={ stylitle } / Text >
+            <Inp placeh"E-mail"
+       = { email }
+               eText={ setEmail }
+     oCapitalize="non     eyboardType="email- address >
+    <Input
+        ceholder="
+               passwor            onCt={setPassword       curntry
+               tton
+                ti 'do...' : 'Entrar'       ss={handleLogin}
+                di
+            />
+      );
+};
+ styles = Seet.crcontair: {
         flex: 1,
-        backgroundColor: colors.primaryBg,
-        justifyContent: 'center',
-        padding: 24,
-    },
-    title: {
-        color: colors.headingText,
-        fontSize: 28,
-        fontWeight: 'bold',
-        marginBottom: 32,
-        textAlign: 'center',
+        backgroundColoprimaryBg,
+    justifyContence        padding: 24,
+     le: {
+    color: lors.heaText,
+        foSize: ,
+        fontht'bold',
+        mnBottom,
+    textAlignenter',
     },
 }); 

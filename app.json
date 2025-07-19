@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "ocorrencias-master-app",
-    "slug": "ocorrencias-master-app",
+    "name": "SeuApp",
+    "slug": "seuapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo_master.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -17,8 +17,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo_master.png",
+        "backgroundColor": "#0F2A35"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.ocorrenciasmasterapp"

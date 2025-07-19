@@ -27,7 +27,10 @@ export const AppNavigator: React.FC = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName="Relatorio">
+        <Stack.Screen name="Relatorio" options={{ title: 'Análise de Relatório' }}>
+          {() => <RelatorioScreen token={token} />}
+        </Stack.Screen>
         <Stack.Screen name="OccurrencesList" options={{ title: 'Ocorrências' }}>
           {({ navigation }) => (
             <View style={{ flex: 1 }}>
@@ -42,9 +45,6 @@ export const AppNavigator: React.FC = () => {
         </Stack.Screen>
         <Stack.Screen name="OccurrenceDetail" options={{ title: 'Detalhes da Ocorrência' }}>
           {() => selectedId ? <OccurrenceDetailScreen id={selectedId} onBack={() => setSelectedId(null)} /> : null}
-        </Stack.Screen>
-        <Stack.Screen name="Relatorio" options={{ title: 'Análise de Relatório' }}>
-          {() => <RelatorioScreen token={token} />}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>

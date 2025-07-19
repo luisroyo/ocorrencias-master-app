@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:5000/api'; // Backend Flask local
+const API_BASE_URL = 'https://processador-relatorios-ia.onrender.com/api'; // Backend Flask Render
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}, token?: string) {
     const headers: HeadersInit = {

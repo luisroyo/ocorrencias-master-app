@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
-    variant?: 'primary' | 'danger' | 'success';
+    variant?: 'primary' | 'danger' | 'success' | 'secondary';
 }
 
 export const Button: React.FC<ButtonProps> = ({ title, variant = 'primary', style, ...props }) => {
@@ -35,6 +35,9 @@ const styles = StyleSheet.create({
     },
     success: {
         backgroundColor: colors.success,
+    },
+    secondary: {
+        backgroundColor: colors.secondaryBg,
     },
     text: {
         color: colors.mainText,

@@ -1,10 +1,12 @@
 {
+  "name": "RelatoriosOcorrencia",
+  "displayName": "Relatórios de Ocorrência",
   "expo": {
     "name": "SeuApp",
     "slug": "seuapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo_master.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {

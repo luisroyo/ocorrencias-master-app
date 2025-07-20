@@ -5,6 +5,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { OccurrencesListScreen } from '../screens/OccurrencesListScreen';
 import { OccurrenceDetailScreen } from '../screens/OccurrenceDetailScreen';
 import { RelatorioScreen } from '../screens/RelatorioScreen';
+import { RelatorioCorrigidoScreen } from '../screens/RelatorioCorrigidoScreen';
 import { Button } from '../components/Button';
 import { View } from 'react-native';
 
@@ -20,16 +21,21 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const AppNavigator: React.FC = () => {
   const [token, setToken] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [relatorioCorrigido, setRelatorioCorrigido] = useState<string | null>(null);
 
   if (!token) {
     return <LoginScreen onLogin={setToken} />;
+  }
+
+  if (relatorioCorrigido) {
+    return <RelatorioCorrigidoScreen relatorio={relatorioCorrigido} onVoltar={() => setRelatorioCorrigido(null)} />;
   }
 
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Relatorio">
         <Stack.Screen name="Relatorio" options={{ title: 'Análise de Relatório' }}>
-          {() => <RelatorioScreen token={token} />}
+          {() => <RelatorioScreen token={token} onRelatorioCorrigido={setRelatorioCorrigido} />}
         </Stack.Screen>
         <Stack.Screen name="OccurrencesList" options={{ title: 'Ocorrências' }}>
           {({ navigation }) => (

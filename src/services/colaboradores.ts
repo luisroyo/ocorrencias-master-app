@@ -1,7 +1,8 @@
 import { apiFetch } from './api';
 
-export async function buscarColaboradores(token: string, termo: string) {
-    return apiFetch(`/colaboradores/search?term=${encodeURIComponent(termo)}`, {}, token);
+export async function buscarColaboradores(nome: string, token?: string) {
+    const params = new URLSearchParams({ nome });
+    return apiFetch(`/api/colaboradores?${params.toString()}`, {}, token);
 }
 
 export async function detalhesColaborador(token: string, id: number) {

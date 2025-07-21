@@ -34,7 +34,7 @@ export const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Relatorio">
-        <Stack.Screen name="Relatorio" options={{ title: 'Análise de Relatório' }}>
+        <Stack.Screen name="Relatorio" options={{ title: '' }}>
           {() => <RelatorioScreen token={token} onRelatorioCorrigido={setRelatorioCorrigido} />}
         </Stack.Screen>
         <Stack.Screen name="OccurrencesList" options={{ title: 'Ocorrências' }}>

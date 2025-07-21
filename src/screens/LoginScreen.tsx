@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Image } from 'react-native';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
@@ -32,6 +32,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
     return (
         <View style={styles.container}>
+            <View style={styles.topoBox}>
+                <Image source={require('../../logo_master.png')} style={styles.logoImg} resizeMode="contain" />
+                <View style={styles.institucionalBox}>
+                    <Text style={styles.institucionalMsg}>É <Text style={styles.bold}>segurança</Text>.
+                        É <Text style={styles.bold}>manutenção</Text>.
+                        É <Text style={styles.bold}>sustentabilidade</Text>.
+                        É <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text></Text>
+                </View>
+            </View>
             <Text style={styles.title}>Login</Text>
             <Input
                 placeholder="E-mail"
@@ -70,5 +79,44 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',
+    },
+    topoBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 12,
+        marginBottom: 18,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        justifyContent: 'center',
+    },
+    logoImg: {
+        width: 70,
+        height: 70,
+        borderRadius: 12,
+        marginRight: 18,
+    },
+    institucionalBox: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    institucionalMsg: {
+        color: colors.primaryBg,
+        fontSize: 15,
+        fontWeight: '400',
+        lineHeight: 20,
+        textAlign: 'left',
+    },
+    bold: {
+        fontWeight: 'bold',
+        color: colors.headingText,
+    },
+    master: {
+        fontWeight: 'bold',
+        color: colors.danger,
+        letterSpacing: 0.5,
     },
 }); 

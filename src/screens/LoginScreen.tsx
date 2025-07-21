@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, Alert, Image, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
@@ -13,6 +13,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async () => {
         setLoading(true);
@@ -31,38 +32,52 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.topoBox}>
-                <Image source={require('../../logo_master.png')} style={styles.logoImg} resizeMode="contain" />
-                <View style={styles.institucionalBox}>
-                    <Text style={styles.institucionalMsg}>É <Text style={styles.bold}>segurança</Text>.
-                        É <Text style={styles.bold}>manutenção</Text>.
-                        É <Text style={styles.bold}>sustentabilidade</Text>.
-                        É <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text></Text>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+        >
+            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+                <View>
+                    <View style={styles.topoBox}>
+                        <Image source={require('../../logo_master.png')} style={styles.logoImg} resizeMode="contain" />
+                        <View style={styles.institucionalBox}>
+                            <Text style={styles.institucionalMsg}>É <Text style={styles.bold}>segurança</Text>.
+                                É <Text style={styles.bold}>manutenção</Text>.
+                                É <Text style={styles.bold}>sustentabilidade</Text>.
+                                É <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text></Text>
+                        </View>
+                    </View>
+                    <Text style={styles.title}>Login</Text>
+                    <Input
+                        placeholder="E-mail"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                    />
+                    <View style={styles.senhaRow}>
+                        <Input
+                            placeholder="Senha"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={!showPassword}
+                            autoCapitalize="none"
+                            keyboardType="default"
+                            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                        />
+                        <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.verSenhaBtn}>
+                            <Text style={styles.verSenhaText}>{showPassword ? 'Ocultar' : 'Ver'}</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <Button
+                        title={loading ? 'Entrando...' : 'Entrar'}
+                        onPress={handleLogin}
+                        disabled={loading}
+                    />
                 </View>
-            </View>
-            <Text style={styles.title}>Login</Text>
-            <Input
-                placeholder="E-mail"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-            />
-            <Input
-                placeholder="Senha"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                keyboardType="default"
-            />
-            <Button
-                title={loading ? 'Entrando...' : 'Entrar'}
-                onPress={handleLogin}
-                disabled={loading}
-            />
-        </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -118,5 +133,29 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: colors.danger,
         letterSpacing: 0.5,
+    },
+    verSenhaBtn: {
+        alignSelf: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+    },
+    verSenhaText: {
+        color: colors.danger,
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    senhaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    input: {
+        backgroundColor: '#fff',
+        color: '#111',
+        fontSize: 16,
+        borderRadius: 14,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        boxShadow: '0px 1px 3px rgba(0,0,0,0.05)',
     },
 }); 

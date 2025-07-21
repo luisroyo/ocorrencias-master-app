@@ -44,7 +44,6 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
         try {
             const response = await analisarRelatorio(token, textoMontado);
             console.log('Resposta da API:', response);
-            Alert.alert('Debug', JSON.stringify(response, null, 2));
             if (response?.sucesso && response.dados) {
                 const relatorioCorrigido = response.dados.relatorio_corrigido || response.dados.relatorio || response.relatorio_corrigido || response.relatorio;
                 if (relatorioCorrigido) {

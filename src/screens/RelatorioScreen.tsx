@@ -121,12 +121,19 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
             Alert.alert('Atenção', 'Gere o relatório limpo antes de enviar.');
             return;
         }
-        const url = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
-        Linking.canOpenURL(url).then(supported => {
+        const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(relatorioLimpo)}`;
+        const webUrl = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
+        Linking.canOpenURL(whatsappUrl).then(supported => {
             if (supported) {
-                Linking.openURL(url);
+                Linking.openURL(whatsappUrl);
             } else {
-                Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+                Linking.canOpenURL(webUrl).then(webSupported => {
+                    if (webSupported) {
+                        Linking.openURL(webUrl);
+                    } else {
+                        Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+                    }
+                });
             }
         });
     };

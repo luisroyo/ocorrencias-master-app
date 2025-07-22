@@ -7,7 +7,8 @@ import { OccurrenceDetailScreen } from '../screens/OccurrenceDetailScreen';
 import { RelatorioScreen } from '../screens/RelatorioScreen';
 import { RelatorioCorrigidoScreen } from '../screens/RelatorioCorrigidoScreen';
 import { Button } from '../components/Button';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
+import { colors } from '../theme/colors';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -34,8 +35,24 @@ export const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Relatorio">
-        <Stack.Screen name="Relatorio" options={{ title: '' }}>
-          {() => <RelatorioScreen token={token} onRelatorioCorrigido={setRelatorioCorrigido} />}
+        <Stack.Screen
+          name="Relatorio"
+          options={{
+            title: '',
+            headerStyle: { backgroundColor: '#f8f8f8' },
+            headerTitle: () => (
+              <Text style={{ fontSize: 20, color: '#333', fontWeight: 'bold', textAlign: 'center', width: '100%', paddingVertical: 14 }}>
+                Análise de Relatório
+              </Text>
+            ),
+          }}
+        >
+          {() => (
+            <RelatorioScreen
+              token={token}
+              onRelatorioCorrigido={setRelatorioCorrigido}
+            />
+          )}
         </Stack.Screen>
         <Stack.Screen name="OccurrencesList" options={{ title: 'Ocorrências' }}>
           {({ navigation }) => (

@@ -14,6 +14,23 @@ import { buscarColaboradores } from '../services/colaboradores';
 import { useEffect, useRef } from 'react';
 import { Linking as RNLinking } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { buscarEnderecos } from '../services/enderecos';
+
+// Substituir os ícones SVG inline por ícones do MaterialCommunityIcons
+// No lugar de <CalendarIcon />, use:
+// <MaterialCommunityIcons name="calendar" size={24} color="#bbb" />
+// No lugar de <ClockIcon />, use:
+// <MaterialCommunityIcons name="clock-outline" size={24} color="#bbb" />
+// No lugar de <MapPinIcon />, use:
+// <MaterialCommunityIcons name="map-marker" size={24} color="#bbb" />
+// No lugar de <UserIcon />, use:
+// <MaterialCommunityIcons name="account" size={24} color="#bbb" />
+// No lugar de <CheckIcon />, use:
+// <MaterialCommunityIcons name="car" size={24} color="#bbb" />
+// No lugar de <FileTextIcon />, use:
+// <MaterialCommunityIcons name="file-document-edit" size={24} color="#bbb" />
+
 
 interface RelatorioScreenProps {
     token: string;
@@ -34,6 +51,9 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
     const [colabSugestoes, setColabSugestoes] = useState<any[]>([]);
     const [colabLoading, setColabLoading] = useState(false);
     const colabTimeout = useRef<NodeJS.Timeout | null>(null);
+    const [enderecoSugestoes, setEnderecoSugestoes] = useState<any[]>([]);
+    const [enderecoLoading, setEnderecoLoading] = useState(false);
+    const enderecoTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const vtrOptions = [
         '',
@@ -143,6 +163,26 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
         Alert.alert('Copiado', 'Relatório limpo copiado para a área de transferência.');
     };
 
+    const handleBuscarEnderecos = (texto: string) => {
+        setEndereco(texto);
+        if (enderecoTimeout.current) clearTimeout(enderecoTimeout.current);
+        if (!texto || texto.length < 2) {
+            setEnderecoSugestoes([]);
+            return;
+        }
+        setEnderecoLoading(true);
+        enderecoTimeout.current = setTimeout(async () => {
+            try {
+                const resp = await buscarEnderecos(texto, token);
+                setEnderecoSugestoes(resp.logradouros || []);
+            } catch {
+                setEnderecoSugestoes([]);
+            } finally {
+                setEnderecoLoading(false);
+            }
+        }, 350);
+    };
+
     const openDatePicker = () => setShowDatePicker(true);
     const openTimePicker = () => setShowTimePicker(true);
 
@@ -153,161 +193,209 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
         >
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                <View style={styles.topoBox}>
-                    <Image source={require('../../logo_master.png')} style={styles.logoImg} resizeMode="contain" />
-                    <View style={styles.institucionalBox}>
-                        <Text style={styles.institucionalMsg}>É <Text style={styles.bold}>segurança</Text>.
-                            É <Text style={styles.bold}>manutenção</Text>.
-                            É <Text style={styles.bold}>sustentabilidade</Text>.
-                            É <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text></Text>
-                    </View>
-                </View>
-                <Text style={styles.title}>Análise de Relatório</Text>
-                {/* Data e Hora na mesma linha */}
-                <View style={styles.rowInputs}>
-                    <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                        <Text style={styles.label}>Data</Text>
-                        {Platform.OS === 'web' ? (
-                            <input
-                                type="date"
-                                value={data ? data.toISOString().substring(0, 10) : ''}
-                                onChange={e => setData(new Date(e.target.value))}
-                                style={{ ...styles.input, width: '100%' }}
-                            />
-                        ) : (
-                            <TouchableOpacity onPress={openDatePicker} activeOpacity={0.7}>
-                                <Input
-                                    placeholder="DD/MM/AAAA"
-                                    value={data ? data.toLocaleDateString('pt-BR') : ''}
-                                    editable={false}
-                                    style={styles.input}
-                                />
-                            </TouchableOpacity>
-                        )}
-                        {showDatePicker && Platform.OS !== 'web' && (
-                            <DateTimePicker
-                                value={data || new Date()}
-                                mode="date"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={(_, selectedDate) => {
-                                    setShowDatePicker(false);
-                                    if (selectedDate) setData(selectedDate);
-                                }}
-                            />
-                        )}
-                    </View>
-                    <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                        <Text style={styles.label}>Hora</Text>
-                        {Platform.OS === 'web' ? (
-                            <input
-                                type="time"
-                                value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
-                                onChange={e => {
-                                    const [h, m] = e.target.value.split(':');
-                                    const newDate = new Date();
-                                    newDate.setHours(Number(h));
-                                    newDate.setMinutes(Number(m));
-                                    setHora(newDate);
-                                }}
-                                style={{ ...styles.input, width: '100%' }}
-                            />
-                        ) : (
-                            <TouchableOpacity onPress={openTimePicker} activeOpacity={0.7}>
-                                <Input
-                                    placeholder="HH:MM"
-                                    value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
-                                    editable={false}
-                                    style={styles.input}
-                                />
-                            </TouchableOpacity>
-                        )}
-                        {showTimePicker && Platform.OS !== 'web' && (
-                            <DateTimePicker
-                                value={hora || new Date()}
-                                mode="time"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={(_, selectedTime) => {
-                                    setShowTimePicker(false);
-                                    if (selectedTime) setHora(selectedTime);
-                                }}
-                            />
-                        )}
-                    </View>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Análise de Relatório</Text>
                 </View>
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Endereço</Text>
-                    <Input
-                        placeholder="Ex: Rua Exemplo, 123"
-                        value={endereco}
-                        onChangeText={setEndereco}
-                        style={styles.input}
-                    />
-                </View>
-
-                {/* Colaborador e VTR na mesma linha */}
-                <View style={styles.rowInputs}>
-                    <View style={[styles.inputGroup, { flex: 2, marginRight: 8 }]}>
-                        <Text style={styles.label}>Colaborador/Responsável</Text>
-                        <Input
-                            placeholder="Nome do responsável"
-                            value={colaborador}
-                            onChangeText={handleBuscarColaboradores}
-                            style={styles.input}
-                            autoCorrect={false}
-                            autoCapitalize="words"
-                        />
-                        {colabLoading && <Text style={{ color: colors.mutedText, fontSize: 13 }}>Buscando...</Text>}
-                        {colabSugestoes.length > 0 && (
-                            <View style={styles.sugestoesBox}>
-                                {colabSugestoes.map((c) => (
-                                    <Text
-                                        key={c.id}
-                                        style={styles.sugestaoItem}
-                                        onPress={() => {
-                                            setColaborador(c.nome_completo);
-                                            setColabSugestoes([]);
-                                        }}
-                                    >
-                                        {c.nome_completo} {c.cargo ? `(${c.cargo})` : ''}
-                                    </Text>
-                                ))}
-                            </View>
-                        )}
-                    </View>
-                    <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                        <Text style={styles.label}>Viatura/VTR</Text>
-                        <View style={styles.pickerBox}>
-                            <Picker
-                                selectedValue={vtr}
-                                onValueChange={setVtr}
-                                style={styles.picker}
-                                dropdownIconColor={colors.primaryBg}
-                            >
-                                {vtrOptions.map(opt => (
-                                    <Picker.Item key={opt} label={opt || 'Selecione'} value={opt} />
-                                ))}
-                            </Picker>
+                <View style={styles.formContainer}>
+                    {/* Data */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="calendar" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Data</Text>
+                            {Platform.OS === 'web' ? (
+                                <input
+                                    type="date"
+                                    value={data ? data.toISOString().substring(0, 10) : ''}
+                                    onChange={e => setData(new Date(e.target.value))}
+                                    style={{ ...styles.input, width: '100%' }}
+                                />
+                            ) : (
+                                <TouchableOpacity onPress={openDatePicker} activeOpacity={0.7}>
+                                    <Input
+                                        placeholder="DD/MM/AAAA"
+                                        value={data ? data.toLocaleDateString('pt-BR') : ''}
+                                        editable={false}
+                                        style={styles.input}
+                                    />
+                                </TouchableOpacity>
+                            )}
+                            {showDatePicker && Platform.OS !== 'web' && (
+                                <DateTimePicker
+                                    value={data || new Date()}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={(_, selectedDate) => {
+                                        setShowDatePicker(false);
+                                        if (selectedDate) setData(selectedDate);
+                                    }}
+                                />
+                            )}
                         </View>
                     </View>
+
+                    {/* Hora */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="clock-outline" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Hora</Text>
+                            {Platform.OS === 'web' ? (
+                                <input
+                                    type="time"
+                                    value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                    onChange={e => {
+                                        const [h, m] = e.target.value.split(':');
+                                        const newDate = new Date();
+                                        newDate.setHours(Number(h));
+                                        newDate.setMinutes(Number(m));
+                                        setHora(newDate);
+                                    }}
+                                    style={{ ...styles.input, width: '100%' }}
+                                />
+                            ) : (
+                                <TouchableOpacity onPress={openTimePicker} activeOpacity={0.7}>
+                                    <Input
+                                        placeholder="HH:MM"
+                                        value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                        editable={false}
+                                        style={styles.input}
+                                    />
+                                </TouchableOpacity>
+                            )}
+                            {showTimePicker && Platform.OS !== 'web' && (
+                                <DateTimePicker
+                                    value={hora || new Date()}
+                                    mode="time"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={(_, selectedTime) => {
+                                        setShowTimePicker(false);
+                                        if (selectedTime) setHora(selectedTime);
+                                    }}
+                                />
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Endereço */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="map-marker" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Endereço</Text>
+                            <Input
+                                placeholder="Ex: Rua Exemplo, 123"
+                                value={endereco}
+                                onChangeText={handleBuscarEnderecos}
+                                style={styles.input}
+                            />
+                            {enderecoLoading && <Text style={{ color: colors.mutedText, fontSize: 13 }}>Buscando...</Text>}
+                            {enderecoSugestoes.length > 0 && (
+                                <View style={styles.sugestoesBox}>
+                                    {enderecoSugestoes.map((e) => (
+                                        <Text
+                                            key={e.id}
+                                            style={styles.sugestaoItem}
+                                            onPress={() => {
+                                                setEndereco(e.nome);
+                                                setEnderecoSugestoes([]);
+                                            }}
+                                        >
+                                            {e.nome}
+                                        </Text>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Colaborador */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="account" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Colaborador/Responsável</Text>
+                            <Input
+                                placeholder="Nome do responsável"
+                                value={colaborador}
+                                onChangeText={handleBuscarColaboradores}
+                                style={styles.input}
+                                autoCorrect={false}
+                                autoCapitalize="words"
+                            />
+                            {colabLoading && <Text style={{ color: colors.mutedText, fontSize: 13 }}>Buscando...</Text>}
+                            {colabSugestoes.length > 0 && (
+                                <View style={styles.sugestoesBox}>
+                                    {colabSugestoes.map((c) => (
+                                        <Text
+                                            key={c.id}
+                                            style={styles.sugestaoItem}
+                                            onPress={() => {
+                                                setColaborador(c.nome_completo);
+                                                setColabSugestoes([]);
+                                            }}
+                                        >
+                                            {c.nome_completo} {c.cargo ? `(${c.cargo})` : ''}
+                                        </Text>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* VTR (mantido como Picker, mas estilizado para se parecer com input) */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            {/* Ícone para VTR, você pode escolher um adequado */}
+                            <MaterialCommunityIcons name="car" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Viatura/VTR</Text>
+                            <View style={styles.pickerBox}>
+                                <Picker
+                                    selectedValue={vtr}
+                                    onValueChange={setVtr}
+                                    style={styles.picker}
+                                    dropdownIconColor={colors.primaryBg}
+                                >
+                                    {vtrOptions.map(opt => (
+                                        <Picker.Item key={opt} label={opt || 'Selecione'} value={opt} />
+                                    ))}
+                                </Picker>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Relatório Bruto */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="file-document-edit" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Relatório Bruto</Text>
+                            <Input
+                                placeholder="Cole ou digite o relatório bruto aqui..."
+                                value={relatorioBruto}
+                                onChangeText={setRelatorioBruto}
+                                multiline
+                                style={[styles.input, styles.multilineInput]}
+                            />
+                        </View>
+                    </View>
+
                 </View>
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Relatório Bruto</Text>
-                    <Input
-                        placeholder="Cole ou digite o relatório bruto aqui..."
-                        value={relatorioBruto}
-                        onChangeText={setRelatorioBruto}
-                        multiline
-                        style={[styles.input, styles.multilineInput]}
-                    />
-                </View>
-
-                <View style={{ marginTop: 12 }}>
+                <View style={styles.buttonContainer}>
                     <Button
                         title={loading ? 'Analisando...' : 'Analisar Relatório'}
                         onPress={handleAnalisar}
                         disabled={loading}
+                        style={styles.analyzeButton}
                     />
                     {loading && <ActivityIndicator color="#fff" style={{ marginTop: 8 }} />}
                 </View>
@@ -318,8 +406,10 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                         <ScrollView horizontal>
                             <Text selectable style={styles.resultText}>{relatorioLimpo}</Text>
                         </ScrollView>
-                        <Button title="Copiar Relatório" onPress={handleCopiar} />
-                        <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} />
+                        <View style={styles.resultButtons}>
+                            <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.resultButton} />
+                            <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.resultButton} />
+                        </View>
                     </View>
                 )}
             </ScrollView>
@@ -333,147 +423,203 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
 const styles = StyleSheet.create({
     container: {
         padding: 20,
-        backgroundColor: colors.primaryBg || '#0B1C26',
+        backgroundColor: colors.primaryBg || '#E8E8E8', // Cor de fundo mais clara para o container principal
         flexGrow: 1,
     },
-    title: {
-        color: '#fff',
-        fontSize: 26,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 28,
+    header: {
+        backgroundColor: colors.primaryBg || '#1E88E5', // Azul mais escuro para o cabeçalho
+        paddingVertical: 20,
+        paddingHorizontal: 15,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        marginBottom: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 8,
     },
-    inputGroup: {
-        marginBottom: 16,
+    headerTitle: {
+        color: '#fff',
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    formContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    inputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#F0F0F0', // Fundo cinza claro para o círculo do ícone
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    icon: {
+        color: colors.primaryBg || '#1E88E5', // Cor do ícone
+    },
+    inputGroupFlex: {
+        flex: 1,
     },
     label: {
-        color: '#ccc',
-        fontSize: 15,
-        marginBottom: 6,
+        color: '#555', // Cor do texto da label
+        fontSize: 14,
+        marginBottom: 5,
+        fontWeight: '500',
     },
     input: {
-        backgroundColor: '#fff',
-        color: '#111',
+        backgroundColor: '#F9F9F9', // Fundo mais claro para os inputs
+        color: '#333',
         fontSize: 16,
-        borderRadius: 14,
+        borderRadius: 10, // Bordas mais arredondadas
         paddingVertical: 12,
-        paddingHorizontal: 16,
-        boxShadow: '0px 1px 3px rgba(0,0,0,0.05)',
+        paddingHorizontal: 15,
+        borderWidth: 1,
+        borderColor: '#E0E0E0', // Borda sutil
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.03,
+        shadowRadius: 2,
+        elevation: 1,
     },
     multilineInput: {
-        minHeight: 120,
+        minHeight: 100,
         textAlignVertical: 'top',
+    },
+    sugestoesBox: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        marginTop: 5,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        maxHeight: 150,
+        overflow: 'scroll',
+        zIndex: 10,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+    },
+    sugestaoItem: {
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        fontSize: 15,
+        color: '#333',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F5F5F5',
+    },
+    pickerBox: {
+        backgroundColor: '#F9F9F9',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.03,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    picker: {
+        width: '100%',
+        height: 50, // Ajustado para ser mais consistente com os inputs
+        color: '#333',
+    },
+    buttonContainer: {
+        marginTop: 25,
+        alignItems: 'center',
+    },
+    analyzeButton: {
+        backgroundColor: colors.primaryBg || '#1E88E5', // Cor do botão principal
+        borderRadius: 12,
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 6,
     },
     resultBox: {
         backgroundColor: '#fff',
         borderRadius: 16,
         padding: 20,
-        marginTop: 28,
-        boxShadow: '0px 2px 6px rgba(0,0,0,0.08)',
+        marginTop: 30,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 5,
     },
     resultTitle: {
         color: '#111',
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 15,
+        textAlign: 'center',
     },
     resultText: {
         color: '#333',
         fontSize: 16,
         fontWeight: '400',
+        lineHeight: 24,
+        marginBottom: 20,
     },
-    sugestoesBox: {
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        marginTop: 2,
-        borderWidth: 1,
-        borderColor: colors.secondaryBg,
-        maxHeight: 140,
-        overflow: 'scroll',
-        zIndex: 10,
-        elevation: 3,
-    },
-    sugestaoItem: {
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        fontSize: 15,
-        color: colors.headingText,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-    },
-    topoBox: {
+    resultButtons: {
         flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 12,
-        marginBottom: 18,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        justifyContent: 'center',
+        justifyContent: 'space-around',
+        marginTop: 10,
     },
-    logoImg: {
-        width: 70,
-        height: 70,
-        borderRadius: 12,
-        marginRight: 18,
-    },
-    institucionalBox: {
+    resultButton: {
         flex: 1,
-        justifyContent: 'center',
-    },
-    institucionalMsg: {
-        color: colors.primaryBg,
-        fontSize: 15,
-        fontWeight: '400',
-        lineHeight: 20,
-        textAlign: 'left',
-    },
-    bold: {
-        fontWeight: 'bold',
-        color: colors.headingText,
-    },
-    master: {
-        fontWeight: 'bold',
-        color: colors.danger,
-        letterSpacing: 0.5,
-    },
-    acaoBox: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    acaoBtn: {
-        marginRight: 8,
-        minWidth: 80,
-        paddingHorizontal: 0,
-    },
-    rowInputs: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        marginBottom: 16,
-    },
-    pickerBox: {
-        backgroundColor: '#fff',
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: colors.secondaryBg,
-        overflow: 'hidden',
-    },
-    picker: {
-        width: '100%',
-        height: 44,
-        color: colors.headingText,
+        marginHorizontal: 5,
+        backgroundColor: colors.secondaryBg || '#4CAF50', // Cor para os botões de ação do resultado
+        borderRadius: 10,
+        paddingVertical: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
     },
     creditoBox: {
         alignItems: 'center',
-        marginTop: 18,
-        marginBottom: 8,
+        marginTop: 20,
+        marginBottom: 10,
     },
     creditoText: {
-        color: '#444',
-        fontSize: 13,
+        color: '#777',
+        fontSize: 12,
         fontStyle: 'italic',
     },
+    // Removendo estilos não utilizados ou que não se encaixam no novo layout
+    topoBox: { display: 'none' },
+    institucionalBox: { display: 'none' },
+    logoImg: { display: 'none' },
+    institucionalMsg: { display: 'none' },
+    bold: { display: 'none' },
+    master: { display: 'none' },
+    rowInputs: { display: 'none' }, // Este estilo foi substituído por inputRow
+    acaoBox: { display: 'none' },
+    acaoBtn: { display: 'none' },
 });

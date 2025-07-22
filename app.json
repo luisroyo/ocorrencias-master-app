@@ -6,7 +6,7 @@
     "slug": "ocorrencias-master-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icone_app.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/icone_app.png",
         "backgroundColor": "#0F2A35"
       },
       "edgeToEdgeEnabled": true,

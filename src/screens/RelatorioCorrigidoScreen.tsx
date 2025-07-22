@@ -19,12 +19,14 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
             Alert.alert('Atenção', 'Gere o relatório limpo antes de enviar.');
             return;
         }
-        const url = `https://wa.me/?text=${encodeURIComponent(relatorio)}`;
-        Linking.canOpenURL(url).then(supported => {
+        const text = encodeURIComponent(relatorio);
+        const urlApp = `whatsapp://send?text=${text}`;
+        const urlWeb = `https://wa.me/?text=${text}`;
+        Linking.canOpenURL(urlApp).then(supported => {
             if (supported) {
-                Linking.openURL(url);
+                Linking.openURL(urlApp);
             } else {
-                Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+                Linking.openURL(urlWeb);
             }
         });
     };

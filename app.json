@@ -1,6 +1,4 @@
 {
-  "name": "RelatoriosOcorrencia",
-  "displayName": "Relatórios de Ocorrências",
   "expo": {
     "name": "Relatórios de Ocorrências",
     "slug": "ocorrencias-master-app",
@@ -10,7 +8,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -23,7 +21,7 @@
         "foregroundImage": "./assets/icone_app.png",
         "backgroundColor": "#0F2A35"
       },
-      "edgeToEdge": true,
+      "edgeToEdgeEnabled": true,
       "package": "com.anonymous.ocorrenciasmasterapp"
     },
     "web": {
@@ -34,9 +32,6 @@
         "projectId": "f5598c2e-0de7-42d0-9439-555a36b86d4d"
       }
     },
-    "plugins": [
-      "@expo/webpack-config"
-    ],
     "updates": {
       "fallbackToCacheTimeout": 0
     },

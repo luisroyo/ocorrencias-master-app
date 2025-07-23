@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Relatórios de Ocorrências",
-    "slug": "ocorrencias-master-app",
-    "version": "1.0.0",
+    "slug": "Relatórios de Ocorrências",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icone_app.png",
     "userInterfaceStyle": "light",
@@ -25,7 +25,7 @@
       "package": "com.anonymous.ocorrenciasmasterapp"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     },
     "extra": {
       "eas": {

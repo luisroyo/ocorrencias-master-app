@@ -196,6 +196,7 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Análise de Relatório</Text>
                 </View>
+                <Text style={styles.subTitle}>Preencha os dados abaixo</Text>
 
                 <View style={styles.formContainer}>
                     {/* Data */}
@@ -423,27 +424,22 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
 const styles = StyleSheet.create({
     container: {
         padding: 20,
-        backgroundColor: colors.primaryBg || '#E8E8E8', // Cor de fundo mais clara para o container principal
+        backgroundColor: '#003c3c', // fundo verde escuro
         flexGrow: 1,
     },
     header: {
-        backgroundColor: colors.primaryBg || '#1E88E5', // Azul mais escuro para o cabeçalho
-        paddingVertical: 20,
-        paddingHorizontal: 15,
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
-        marginBottom: 20,
+        backgroundColor: 'transparent',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 8,
+        marginBottom: 0,
     },
     headerTitle: {
-        color: '#fff',
-        fontSize: 24,
-        fontWeight: 'bold',
+        display: 'none', // título só no AppBar
+    },
+    subTitle: {
+        fontSize: 16,
+        color: '#ddd',
+        textAlign: 'center',
+        marginBottom: 20,
     },
     formContainer: {
         backgroundColor: '#fff',
@@ -458,7 +454,7 @@ const styles = StyleSheet.create({
     inputRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: 22, // mais espaçamento
     },
     iconContainer: {
         width: 40,
@@ -475,16 +471,18 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     icon: {
-        color: colors.primaryBg || '#1E88E5', // Cor do ícone
+        color: '#ddd',
+        opacity: 0.8,
+        marginBottom: 6,
     },
     inputGroupFlex: {
         flex: 1,
     },
     label: {
-        color: '#555', // Cor do texto da label
-        fontSize: 14,
+        color: '#ddd',
+        fontSize: 16,
+        fontWeight: '600',
         marginBottom: 5,
-        fontWeight: '500',
     },
     input: {
         backgroundColor: '#F9F9F9', // Fundo mais claro para os inputs
@@ -502,8 +500,11 @@ const styles = StyleSheet.create({
         elevation: 1,
     },
     multilineInput: {
-        minHeight: 100,
+        minHeight: 140,
         textAlignVertical: 'top',
+        backgroundColor: '#eef5f5',
+        borderColor: '#88c0b8',
+        borderWidth: 1.5,
     },
     sugestoesBox: {
         backgroundColor: '#fff',
@@ -550,14 +551,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     analyzeButton: {
-        backgroundColor: colors.primaryBg || '#1E88E5', // Cor do botão principal
+        backgroundColor: '#009688',
         borderRadius: 12,
-        paddingVertical: 15,
+        paddingVertical: 16,
         paddingHorizontal: 30,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
         elevation: 6,
     },
     resultBox: {
@@ -608,9 +609,11 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     creditoText: {
-        color: '#777',
-        fontSize: 12,
+        color: '#ccc',
+        fontSize: 13,
         fontStyle: 'italic',
+        textAlign: 'center',
+        marginTop: 10,
     },
     // Removendo estilos não utilizados ou que não se encaixam no novo layout
     topoBox: { display: 'none' },

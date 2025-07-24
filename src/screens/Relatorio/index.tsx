@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View, Text, Alert, Platform, TouchableOpacity, Linking, Clipboard
 } from 'react-native';
@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { buscarEnderecos } from '../../services/enderecos';
 import { styles } from './styles';
 import { BaseScreen } from '../../components/BaseScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface RelatorioScreenProps {
     token: string;
@@ -34,10 +35,10 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
     const [vtr, setVtr] = useState('');
     const [colabSugestoes, setColabSugestoes] = useState<any[]>([]);
     const [colabLoading, setColabLoading] = useState(false);
-    const colabTimeout = useRef<NodeJS.Timeout | null>(null);
+    const colabTimeout = useRef<any>(null);
     const [enderecoSugestoes, setEnderecoSugestoes] = useState<any[]>([]);
     const [enderecoLoading, setEnderecoLoading] = useState(false);
-    const enderecoTimeout = useRef<NodeJS.Timeout | null>(null);
+    const enderecoTimeout = useRef<any>(null);
 
     const vtrOptions = [
         '',
@@ -51,6 +52,44 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
         'VTR 10',
         'VTR 11',
     ];
+
+    const FORM_KEY = 'relatorio_form_state_v1';
+
+    // Carregar estado salvo ao montar
+    useEffect(() => {
+        (async () => {
+            try {
+                const saved = await AsyncStorage.getItem(FORM_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.data) setData(new Date(parsed.data));
+                    if (parsed.hora) setHora(new Date(parsed.hora));
+                    if (parsed.endereco) setEndereco(parsed.endereco);
+                    if (parsed.colaborador) setColaborador(parsed.colaborador);
+                    if (parsed.relatorioBruto) setRelatorioBruto(parsed.relatorioBruto);
+                    if (parsed.vtr) setVtr(parsed.vtr);
+                }
+            } catch {}
+        })();
+    }, []);
+
+    // Salvar estado sempre que algum campo mudar
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            AsyncStorage.setItem(
+                FORM_KEY,
+                JSON.stringify({
+                    data: data ? data.toISOString() : null,
+                    hora: hora ? hora.toISOString() : null,
+                    endereco,
+                    colaborador,
+                    relatorioBruto,
+                    vtr,
+                })
+            );
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [data, hora, endereco, colaborador, relatorioBruto, vtr]);
 
     // Função para buscar colaboradores conforme digita
     const handleBuscarColaboradores = (texto: string) => {
@@ -119,11 +158,13 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
         }
     };
 
+    // Limpar estado salvo ao enviar via WhatsApp
     const handleEnviarWhatsApp = () => {
         if (!relatorioLimpo) {
             Alert.alert('Atenção', 'Gere o relatório limpo antes de enviar.');
             return;
         }
+        AsyncStorage.removeItem(FORM_KEY); // Limpa o estado salvo
         const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(relatorioLimpo)}`;
         const webUrl = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
         Linking.canOpenURL(whatsappUrl).then(supported => {

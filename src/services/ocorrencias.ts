@@ -11,7 +11,7 @@ export async function listarOcorrencias(token: string, filtros: Record<string, a
 }
 
 export async function detalheOcorrencia(token: string, id: number) {
-    return apiFetch(`/ocorrencias/${id}`, {}, token);
+    return apiFetch(`/api/ocorrencias/${id}`, {}, token);
 }
 
 export async function criarOcorrencia(token: string, dados: any) {

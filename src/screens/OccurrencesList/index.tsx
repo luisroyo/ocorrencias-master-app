@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { Text, FlatList } from 'react-native';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { styles } from './styles';
+import { BaseScreen } from '../../components/BaseScreen';
 
 const mockOccurrences = [
     {
@@ -28,8 +29,7 @@ const mockOccurrences = [
 
 export const OccurrencesListScreen: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect }) => {
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Ocorrências</Text>
+        <BaseScreen title="Ocorrências">
             <FlatList
                 data={mockOccurrences}
                 keyExtractor={item => item.id}
@@ -47,7 +47,7 @@ export const OccurrencesListScreen: React.FC<{ onSelect: (id: string) => void }>
                 )}
                 contentContainerStyle={{ paddingBottom: 24 }}
             />
-        </View>
+        </BaseScreen>
     );
 };
 

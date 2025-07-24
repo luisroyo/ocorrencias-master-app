@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, Image, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, Alert, Image, TouchableOpacity } from 'react-native';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { login } from '../../services/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { styles } from './styles';
+import { BaseScreen } from '../../components/BaseScreen';
 
 interface LoginScreenProps {
     onLogin: (token: string) => void;
@@ -47,51 +48,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-        >
-            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                <View>
-                    <View style={styles.topoBox}>
-                        <Image source={require('../../logo_master.png')} style={styles.logoImg} resizeMode="contain" />
-                        <View style={styles.institucionalBox}>
-                            <Text style={styles.institucionalMsg}>É <Text style={styles.bold}>segurança</Text>.
-                                É <Text style={styles.bold}>manutenção</Text>.
-                                É <Text style={styles.bold}>sustentabilidade</Text>.
-                                É <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text></Text>
-                        </View>
+        <BaseScreen title="Login">
+            <View>
+                <View style={styles.topoBox}>
+                    <Image source={require('../../logo_master.png')} style={styles.logoImg} resizeMode="contain" />
+                    <View style={styles.institucionalBox}>
+                        <Text style={styles.institucionalMsg}>É <Text style={styles.bold}>segurança</Text>.
+                            É <Text style={styles.bold}>manutenção</Text>.
+                            É <Text style={styles.bold}>sustentabilidade</Text>.
+                            É <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text></Text>
                     </View>
-                    <Text style={styles.title}>Login</Text>
-                    <Input
-                        placeholder="E-mail"
-                        value={email}
-                        onChangeText={setEmail}
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                    />
-                    <View style={styles.senhaRow}>
-                        <Input
-                            placeholder="Senha"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry={!showPassword}
-                            autoCapitalize="none"
-                            keyboardType="default"
-                            style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                        />
-                        <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.verSenhaBtn}>
-                            <Text style={styles.verSenhaText}>{showPassword ? 'Ocultar' : 'Ver'}</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <Button
-                        title={loading ? 'Entrando...' : 'Entrar'}
-                        onPress={handleLogin}
-                        disabled={loading}
-                    />
                 </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                <Input
+                    placeholder="E-mail"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                />
+                <View style={styles.senhaRow}>
+                    <Input
+                        placeholder="Senha"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        autoCapitalize="none"
+                        keyboardType="default"
+                        style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.verSenhaBtn}>
+                        <Text style={styles.verSenhaText}>{showPassword ? 'Ocultar' : 'Ver'}</Text>
+                    </TouchableOpacity>
+                </View>
+                <Button
+                    title={loading ? 'Entrando...' : 'Entrar'}
+                    onPress={handleLogin}
+                    disabled={loading}
+                />
+            </View>
+        </BaseScreen>
     );
 }; 

@@ -2,7 +2,12 @@ import { apiFetch } from './api';
 
 export async function listarOcorrencias(token: string, filtros: Record<string, any> = {}) {
     const params = new URLSearchParams(filtros as any).toString();
-    return apiFetch(`/ocorrencias${params ? '?' + params : ''}`, {}, token);
+    try {
+        const resp = await apiFetch(`/api/ocorrencias/historico${params ? '?' + params : ''}`, {}, token);
+        return resp;
+    } catch (error) {
+        return { historico: [], error };
+    }
 }
 
 export async function detalheOcorrencia(token: string, id: number) {

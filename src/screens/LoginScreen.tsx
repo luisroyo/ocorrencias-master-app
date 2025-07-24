@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Image, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
 import { login } from '../services/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface LoginScreenProps {
     onLogin: (token: string) => void;
@@ -15,11 +16,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    useEffect(() => {
+        // Buscar e-mail salvo ao abrir a tela
+        const loadEmail = async () => {
+            try {
+                const savedEmail = await AsyncStorage.getItem('savedEmail');
+                if (savedEmail) setEmail(savedEmail);
+            } catch { }
+        };
+        loadEmail();
+    }, []);
+
     const handleLogin = async () => {
         setLoading(true);
         try {
             const response = await login(email, password);
             if (response && response.token) {
+                // Salvar o e-mail ao fazer login
+                await AsyncStorage.setItem('savedEmail', email);
                 onLogin(response.token);
                 return;
             }

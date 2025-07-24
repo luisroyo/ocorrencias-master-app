@@ -6,8 +6,12 @@ import { colors } from '../../theme/colors';
 import { styles } from './styles';
 import { BaseScreen } from '../../components/BaseScreen';
 import { detalheOcorrencia } from '../../services/ocorrencias';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
-export const OccurrenceDetailScreen: React.FC<{ id: string; onBack: () => void; token?: string }> = ({ id, onBack, token }) => {
+export const OccurrenceDetailScreen: React.FC = () => {
+    const route = useRoute();
+    const navigation = useNavigation();
+    const { id, token } = route.params as { id: string; token: string };
     const [detail, setDetail] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -40,7 +44,7 @@ export const OccurrenceDetailScreen: React.FC<{ id: string; onBack: () => void; 
                     <Text style={styles.date}>{detail.data_hora_ocorrencia ? new Date(detail.data_hora_ocorrencia).toLocaleString('pt-BR') : detail.date}</Text>
                     <Text style={[styles.status, statusStyle(detail.status)]}>{detail.status}</Text>
                     <Text style={styles.description}>{detail.relatorio_final || detail.description}</Text>
-                    <Button title="Voltar" onPress={onBack} />
+                    <Button title="Voltar" onPress={() => navigation.goBack()} />
                 </Card>
             ) : null}
         </BaseScreen>

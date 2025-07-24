@@ -9,8 +9,6 @@ import { ROUTES } from '../constants/routes';
 const Stack = createNativeStackNavigator();
 
 export const OccurrencesStack: React.FC<{ token: string }> = ({ token }) => {
-    const [selectedId, setSelectedId] = useState<string | null>(null);
-
     return (
         <Stack.Navigator initialRouteName={ROUTES.OCORRENCIAS_LIST}>
             <Stack.Screen
@@ -25,12 +23,10 @@ export const OccurrencesStack: React.FC<{ token: string }> = ({ token }) => {
                     headerTitleAlign: 'center',
                 }}
             >
-                {() => (
-                    <OccurrencesListScreen onSelect={id => setSelectedId(id)} token={token} />
-                )}
+                {props => <OccurrencesListScreen {...props} token={token} />}
             </Stack.Screen>
             <Stack.Screen name={ROUTES.OCORRENCIA_DETAIL} options={{ title: 'Detalhes da Ocorrência' }}>
-                {() => selectedId ? <OccurrenceDetailScreen id={selectedId} onBack={() => setSelectedId(null)} token={token} /> : null}
+                {props => <OccurrenceDetailScreen {...props} token={token} />}
             </Stack.Screen>
         </Stack.Navigator>
     );

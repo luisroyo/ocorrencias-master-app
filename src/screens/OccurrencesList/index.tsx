@@ -6,11 +6,14 @@ import { colors } from '../../theme/colors';
 import { styles } from './styles';
 import { BaseScreen } from '../../components/BaseScreen';
 import { listarOcorrencias } from '../../services/ocorrencias';
+import { useNavigation } from '@react-navigation/native';
+import { ROUTES } from '../../constants/routes';
 
-export const OccurrencesListScreen: React.FC<{ onSelect: (id: string) => void; token?: string }> = ({ onSelect, token }) => {
+export const OccurrencesListScreen: React.FC<{ token?: string }> = ({ token }) => {
     const [ocorrencias, setOcorrencias] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const navigation = useNavigation();
 
     useEffect(() => {
         async function fetchData() {
@@ -46,7 +49,7 @@ export const OccurrencesListScreen: React.FC<{ onSelect: (id: string) => void; t
                             <Button
                                 title="Ver detalhes"
                                 variant="success"
-                                onPress={() => onSelect(String(item.id))}
+                                onPress={() => navigation.navigate(ROUTES.OCORRENCIA_DETAIL, { id: String(item.id), token })}
                             />
                         </Card>
                     )}

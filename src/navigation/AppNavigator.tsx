@@ -1,23 +1,10 @@
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LoginScreen } from '../screens/LoginScreen';
-import { OccurrencesListScreen } from '../screens/OccurrencesListScreen';
-import { OccurrenceDetailScreen } from '../screens/OccurrenceDetailScreen';
-import { RelatorioScreen } from '../screens/RelatorioScreen';
-import { RelatorioCorrigidoScreen } from '../screens/RelatorioCorrigidoScreen';
-import { Button } from '../components/Button';
-import { View, Text } from 'react-native';
-import { colors } from '../theme/colors';
-
-export type RootStackParamList = {
-  Login: undefined;
-  OccurrencesList: undefined;
-  OccurrenceDetail: { id: string };
-  Relatorio: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+import { RelatorioStack } from './RelatorioStack';
+import { OccurrencesStack } from './OccurrencesStack';
+import { RelatorioCorrigidoStack } from './RelatorioCorrigidoStack';
+import { LoginScreen } from '../screens/Login';
+import { ROUTES } from '../constants/routes';
 
 export const AppNavigator: React.FC = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -29,47 +16,16 @@ export const AppNavigator: React.FC = () => {
   }
 
   if (relatorioCorrigido) {
-    return <RelatorioCorrigidoScreen relatorio={relatorioCorrigido} onVoltar={() => setRelatorioCorrigido(null)} />;
+    return <RelatorioCorrigidoStack relatorio={relatorioCorrigido} onVoltar={() => setRelatorioCorrigido(null)} />;
   }
 
+  // Exemplo: você pode alternar entre stacks conforme a navegação global do app
+  // Aqui, por simplicidade, mostramos o RelatorioStack como principal
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Relatorio">
-        <Stack.Screen
-          name="Relatorio"
-          options={{
-            title: '',
-            headerStyle: { backgroundColor: '#f8f8f8' },
-            headerTitle: () => (
-              <Text style={{ fontSize: 20, color: '#333', fontWeight: 'bold', textAlign: 'center', width: '100%', paddingVertical: 14 }}>
-                Análise de Relatório
-              </Text>
-            ),
-          }}
-        >
-          {() => (
-            <RelatorioScreen
-              token={token}
-              onRelatorioCorrigido={setRelatorioCorrigido}
-            />
-          )}
-        </Stack.Screen>
-        <Stack.Screen name="OccurrencesList" options={{ title: 'Ocorrências' }}>
-          {({ navigation }) => (
-            <View style={{ flex: 1 }}>
-              <OccurrencesListScreen onSelect={id => setSelectedId(id)} />
-              <Button
-                title="Analisar Relatório"
-                onPress={() => navigation.navigate('Relatorio')}
-                style={{ margin: 16 }}
-              />
-            </View>
-          )}
-        </Stack.Screen>
-        <Stack.Screen name="OccurrenceDetail" options={{ title: 'Detalhes da Ocorrência' }}>
-          {() => selectedId ? <OccurrenceDetailScreen id={selectedId} onBack={() => setSelectedId(null)} /> : null}
-        </Stack.Screen>
-      </Stack.Navigator>
+      <RelatorioStack token={token} onRelatorioCorrigido={setRelatorioCorrigido} />
+      {/* Para navegação real entre stacks, use um Tab.Navigator ou lógica de navegação global */}
+      {/* <OccurrencesStack /> */}
     </NavigationContainer>
   );
 }; 

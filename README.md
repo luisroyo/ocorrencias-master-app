@@ -82,6 +82,9 @@ src/
     OccurrencesList/
       index.tsx    # Tela de lista de ocorrências
       styles.ts    # Estilos da tela de lista de ocorrências
+    OccurrenceDetail/
+      index.tsx    # Tela de detalhes da ocorrência
+      styles.ts    # Estilos da tela de detalhes da ocorrência
     ...outras telas (cada uma em sua pasta)
   services/        # Serviços de API
   theme/           # Temas e cores

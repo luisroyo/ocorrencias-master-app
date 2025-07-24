@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Card } from '../components/Card';
-import { Button } from '../components/Button';
-import { colors } from '../theme/colors';
+import { View, Text } from 'react-native';
+import { Card } from '../../components/Card';
+import { Button } from '../../components/Button';
+import { colors } from '../../theme/colors';
+import { styles } from './styles';
 
 const mockDetails: Record<string, { title: string; description: string; status: string; date: string }> = {
     '1': {
@@ -52,33 +53,4 @@ function statusStyle(status: string) {
         default:
             return { color: colors.mutedText };
     }
-}
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.primaryBg,
-        justifyContent: 'center',
-        padding: 16,
-    },
-    title: {
-        color: colors.headingText,
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    date: {
-        color: colors.mutedText,
-        fontSize: 14,
-        marginBottom: 8,
-    },
-    status: {
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    description: {
-        color: colors.headingText,
-        fontSize: 16,
-        marginBottom: 16,
-    },
-}); 
+} 

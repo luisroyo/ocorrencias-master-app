@@ -1,52 +1,58 @@
-import React from 'react';
-import { Text, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, FlatList, ActivityIndicator, View } from 'react-native';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { styles } from './styles';
 import { BaseScreen } from '../../components/BaseScreen';
+import { listarOcorrencias } from '../../services/ocorrencias';
 
-const mockOccurrences = [
-    {
-        id: '1',
-        title: 'Queda de energia',
-        status: 'Pendente',
-        date: '2024-06-01',
-    },
-    {
-        id: '2',
-        title: 'Vazamento de água',
-        status: 'Resolvido',
-        date: '2024-05-30',
-    },
-    {
-        id: '3',
-        title: 'Barulho excessivo',
-        status: 'Em andamento',
-        date: '2024-05-28',
-    },
-];
+export const OccurrencesListScreen: React.FC<{ onSelect: (id: string) => void; token?: string }> = ({ onSelect, token }) => {
+    const [ocorrencias, setOcorrencias] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-export const OccurrencesListScreen: React.FC<{ onSelect: (id: string) => void }> = ({ onSelect }) => {
+    useEffect(() => {
+        async function fetchData() {
+            setLoading(true);
+            setError(null);
+            try {
+                const resp = await listarOcorrencias(token || '');
+                setOcorrencias(resp.historico || []);
+            } catch (e) {
+                setError('Erro ao buscar ocorrências');
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchData();
+    }, [token]);
+
     return (
         <BaseScreen title="Ocorrências">
-            <FlatList
-                data={mockOccurrences}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <Card>
-                        <Text style={styles.occurrenceTitle}>{item.title}</Text>
-                        <Text style={styles.occurrenceDate}>{item.date}</Text>
-                        <Text style={[styles.status, statusStyle(item.status)]}>{item.status}</Text>
-                        <Button
-                            title="Ver detalhes"
-                            variant="success"
-                            onPress={() => onSelect(item.id)}
-                        />
-                    </Card>
-                )}
-                contentContainerStyle={{ paddingBottom: 24 }}
-            />
+            {loading ? (
+                <ActivityIndicator size="large" color={colors.primaryBg} style={{ marginTop: 32 }} />
+            ) : error ? (
+                <Text style={{ color: colors.danger, textAlign: 'center', marginTop: 32 }}>{error}</Text>
+            ) : (
+                <FlatList
+                    data={ocorrencias}
+                    keyExtractor={item => String(item.id)}
+                    renderItem={({ item }) => (
+                        <Card>
+                            <Text style={styles.occurrenceTitle}>{item.tipo || item.title}</Text>
+                            <Text style={styles.occurrenceDate}>{item.data_hora_ocorrencia ? new Date(item.data_hora_ocorrencia).toLocaleString('pt-BR') : item.date}</Text>
+                            <Text style={[styles.status, statusStyle(item.status)]}>{item.status}</Text>
+                            <Button
+                                title="Ver detalhes"
+                                variant="success"
+                                onPress={() => onSelect(String(item.id))}
+                            />
+                        </Card>
+                    )}
+                    contentContainerStyle={{ paddingBottom: 24 }}
+                />
+            )}
         </BaseScreen>
     );
 };

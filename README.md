@@ -5,12 +5,12 @@ Aplicativo mobile para registro e acompanhamento de ocorrências, integrado a um
 ## Funcionalidades
 - Login com e-mail e senha (token JWT)
 - Salvamento automático do e-mail após login (campo de e-mail já aparece preenchido na próxima vez)
-- Listagem e detalhamento de ocorrências
+- Listagem e detalhamento de ocorrências (dados reais da API)
 - Cadastro e edição de ocorrências
-- Busca de colaboradores
+- Busca de colaboradores (autocomplete via API)
 - Preenchimento automático de campos (endereços, colaboradores)
 - Envio de relatórios via WhatsApp (nativo e web)
-- Integração total com API Flask
+- Integração total com API Flask (endpoints REST)
 
 ## Requisitos
 - Node.js >= 16
@@ -53,13 +53,31 @@ Edite o arquivo `src/services/api.ts` e ajuste a URL base da API para o endereç
 const API_BASE_URL = 'http://127.0.0.1:5000/api';
 ```
 
-## Ícone e Splash
-O ícone do app e o splash screen estão configurados em `app.json` e ficam na pasta `assets/`.
-- Para trocar o ícone, substitua o arquivo `assets/icon.png` (deve ser PNG, quadrado, 1024x1024).
-- Para trocar o splash, edite a propriedade `splash.image` em `app.json`.
+## Endpoints utilizados
+- `POST /api/ocorrencias/analisar-relatorio` — Análise e correção de relatório
+  - Payload: `{ "texto_relatorio": "..." }`
+- `GET /api/colaboradores?nome=...` — Busca de colaboradores (autocomplete)
+- `GET /api/logradouros_view?nome=...` — Busca de endereços (autocomplete)
+- `GET /api/ocorrencias/historico` — Listagem de ocorrências (com filtros opcionais)
+- `GET /ocorrencias/{id}` — Detalhes de ocorrência
+
+## Exemplo de uso dos serviços
+```ts
+// Analisar relatório
+const resp = await analisarRelatorio(token, texto_relatorio);
+// Buscar colaboradores
+const resp = await buscarColaboradores('João', token);
+// Buscar endereços
+const resp = await buscarEnderecos('Rua', token);
+// Listar ocorrências
+const resp = await listarOcorrencias(token, { status: 'Pendente' });
+// Detalhe de ocorrência
+const resp = await detalheOcorrencia(token, 123);
+```
 
 ## Observações
 - O backend Flask deve retornar um campo `token` no login para autenticação JWT.
+- Sempre envie o token JWT no header Authorization: `Bearer <token>`.
 - Endpoints REST devem estar liberados para CORS.
 - Não esqueça de criar um usuário válido no backend para testar o login.
 

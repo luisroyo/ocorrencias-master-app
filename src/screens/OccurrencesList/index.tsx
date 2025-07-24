@@ -29,7 +29,7 @@ export const OccurrencesListScreen: React.FC<{ onSelect: (id: string) => void; t
     }, [token]);
 
     return (
-        <BaseScreen title="Ocorrências">
+        <BaseScreen disableScroll>
             {loading ? (
                 <ActivityIndicator size="large" color={colors.primaryBg} style={{ marginTop: 32 }} />
             ) : error ? (

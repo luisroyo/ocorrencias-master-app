@@ -35,9 +35,9 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
 
     return (
         <BaseScreen title="Relatório Corrigido">
-            <ScrollView style={styles.resultBox} contentContainerStyle={{ padding: 0 }}>
+            <View style={styles.resultBox}>
                 <Text selectable style={styles.resultText}>{relatorio}</Text>
-            </ScrollView>
+            </View>
             <View style={styles.buttonRow}>
                 <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.button} />
                 <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />

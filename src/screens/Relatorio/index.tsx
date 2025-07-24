@@ -170,7 +170,7 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
     const openTimePicker = () => setShowTimePicker(true);
 
     return (
-        <BaseScreen title="Análise de Relatório" subtitle="Preencha os dados abaixo">
+        <BaseScreen subtitle="Preencha os dados abaixo">
             <View style={styles.formContainer}>
                 {/* Data */}
                 <View style={styles.inputRow}>

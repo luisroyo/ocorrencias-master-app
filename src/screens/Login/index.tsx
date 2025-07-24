@@ -51,7 +51,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         <BaseScreen title="Login">
             <View>
                 <View style={styles.topoBox}>
-                    <Image source={require('../../logo_master.png')} style={styles.logoImg} resizeMode="contain" />
+                    <Image source={require('../../../assets/logo_master.png')} style={styles.logoImg} resizeMode="contain" />
                     <View style={styles.institucionalBox}>
                         <Text style={styles.institucionalMsg}>É <Text style={styles.bold}>segurança</Text>.
                             É <Text style={styles.bold}>manutenção</Text>.

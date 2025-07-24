@@ -7,15 +7,15 @@ import { ROUTES } from '../constants/routes';
 const Tab = createBottomTabNavigator();
 
 export const TabNavigator: React.FC<{ token: string; onRelatorioCorrigido: (relatorio: string) => void }> = ({ token, onRelatorioCorrigido }) => (
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
         <Tab.Screen
-            name={ROUTES.RELATORIO}
+            name="RelatorioTab"
             options={{ title: 'Relatório' }}
         >
             {() => <RelatorioStack token={token} onRelatorioCorrigido={onRelatorioCorrigido} />}
         </Tab.Screen>
         <Tab.Screen
-            name={ROUTES.OCORRENCIAS_LIST}
+            name="OccurrencesTab"
             options={{ title: 'Ocorrências' }}
             component={OccurrencesStack}
         />

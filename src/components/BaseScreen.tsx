@@ -7,23 +7,36 @@ interface BaseScreenProps {
   subtitle?: string;
   children: React.ReactNode;
   showCredit?: boolean;
+  disableScroll?: boolean;
 }
 
-export const BaseScreen: React.FC<BaseScreenProps> = ({ title, subtitle, children, showCredit = true }) => (
+export const BaseScreen: React.FC<BaseScreenProps> = ({ title, subtitle, children, showCredit = true, disableScroll = false }) => (
   <KeyboardAvoidingView
     style={{ flex: 1 }}
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
   >
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      {title && (
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{title}</Text>
-        </View>
-      )}
-      {subtitle && <Text style={styles.subTitle}>{subtitle}</Text>}
-      <View style={styles.contentBox}>{children}</View>
-    </ScrollView>
+    {disableScroll ? (
+      <View style={styles.container}>
+        {title && (
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{title}</Text>
+          </View>
+        )}
+        {subtitle && <Text style={styles.subTitle}>{subtitle}</Text>}
+        <View style={styles.contentBox}>{children}</View>
+      </View>
+    ) : (
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        {title && (
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{title}</Text>
+          </View>
+        )}
+        {subtitle && <Text style={styles.subTitle}>{subtitle}</Text>}
+        <View style={styles.contentBox}>{children}</View>
+      </ScrollView>
+    )}
     {showCredit && (
       <View style={styles.creditoBox}>
         <Text style={styles.creditoText}>Desenvolvido por Luis Eduardo Rodrigues Royo</Text>

@@ -79,6 +79,9 @@ src/
     Login/
       index.tsx    # Tela de login
       styles.ts    # Estilos da tela de login
+    OccurrencesList/
+      index.tsx    # Tela de lista de ocorrências
+      styles.ts    # Estilos da tela de lista de ocorrências
     ...outras telas (cada uma em sua pasta)
   services/        # Serviços de API
   theme/           # Temas e cores

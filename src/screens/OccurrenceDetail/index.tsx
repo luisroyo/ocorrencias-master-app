@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Text } from 'react-native';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { styles } from './styles';
+import { BaseScreen } from '../../components/BaseScreen';
 
 const mockDetails: Record<string, { title: string; description: string; status: string; date: string }> = {
     '1': {
@@ -30,7 +31,7 @@ export const OccurrenceDetailScreen: React.FC<{ id: string; onBack: () => void }
     const detail = mockDetails[id];
     if (!detail) return null;
     return (
-        <View style={styles.container}>
+        <BaseScreen title="Detalhes da Ocorrência">
             <Card>
                 <Text style={styles.title}>{detail.title}</Text>
                 <Text style={styles.date}>{detail.date}</Text>
@@ -38,7 +39,7 @@ export const OccurrenceDetailScreen: React.FC<{ id: string; onBack: () => void }
                 <Text style={styles.description}>{detail.description}</Text>
                 <Button title="Voltar" onPress={onBack} />
             </Card>
-        </View>
+        </BaseScreen>
     );
 };
 

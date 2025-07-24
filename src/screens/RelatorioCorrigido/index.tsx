@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Linking, Clipboard } from 'react-native';
+import { Text, ScrollView, Alert, Linking, Clipboard, View } from 'react-native';
 import { colors } from '../../theme/colors';
 import { Button } from '../../components/Button';
 import { styles } from './styles';
+import { BaseScreen } from '../../components/BaseScreen';
 
 interface RelatorioCorrigidoScreenProps {
     relatorio: string;
@@ -33,8 +34,7 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Relatório Corrigido</Text>
+        <BaseScreen title="Relatório Corrigido">
             <ScrollView style={styles.resultBox} contentContainerStyle={{ padding: 0 }}>
                 <Text selectable style={styles.resultText}>{relatorio}</Text>
             </ScrollView>
@@ -43,6 +43,6 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
                 <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />
             </View>
             <Button title="Voltar" onPress={onVoltar} style={styles.buttonVoltar} variant="secondary" />
-        </View>
+        </BaseScreen>
     );
 }; 

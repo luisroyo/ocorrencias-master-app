@@ -1,44 +1,48 @@
-import React from 'react';
-import { Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, ActivityIndicator } from 'react-native';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { styles } from './styles';
 import { BaseScreen } from '../../components/BaseScreen';
+import { detalheOcorrencia } from '../../services/ocorrencias';
 
-const mockDetails: Record<string, { title: string; description: string; status: string; date: string }> = {
-    '1': {
-        title: 'Queda de energia',
-        description: 'Falta de energia elétrica em todo o prédio desde as 14h.',
-        status: 'Pendente',
-        date: '2024-06-01',
-    },
-    '2': {
-        title: 'Vazamento de água',
-        description: 'Vazamento identificado no 2º andar, próximo ao elevador.',
-        status: 'Resolvido',
-        date: '2024-05-30',
-    },
-    '3': {
-        title: 'Barulho excessivo',
-        description: 'Barulho vindo do apartamento 301 durante a madrugada.',
-        status: 'Em andamento',
-        date: '2024-05-28',
-    },
-};
+export const OccurrenceDetailScreen: React.FC<{ id: string; onBack: () => void; token?: string }> = ({ id, onBack, token }) => {
+    const [detail, setDetail] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-export const OccurrenceDetailScreen: React.FC<{ id: string; onBack: () => void }> = ({ id, onBack }) => {
-    const detail = mockDetails[id];
-    if (!detail) return null;
+    useEffect(() => {
+        async function fetchDetail() {
+            setLoading(true);
+            setError(null);
+            try {
+                const resp = await detalheOcorrencia(token || '', Number(id));
+                setDetail(resp);
+            } catch (e) {
+                setError('Erro ao buscar detalhes da ocorrência');
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchDetail();
+    }, [id, token]);
+
     return (
         <BaseScreen title="Detalhes da Ocorrência">
-            <Card>
-                <Text style={styles.title}>{detail.title}</Text>
-                <Text style={styles.date}>{detail.date}</Text>
-                <Text style={[styles.status, statusStyle(detail.status)]}>{detail.status}</Text>
-                <Text style={styles.description}>{detail.description}</Text>
-                <Button title="Voltar" onPress={onBack} />
-            </Card>
+            {loading ? (
+                <ActivityIndicator size="large" color={colors.primaryBg} style={{ marginTop: 32 }} />
+            ) : error ? (
+                <Text style={{ color: colors.danger, textAlign: 'center', marginTop: 32 }}>{error}</Text>
+            ) : detail ? (
+                <Card>
+                    <Text style={styles.title}>{detail.tipo || detail.title}</Text>
+                    <Text style={styles.date}>{detail.data_hora_ocorrencia ? new Date(detail.data_hora_ocorrencia).toLocaleString('pt-BR') : detail.date}</Text>
+                    <Text style={[styles.status, statusStyle(detail.status)]}>{detail.status}</Text>
+                    <Text style={styles.description}>{detail.relatorio_final || detail.description}</Text>
+                    <Button title="Voltar" onPress={onBack} />
+                </Card>
+            ) : null}
         </BaseScreen>
     );
 };

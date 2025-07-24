@@ -76,6 +76,9 @@ src/
     Relatorio/
       index.tsx    # Tela de relatório
       styles.ts    # Estilos da tela de relatório
+    Login/
+      index.tsx    # Tela de login
+      styles.ts    # Estilos da tela de login
     ...outras telas (cada uma em sua pasta)
   services/        # Serviços de API
   theme/           # Temas e cores

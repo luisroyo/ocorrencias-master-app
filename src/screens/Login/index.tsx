@@ -9,6 +9,9 @@ import {
     SafeAreaView,
     StatusBar,
     Platform,
+    KeyboardAvoidingView,
+    ScrollView,
+    TouchableWithoutFeedback
 } from 'react-native';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
@@ -80,59 +83,70 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 barStyle="dark-content"
                 backgroundColor={Platform.OS === 'android' ? '#f5f6fa' : undefined}
             />
-            <View style={styles.container}>
-                <View style={styles.loginBox}>
-                    <Image
-                        source={require('../../../assets/logo_master.png')}
-                        style={styles.logoImg}
-                        resizeMode="contain"
-                    />
-                    <Text style={styles.institucionalMsg}>
-                        É <Text style={styles.bold}>segurança</Text>. É <Text style={styles.bold}>manutenção</Text>. É{' '}
-                        <Text style={styles.bold}>sustentabilidade</Text>. É{' '}
-                        <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text>
-                    </Text>
-
-                    <Input
-                        placeholder="E-mail"
-                        value={email}
-                        onChangeText={setEmail}
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                        style={styles.inputProf}
-                    />
-
-                    <View style={styles.senhaRow}>
-                        <Input
-                            placeholder="Senha"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry={!showPassword}
-                            autoCapitalize="none"
-                            style={[styles.inputProf, { flex: 1, marginBottom: 0 }]}
-                        />
-                        <TouchableOpacity
-                            onPress={() => setShowPassword((prev) => !prev)}
-                            style={styles.verSenhaBtn}
-                            accessibilityLabel="Mostrar ou ocultar senha"
-                        >
-                            <Feather
-                                name={showPassword ? 'eye-off' : 'eye'}
-                                size={22}
-                                color={colors.danger}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContainer}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <View style={styles.loginBox}>
+                            <Image
+                                source={require('../../../assets/logo_master.png')}
+                                style={styles.logoImg}
+                                resizeMode="contain"
                             />
-                        </TouchableOpacity>
-                    </View>
+                            <Text style={styles.institucionalMsg}>
+                                É <Text style={styles.bold}>segurança</Text>. É <Text style={styles.bold}>manutenção</Text>. É{' '}
+                                <Text style={styles.bold}>sustentabilidade</Text>. É{' '}
+                                <Text style={styles.master}>ASSOCIAÇÃO MASTER</Text>
+                            </Text>
 
-                    <Button
-                        title={loading ? 'Entrando...' : 'Entrar'}
-                        onPress={handleLogin}
-                        disabled={loading}
-                        style={styles.button}
-                        textStyle={styles.buttonText}
-                    />
-                </View>
-            </View>
+                            <Input
+                                placeholder="E-mail"
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                style={styles.inputProf}
+                            />
+
+                            <View style={styles.senhaRow}>
+                                <Input
+                                    placeholder="Senha"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry={!showPassword}
+                                    autoCapitalize="none"
+                                    style={[styles.inputProf, { flex: 1, marginBottom: 0 }]}
+                                />
+                                <TouchableOpacity
+                                    onPress={() => setShowPassword((prev) => !prev)}
+                                    style={styles.verSenhaBtn}
+                                    accessibilityLabel="Mostrar ou ocultar senha"
+                                >
+                                    <Feather
+                                        name={showPassword ? 'eye-off' : 'eye'}
+                                        size={22}
+                                        color={colors.danger}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+
+                            <Button
+                                title={loading ? 'Entrando...' : 'Entrar'}
+                                onPress={handleLogin}
+                                disabled={loading}
+                                style={styles.button}
+                                textStyle={styles.buttonText}
+                            />
+                        </View>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };

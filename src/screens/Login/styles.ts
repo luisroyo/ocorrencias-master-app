@@ -85,4 +85,11 @@ export const styles = StyleSheet.create({
         fontWeight: 'bold',
         letterSpacing: 1,
     },
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16,
+    },
+
 });

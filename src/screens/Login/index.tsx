@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert, Image, TouchableOpacity, Keyboard } from 'react-native';
+import {
+    View,
+    Text,
+    Alert,
+    Image,
+    TouchableOpacity,
+    Keyboard,
+    SafeAreaView,
+    StatusBar,
+    Platform,
+} from 'react-native';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { login } from '../../services/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { styles } from './styles';
-import { BaseScreen } from '../../components/BaseScreen';
 import { Feather } from '@expo/vector-icons';
 
 interface LoginScreenProps {
@@ -66,7 +75,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     };
 
     return (
-        <BaseScreen showCredit={false} disableScroll>
+        <SafeAreaView style={styles.safeArea}>
+            <StatusBar
+                barStyle="dark-content"
+                backgroundColor={Platform.OS === 'android' ? '#f5f6fa' : undefined}
+            />
             <View style={styles.container}>
                 <View style={styles.loginBox}>
                     <Image
@@ -120,6 +133,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     />
                 </View>
             </View>
-        </BaseScreen>
+        </SafeAreaView>
     );
 };

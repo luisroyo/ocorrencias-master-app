@@ -8,26 +8,26 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.ocorrenciasmasterapp",
+      "bundleIdentifier": "com.luisroyo.ocorrenciasmasterapp",
       "icon": "./assets/icon.png"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F2A35"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.ocorrenciasmasterapp",
-      "icon": "./assets/icon.png"
+      "package": "com.luisroyo.ocorrenciasmasterapp",
+      "icon": "./assets/icon.png",
+      "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/icon.png"
+      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
@@ -40,8 +40,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "runtimeVersion": "1.0.1",
+    "jsEngine": "hermes"
   }
 }

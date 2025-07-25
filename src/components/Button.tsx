@@ -5,16 +5,17 @@ import { colors } from '../theme/colors';
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
     variant?: 'primary' | 'danger' | 'success' | 'secondary';
+    textStyle?: any;
 }
 
-export const Button: React.FC<ButtonProps> = ({ title, variant = 'primary', style, ...props }) => {
+export const Button: React.FC<ButtonProps> = ({ title, variant = 'primary', style, textStyle, ...props }) => {
     return (
         <TouchableOpacity
             style={[styles.button, styles[variant], style]}
             activeOpacity={0.8}
             {...props}
         >
-            <Text style={styles.text}>{title}</Text>
+            <Text style={[styles.text, textStyle]}>{title}</Text>
         </TouchableOpacity>
     );
 };

@@ -8,16 +8,17 @@ interface BaseScreenProps {
   children: React.ReactNode;
   showCredit?: boolean;
   disableScroll?: boolean;
+  backgroundColor?: string;
 }
 
-export const BaseScreen: React.FC<BaseScreenProps> = ({ title, subtitle, children, showCredit = true, disableScroll = false }) => (
+export const BaseScreen: React.FC<BaseScreenProps> = ({ title, subtitle, children, showCredit = true, disableScroll = false, backgroundColor }) => (
   <KeyboardAvoidingView
     style={{ flex: 1 }}
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
   >
     {disableScroll ? (
-      <View style={styles.container}>
+      <View style={[styles.container, backgroundColor ? { backgroundColor } : {}]}>
         {title && (
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{title}</Text>
@@ -27,7 +28,7 @@ export const BaseScreen: React.FC<BaseScreenProps> = ({ title, subtitle, childre
         <View style={styles.contentBox}>{children}</View>
       </View>
     ) : (
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.container, backgroundColor ? { backgroundColor } : {}]} keyboardShouldPersistTaps="handled">
         {title && (
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{title}</Text>

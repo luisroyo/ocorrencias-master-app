@@ -2,10 +2,14 @@ import React from 'react';
 import { TextInput, StyleSheet, TextInputProps } from 'react-native';
 import { colors } from '../theme/colors';
 
-export const Input: React.FC<TextInputProps> = (props) => {
+export const Input: React.FC<TextInputProps & { highlighted?: boolean }> = ({ highlighted, style, ...props }) => {
     return (
         <TextInput
-            style={styles.input}
+            style={[
+                styles.input,
+                highlighted && styles.inputHighlighted,
+                style,
+            ]}
             placeholderTextColor={colors.mutedText}
             {...props}
         />
@@ -23,5 +27,9 @@ const styles = StyleSheet.create({
         marginVertical: 8,
         borderWidth: 1,
         borderColor: colors.secondaryBg,
+    },
+    inputHighlighted: {
+        borderWidth: 2,
+        borderColor: colors.danger, // cor de destaque
     },
 }); 

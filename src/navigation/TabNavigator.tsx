@@ -4,17 +4,53 @@ import { RelatorioStack } from './RelatorioStack';
 import { OccurrencesStack } from './OccurrencesStack';
 import { ROUTES } from '../constants/routes';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 
-export const TabNavigator: React.FC<{ token: string; onRelatorioCorrigido: (relatorio: string) => void }> = ({ token, onRelatorioCorrigido }) => (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+export const TabNavigator: React.FC<{
+    token: string;
+    onRelatorioCorrigido: (relatorio: string) => void;
+    onLogout?: () => Promise<void>;
+}> = ({ token, onRelatorioCorrigido, onLogout }) => (
+    <Tab.Navigator
+        screenOptions={{
+            headerShown: false,
+            tabBarStyle: {
+                backgroundColor: '#fff',
+                borderTopWidth: 1,
+                borderTopColor: '#e0e0e0',
+                paddingBottom: 5,
+                paddingTop: 5,
+                height: 60,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 8,
+            },
+            tabBarActiveTintColor: colors.primaryBg || '#1e3a8a',
+            tabBarInactiveTintColor: '#999',
+            tabBarLabelStyle: {
+                fontSize: 12,
+                fontWeight: '600',
+                marginTop: 2,
+            },
+            tabBarIconStyle: {
+                marginBottom: 2,
+            }
+        }}
+    >
         <Tab.Screen
             name="RelatorioTab"
             options={{
                 title: 'Relatório',
-                tabBarIcon: ({ color, size }) => (
-                    <MaterialCommunityIcons name="file-document-edit" size={size} color={color} />
+                tabBarIcon: ({ color, size, focused }) => (
+                    <MaterialCommunityIcons
+                        name={focused ? "file-document-edit" : "file-document-outline"}
+                        size={size}
+                        color={color}
+                    />
                 ),
             }}
         >
@@ -24,8 +60,12 @@ export const TabNavigator: React.FC<{ token: string; onRelatorioCorrigido: (rela
             name="OccurrencesTab"
             options={{
                 title: 'Ocorrências',
-                tabBarIcon: ({ color, size }) => (
-                    <MaterialCommunityIcons name="format-list-bulleted" size={size} color={color} />
+                tabBarIcon: ({ color, size, focused }) => (
+                    <MaterialCommunityIcons
+                        name={focused ? "format-list-bulleted" : "format-list-bulleted-type"}
+                        size={size}
+                        color={color}
+                    />
                 ),
             }}
         >

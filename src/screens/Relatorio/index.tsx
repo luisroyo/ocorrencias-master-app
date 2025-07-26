@@ -69,7 +69,7 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
                     if (parsed.relatorioBruto) setRelatorioBruto(parsed.relatorioBruto);
                     if (parsed.vtr) setVtr(parsed.vtr);
                 }
-            } catch {}
+            } catch { }
         })();
     }, []);
 
@@ -90,6 +90,33 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
         }, 400);
         return () => clearTimeout(timeout);
     }, [data, hora, endereco, colaborador, relatorioBruto, vtr]);
+
+    // Função para limpar formulário
+    const handleLimparFormulario = () => {
+        Alert.alert(
+            'Limpar Formulário',
+            'Tem certeza que deseja limpar todos os campos?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Limpar',
+                    style: 'destructive',
+                    onPress: () => {
+                        setData(null);
+                        setHora(null);
+                        setEndereco('');
+                        setColaborador('');
+                        setRelatorioBruto('');
+                        setRelatorioLimpo('');
+                        setVtr('');
+                        setColabSugestoes([]);
+                        setEnderecoSugestoes([]);
+                        AsyncStorage.removeItem(FORM_KEY);
+                    }
+                }
+            ]
+        );
+    };
 
     // Função para buscar colaboradores conforme digita
     const handleBuscarColaboradores = (texto: string) => {
@@ -164,7 +191,7 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
             Alert.alert('Atenção', 'Gere o relatório limpo antes de enviar.');
             return;
         }
-        AsyncStorage.removeItem(FORM_KEY); // Limpa o estado salvo
+        // NÃO limpa mais automaticamente - só quando o usuário quiser
         const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(relatorioLimpo)}`;
         const webUrl = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
         Linking.canOpenURL(whatsappUrl).then(supported => {
@@ -406,12 +433,20 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
             </View>
 
             <View style={styles.buttonContainer}>
-                <Button
-                    title={loading ? 'Analisando...' : 'Analisar Relatório'}
-                    onPress={handleAnalisar}
-                    disabled={loading}
-                    style={styles.analyzeButton}
-                />
+                <View style={styles.buttonRow}>
+                    <Button
+                        title={loading ? 'Analisando...' : 'Analisar Relatório'}
+                        onPress={handleAnalisar}
+                        disabled={loading}
+                        style={styles.analyzeButton}
+                    />
+                    <Button
+                        title="Limpar Formulário"
+                        onPress={handleLimparFormulario}
+                        style={styles.clearButton}
+                        textStyle={styles.clearButtonText}
+                    />
+                </View>
                 {loading && <ActivityIndicator color="#fff" style={{ marginTop: 8 }} />}
             </View>
 

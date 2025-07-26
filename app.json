@@ -23,12 +23,12 @@
     },
     "android": {
       "package": "com.luisroyo.ocorrenciasmasterapp",
-      "icon": "./assets/icon.png",
+      "label": "Ocorrências",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1e3a8a"
       },
-      "label": "Ocorrências",
+      "versionCode": 2,
       "edgeToEdgeEnabled": true
     },
     "web": {

@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1e3a8a"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,13 +18,17 @@
       "buildNumber": "1.0.1",
       "icon": "./assets/icon.png",
       "infoPlist": {
-        "CFBundleDisplayName": "Relatórios de Ocorrências"
+        "CFBundleDisplayName": "Ocorrências"
       }
     },
     "android": {
       "package": "com.luisroyo.ocorrenciasmasterapp",
       "icon": "./assets/icon.png",
-      "label": "Relatórios de Ocorrências",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e3a8a"
+      },
+      "label": "Ocorrências",
       "edgeToEdgeEnabled": true
     },
     "web": {

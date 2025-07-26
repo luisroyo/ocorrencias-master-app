@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Relatórios de Ocorrências",
+    "name": "Ocorrências",
     "slug": "ocorrencias-master-app",
     "version": "1.0.1",
     "orientation": "portrait",
@@ -16,14 +16,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.luisroyo.ocorrenciasmasterapp",
       "buildNumber": "1.0.1",
-      "icon": "./assets/icon.png",
       "infoPlist": {
         "CFBundleDisplayName": "Ocorrências"
       }
     },
     "android": {
       "package": "com.luisroyo.ocorrenciasmasterapp",
-      "label": "Ocorrências",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1e3a8a"

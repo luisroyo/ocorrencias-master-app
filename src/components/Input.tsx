@@ -11,6 +11,8 @@ export const Input: React.FC<TextInputProps & { highlighted?: boolean }> = ({ hi
                 style,
             ]}
             placeholderTextColor={colors.mutedText}
+            editable={true}
+            pointerEvents="auto"
             {...props}
         />
     );

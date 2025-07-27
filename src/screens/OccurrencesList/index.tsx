@@ -32,7 +32,7 @@ export const OccurrencesListScreen: React.FC<{ token?: string }> = ({ token }) =
     }, [token]);
 
     return (
-        <BaseScreen disableScroll>
+        <BaseScreen>
             {loading ? (
                 <ActivityIndicator size="large" color={colors.primaryBg} style={{ marginTop: 32 }} />
             ) : error ? (
@@ -53,7 +53,8 @@ export const OccurrencesListScreen: React.FC<{ token?: string }> = ({ token }) =
                             />
                         </Card>
                     )}
-                    contentContainerStyle={{ paddingBottom: 24 }}
+                    contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+                    style={{ flex: 1 }}
                 />
             )}
         </BaseScreen>

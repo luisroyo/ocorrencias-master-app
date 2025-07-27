@@ -239,7 +239,7 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
 
     return (
         <BaseScreen subtitle="Preencha os dados abaixo">
-            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
                 <View style={styles.formContainer}>
                     {/* Data */}
                     <View style={styles.inputRow}>

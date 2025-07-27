@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, ScrollView, Alert, Linking, Clipboard, View } from 'react-native';
+import { Text, ScrollView, Alert, Linking, Clipboard, View, Platform } from 'react-native';
 import { colors } from '../../theme/colors';
 import { Button } from '../../components/Button';
 import { styles } from './styles';
@@ -36,7 +36,23 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
     return (
         <BaseScreen title="Relatório Corrigido">
             <View style={styles.resultBox}>
-                <Text selectable style={styles.resultText}>{relatorio}</Text>
+                {Platform.OS === 'web' ? (
+                    <pre style={{
+                        color: '#333',
+                        fontSize: 16,
+                        lineHeight: '22px',
+                        fontFamily: 'inherit',
+                        whiteSpace: 'pre-line',
+                        margin: 0,
+                        padding: 0,
+                        background: 'none',
+                        border: 'none',
+                    }}>{relatorio}</pre>
+                ) : (
+                    relatorio.split('\n').map((line, idx) => (
+                        <Text key={idx} selectable style={styles.resultText}>{line || ' '}</Text>
+                    ))
+                )}
             </View>
             <View style={styles.buttonRow}>
                 <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.button} />

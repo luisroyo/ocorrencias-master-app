@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-    View, Text, Alert, Platform, TouchableOpacity, Linking, Clipboard
+    View, Text, Alert, Platform, TouchableOpacity, Linking, Clipboard, ScrollView
 } from 'react-native';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
@@ -239,227 +239,250 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
 
     return (
         <BaseScreen subtitle="Preencha os dados abaixo">
-            <View style={styles.formContainer}>
-                {/* Data */}
-                <View style={styles.inputRow}>
-                    <View style={styles.iconContainer}>
-                        <MaterialCommunityIcons name="calendar" size={24} color="#bbb" />
-                    </View>
-                    <View style={styles.inputGroupFlex}>
-                        <Text style={styles.label}>Data</Text>
-                        {Platform.OS === 'web' ? (
-                            <input
-                                type="date"
-                                value={data ? data.toISOString().substring(0, 10) : ''}
-                                onChange={e => setData(new Date(e.target.value))}
-                                style={{ ...styles.input, width: '100%' }}
-                            />
-                        ) : (
-                            <TouchableOpacity onPress={openDatePicker} activeOpacity={0.7}>
-                                <Input
-                                    placeholder="DD/MM/AAAA"
-                                    value={data ? data.toLocaleDateString('pt-BR') : ''}
-                                    editable={false}
-                                    style={styles.input}
+            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}>
+                <View style={styles.formContainer}>
+                    {/* Data */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="calendar" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Data</Text>
+                            {Platform.OS === 'web' ? (
+                                <input
+                                    type="date"
+                                    value={data ? data.toISOString().substring(0, 10) : ''}
+                                    onChange={e => setData(new Date(e.target.value))}
+                                    style={{
+                                        backgroundColor: '#F9F9F9',
+                                        color: '#333',
+                                        fontSize: 16,
+                                        borderRadius: 10,
+                                        padding: '12px 15px',
+                                        border: '1px solid #E0E0E0',
+                                        width: '100%',
+                                        marginBottom: 0,
+                                        boxSizing: 'border-box',
+                                        height: 48,
+                                    }}
                                 />
-                            </TouchableOpacity>
-                        )}
-                        {showDatePicker && Platform.OS !== 'web' && (
-                            <DateTimePicker
-                                value={data || new Date()}
-                                mode="date"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={(_, selectedDate) => {
-                                    setShowDatePicker(false);
-                                    if (selectedDate) setData(selectedDate);
-                                }}
-                            />
-                        )}
-                    </View>
-                </View>
-
-                {/* Hora */}
-                <View style={styles.inputRow}>
-                    <View style={styles.iconContainer}>
-                        <MaterialCommunityIcons name="clock-outline" size={24} color="#bbb" />
-                    </View>
-                    <View style={styles.inputGroupFlex}>
-                        <Text style={styles.label}>Hora</Text>
-                        {Platform.OS === 'web' ? (
-                            <input
-                                type="time"
-                                value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
-                                onChange={e => {
-                                    const [h, m] = e.target.value.split(':');
-                                    const newDate = new Date();
-                                    newDate.setHours(Number(h));
-                                    newDate.setMinutes(Number(m));
-                                    setHora(newDate);
-                                }}
-                                style={{ ...styles.input, width: '100%' }}
-                            />
-                        ) : (
-                            <TouchableOpacity onPress={openTimePicker} activeOpacity={0.7}>
-                                <Input
-                                    placeholder="HH:MM"
-                                    value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
-                                    editable={false}
-                                    style={styles.input}
+                            ) : (
+                                <TouchableOpacity onPress={openDatePicker} activeOpacity={0.7}>
+                                    <Input
+                                        placeholder="DD/MM/AAAA"
+                                        value={data ? data.toLocaleDateString('pt-BR') : ''}
+                                        editable={false}
+                                        style={styles.input}
+                                    />
+                                </TouchableOpacity>
+                            )}
+                            {showDatePicker && Platform.OS !== 'web' && (
+                                <DateTimePicker
+                                    value={data || new Date()}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={(_, selectedDate) => {
+                                        setShowDatePicker(false);
+                                        if (selectedDate) setData(selectedDate);
+                                    }}
                                 />
-                            </TouchableOpacity>
-                        )}
-                        {showTimePicker && Platform.OS !== 'web' && (
-                            <DateTimePicker
-                                value={hora || new Date()}
-                                mode="time"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={(_, selectedTime) => {
-                                    setShowTimePicker(false);
-                                    if (selectedTime) setHora(selectedTime);
-                                }}
-                            />
-                        )}
-                    </View>
-                </View>
-
-                {/* Endereço */}
-                <View style={styles.inputRow}>
-                    <View style={styles.iconContainer}>
-                        <MaterialCommunityIcons name="map-marker" size={24} color="#bbb" />
-                    </View>
-                    <View style={styles.inputGroupFlex}>
-                        <Text style={styles.label}>Endereço</Text>
-                        <Input
-                            placeholder="Ex: Rua Exemplo, 123"
-                            value={endereco}
-                            onChangeText={handleBuscarEnderecos}
-                            style={styles.input}
-                        />
-                        {enderecoLoading && <Text style={{ color: colors.mutedText, fontSize: 13 }}>Buscando...</Text>}
-                        {enderecoSugestoes.length > 0 && (
-                            <View style={styles.sugestoesBox}>
-                                {enderecoSugestoes.map((e) => (
-                                    <Text
-                                        key={e.id}
-                                        style={styles.sugestaoItem}
-                                        onPress={() => {
-                                            setEndereco(e.nome);
-                                            setEnderecoSugestoes([]);
-                                        }}
-                                    >
-                                        {e.nome}
-                                    </Text>
-                                ))}
-                            </View>
-                        )}
-                    </View>
-                </View>
-
-                {/* Colaborador */}
-                <View style={styles.inputRow}>
-                    <View style={styles.iconContainer}>
-                        <MaterialCommunityIcons name="account" size={24} color="#bbb" />
-                    </View>
-                    <View style={styles.inputGroupFlex}>
-                        <Text style={styles.label}>Colaborador/Responsável</Text>
-                        <Input
-                            placeholder="Nome do responsável"
-                            value={colaborador}
-                            onChangeText={handleBuscarColaboradores}
-                            style={styles.input}
-                            autoCorrect={false}
-                            autoCapitalize="words"
-                        />
-                        {colabLoading && <Text style={{ color: colors.mutedText, fontSize: 13 }}>Buscando...</Text>}
-                        {colabSugestoes.length > 0 && (
-                            <View style={styles.sugestoesBox}>
-                                {colabSugestoes.map((c) => (
-                                    <Text
-                                        key={c.id}
-                                        style={styles.sugestaoItem}
-                                        onPress={() => {
-                                            setColaborador(c.nome_completo);
-                                            setColabSugestoes([]);
-                                        }}
-                                    >
-                                        {c.nome_completo} {c.cargo ? `(${c.cargo})` : ''}
-                                    </Text>
-                                ))}
-                            </View>
-                        )}
-                    </View>
-                </View>
-
-                {/* VTR (mantido como Picker, mas estilizado para se parecer com input) */}
-                <View style={styles.inputRow}>
-                    <View style={styles.iconContainer}>
-                        {/* Ícone para VTR, você pode escolher um adequado */}
-                        <MaterialCommunityIcons name="car" size={24} color="#bbb" />
-                    </View>
-                    <View style={styles.inputGroupFlex}>
-                        <Text style={styles.label}>Viatura/VTR</Text>
-                        <View style={styles.pickerBox}>
-                            <Picker
-                                selectedValue={vtr}
-                                onValueChange={setVtr}
-                                style={styles.picker}
-                                dropdownIconColor={colors.primaryBg}
-                            >
-                                {vtrOptions.map(opt => (
-                                    <Picker.Item key={opt} label={opt || 'Selecione'} value={opt} />
-                                ))}
-                            </Picker>
+                            )}
                         </View>
                     </View>
+
+                    {/* Hora */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="clock-outline" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Hora</Text>
+                            {Platform.OS === 'web' ? (
+                                <input
+                                    type="time"
+                                    value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                    onChange={e => {
+                                        const [h, m] = e.target.value.split(':');
+                                        const newDate = new Date();
+                                        newDate.setHours(Number(h));
+                                        newDate.setMinutes(Number(m));
+                                        setHora(newDate);
+                                    }}
+                                    style={{
+                                        backgroundColor: '#F9F9F9',
+                                        color: '#333',
+                                        fontSize: 16,
+                                        borderRadius: 10,
+                                        padding: '12px 15px',
+                                        border: '1px solid #E0E0E0',
+                                        width: '100%',
+                                        marginBottom: 0,
+                                        boxSizing: 'border-box',
+                                        height: 48,
+                                    }}
+                                />
+                            ) : (
+                                <TouchableOpacity onPress={openTimePicker} activeOpacity={0.7}>
+                                    <Input
+                                        placeholder="HH:MM"
+                                        value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                        editable={false}
+                                        style={styles.input}
+                                    />
+                                </TouchableOpacity>
+                            )}
+                            {showTimePicker && Platform.OS !== 'web' && (
+                                <DateTimePicker
+                                    value={hora || new Date()}
+                                    mode="time"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={(_, selectedTime) => {
+                                        setShowTimePicker(false);
+                                        if (selectedTime) setHora(selectedTime);
+                                    }}
+                                />
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Endereço */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="map-marker" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Endereço</Text>
+                            <Input
+                                placeholder="Ex: Rua Exemplo, 123"
+                                value={endereco}
+                                onChangeText={handleBuscarEnderecos}
+                                style={styles.input}
+                            />
+                            {enderecoLoading && <Text style={{ color: colors.mutedText, fontSize: 13 }}>Buscando...</Text>}
+                            {enderecoSugestoes.length > 0 && (
+                                <View style={styles.sugestoesBox}>
+                                    {enderecoSugestoes.map((e) => (
+                                        <Text
+                                            key={e.id}
+                                            style={styles.sugestaoItem}
+                                            onPress={() => {
+                                                setEndereco(e.nome);
+                                                setEnderecoSugestoes([]);
+                                            }}
+                                        >
+                                            {e.nome}
+                                        </Text>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Colaborador */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="account" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Colaborador/Responsável</Text>
+                            <Input
+                                placeholder="Nome do responsável"
+                                value={colaborador}
+                                onChangeText={handleBuscarColaboradores}
+                                style={styles.input}
+                                autoCorrect={false}
+                                autoCapitalize="words"
+                            />
+                            {colabLoading && <Text style={{ color: colors.mutedText, fontSize: 13 }}>Buscando...</Text>}
+                            {colabSugestoes.length > 0 && (
+                                <View style={styles.sugestoesBox}>
+                                    {colabSugestoes.map((c) => (
+                                        <Text
+                                            key={c.id}
+                                            style={styles.sugestaoItem}
+                                            onPress={() => {
+                                                setColaborador(c.nome_completo);
+                                                setColabSugestoes([]);
+                                            }}
+                                        >
+                                            {c.nome_completo} {c.cargo ? `(${c.cargo})` : ''}
+                                        </Text>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* VTR (mantido como Picker, mas estilizado para se parecer com input) */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            {/* Ícone para VTR, você pode escolher um adequado */}
+                            <MaterialCommunityIcons name="car" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Viatura/VTR</Text>
+                            <View style={styles.pickerBox}>
+                                <Picker
+                                    selectedValue={vtr}
+                                    onValueChange={setVtr}
+                                    style={styles.picker}
+                                    dropdownIconColor={colors.primaryBg}
+                                >
+                                    {vtrOptions.map(opt => (
+                                        <Picker.Item key={opt} label={opt || 'Selecione'} value={opt} />
+                                    ))}
+                                </Picker>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Relatório Bruto */}
+                    <View style={styles.inputRow}>
+                        <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="file-document-edit" size={24} color="#bbb" />
+                        </View>
+                        <View style={styles.inputGroupFlex}>
+                            <Text style={styles.label}>Relatório Bruto</Text>
+                            <Input
+                                placeholder="Cole ou digite o relatório bruto aqui..."
+                                value={relatorioBruto}
+                                onChangeText={setRelatorioBruto}
+                                multiline
+                                style={[styles.input, styles.multilineInput]}
+                            />
+                        </View>
+                    </View>
+
                 </View>
 
-                {/* Relatório Bruto */}
-                <View style={styles.inputRow}>
-                    <View style={styles.iconContainer}>
-                        <MaterialCommunityIcons name="file-document-edit" size={24} color="#bbb" />
-                    </View>
-                    <View style={styles.inputGroupFlex}>
-                        <Text style={styles.label}>Relatório Bruto</Text>
-                        <Input
-                            placeholder="Cole ou digite o relatório bruto aqui..."
-                            value={relatorioBruto}
-                            onChangeText={setRelatorioBruto}
-                            multiline
-                            style={[styles.input, styles.multilineInput]}
+                <View style={styles.buttonContainer}>
+                    <View style={styles.buttonRow}>
+                        <Button
+                            title={loading ? 'Analisando...' : 'Analisar Relatório'}
+                            onPress={handleAnalisar}
+                            disabled={loading}
+                            style={styles.analyzeButton}
+                        />
+                        <Button
+                            title="Limpar Formulário"
+                            onPress={handleLimparFormulario}
+                            style={styles.clearButton}
+                            textStyle={styles.clearButtonText}
                         />
                     </View>
+                    {loading && <ActivityIndicator color="#fff" style={{ marginTop: 8 }} />}
                 </View>
-
-            </View>
-
-            <View style={styles.buttonContainer}>
-                <View style={styles.buttonRow}>
-                    <Button
-                        title={loading ? 'Analisando...' : 'Analisar Relatório'}
-                        onPress={handleAnalisar}
-                        disabled={loading}
-                        style={styles.analyzeButton}
-                    />
-                    <Button
-                        title="Limpar Formulário"
-                        onPress={handleLimparFormulario}
-                        style={styles.clearButton}
-                        textStyle={styles.clearButtonText}
-                    />
-                </View>
-                {loading && <ActivityIndicator color="#fff" style={{ marginTop: 8 }} />}
-            </View>
-
-            {relatorioLimpo && (
-                <View style={styles.resultBox}>
-                    <Text style={styles.resultTitle}>Relatório Limpo</Text>
-                    <Text selectable style={styles.resultText}>{relatorioLimpo}</Text>
-                    <View style={styles.resultButtons}>
-                        <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.resultButton} />
-                        <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.resultButton} />
+                {relatorioLimpo && (
+                    <View style={styles.resultBox}>
+                        <Text style={styles.resultTitle}>Relatório Limpo</Text>
+                        <Text selectable style={styles.resultText}>{relatorioLimpo}</Text>
+                        <View style={styles.resultButtons}>
+                            <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.resultButton} />
+                            <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.resultButton} />
+                        </View>
                     </View>
-                </View>
-            )}
+                )}
+            </ScrollView>
         </BaseScreen>
     );
 };

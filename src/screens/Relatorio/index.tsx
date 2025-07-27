@@ -94,7 +94,7 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
     // Função para limpar formulário
     const handleLimparFormulario = () => {
         console.log('Botão Limpar Formulário clicado');
-        
+
         // Limpar imediatamente sem confirmação para testar
         setData(null);
         setHora(null);
@@ -107,7 +107,7 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
         setEnderecoSugestoes([]);
         setLoading(false);
         setColabLoading(false);
-        
+
         // Limpar AsyncStorage
         AsyncStorage.removeItem(FORM_KEY).then(() => {
             console.log('AsyncStorage limpo');
@@ -115,7 +115,7 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
         }).catch((error) => {
             console.error('Erro ao limpar AsyncStorage:', error);
         });
-        
+
         console.log('Estados limpos');
     };
 
@@ -154,12 +154,12 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
         if (relatorioProcessado.includes('Data:') && relatorioProcessado.includes('Hora:')) {
             return relatorioProcessado;
         }
-        
+
         // Caso contrário, aplica o template básico
         const dataAtual = data ? data.toLocaleDateString('pt-BR') : '[Preencher data]';
         const horaAtual = hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '[Preencher hora]';
         const enderecoAtual = endereco || '[Preencher endereço]';
-        
+
         return `Data: ${dataAtual}
 Hora: ${horaAtual}
 Local: ${enderecoAtual}

@@ -35,30 +35,34 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
 
     return (
         <BaseScreen title="Relatório Corrigido">
-            <View style={styles.resultBox}>
-                {Platform.OS === 'web' ? (
-                    <pre style={{
-                        color: '#333',
-                        fontSize: 16,
-                        lineHeight: '22px',
-                        fontFamily: 'inherit',
-                        whiteSpace: 'pre-line',
-                        margin: 0,
-                        padding: 0,
-                        background: 'none',
-                        border: 'none',
-                    }}>{relatorio}</pre>
-                ) : (
-                    relatorio.split('\n').map((line, idx) => (
-                        <Text key={idx} selectable style={styles.resultText}>{line || ' '}</Text>
-                    ))
-                )}
-            </View>
-            <View style={styles.buttonRow}>
-                <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.button} />
-                <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />
-            </View>
-            <Button title="Voltar" onPress={onVoltar} style={styles.buttonVoltar} variant="secondary" />
+            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
+                <View style={styles.resultBox}>
+                    {Platform.OS === 'web' ? (
+                        <pre style={{
+                            color: '#333',
+                            fontSize: 16,
+                            lineHeight: '22px',
+                            fontFamily: 'inherit',
+                            whiteSpace: 'pre-line',
+                            margin: 0,
+                            padding: 0,
+                            background: 'none',
+                            border: 'none',
+                            maxHeight: '60vh',
+                            overflow: 'auto',
+                        }}>{relatorio}</pre>
+                    ) : (
+                        relatorio.split('\n').map((line, idx) => (
+                            <Text key={idx} selectable style={styles.resultText}>{line || ' '}</Text>
+                        ))
+                    )}
+                </View>
+                <View style={styles.buttonRow}>
+                    <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.button} />
+                    <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />
+                </View>
+                <Button title="Voltar" onPress={onVoltar} style={styles.buttonVoltar} variant="secondary" />
+            </ScrollView>
         </BaseScreen>
     );
 }; 

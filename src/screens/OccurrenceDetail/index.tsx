@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, ActivityIndicator } from 'react-native';
+import { Text, ActivityIndicator, Platform } from 'react-native';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
@@ -43,7 +43,23 @@ export const OccurrenceDetailScreen: React.FC = () => {
                     <Text style={styles.title}>{detail.tipo || detail.title}</Text>
                     <Text style={styles.date}>{detail.data_hora_ocorrencia ? new Date(detail.data_hora_ocorrencia).toLocaleString('pt-BR') : detail.date}</Text>
                     <Text style={[styles.status, statusStyle(detail.status)]}>{detail.status}</Text>
-                    <Text style={styles.description}>{detail.relatorio_final || detail.description}</Text>
+                    {Platform.OS === 'web' ? (
+                        <pre style={{
+                            color: '#333',
+                            fontSize: 16,
+                            lineHeight: '22px',
+                            fontFamily: 'inherit',
+                            whiteSpace: 'pre-line',
+                            margin: 0,
+                            padding: 0,
+                            background: 'none',
+                            border: 'none',
+                        }}>{detail.relatorio_final || detail.description}</pre>
+                    ) : (
+                        (detail.relatorio_final || detail.description)?.split('\n').map((line, idx) => (
+                            <Text key={idx} style={styles.description}>{line || ' '}</Text>
+                        ))
+                    )}
                     <Button title="Voltar" onPress={() => navigation.goBack()} />
                 </Card>
             ) : null}

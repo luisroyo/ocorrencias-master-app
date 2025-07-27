@@ -118,6 +118,14 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
         );
     };
 
+    // Limpar dados quando o componente for desmontado (logout)
+    useEffect(() => {
+        return () => {
+            // Não limpar automaticamente ao sair da tela
+            // Só limpar quando o usuário explicitamente quiser
+        };
+    }, []);
+
     // Função para buscar colaboradores conforme digita
     const handleBuscarColaboradores = (texto: string) => {
         setColaborador(texto);

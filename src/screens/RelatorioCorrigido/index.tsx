@@ -35,8 +35,9 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
 
     return (
         <BaseScreen title="Relatório Corrigido">
-            <View style={{ flex: 1 }}>
-                <View style={[styles.resultBox, { flex: 1, marginBottom: 16 }]}>
+            <View style={{ flex: 1, paddingBottom: 20 }}>
+                {/* Área do texto - ocupa a maior parte do espaço */}
+                <View style={[styles.resultBox, { flex: 1, marginBottom: 20 }]}>
                     {Platform.OS === 'web' ? (
                         <pre style={{
                             color: '#333',
@@ -59,11 +60,15 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
                         </ScrollView>
                     )}
                 </View>
-                <View style={styles.buttonRow}>
-                    <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.button} />
-                    <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />
+                
+                {/* Área dos botões - fica completamente separada */}
+                <View style={{ paddingHorizontal: 20 }}>
+                    <View style={styles.buttonRow}>
+                        <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.button} />
+                        <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />
+                    </View>
+                    <Button title="Voltar" onPress={onVoltar} style={styles.buttonVoltar} variant="secondary" />
                 </View>
-                <Button title="Voltar" onPress={onVoltar} style={styles.buttonVoltar} variant="secondary" />
             </View>
         </BaseScreen>
     );

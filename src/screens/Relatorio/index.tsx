@@ -93,6 +93,7 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
 
     // Função para limpar formulário
     const handleLimparFormulario = () => {
+        console.log('Botão Limpar Formulário clicado');
         Alert.alert(
             'Limpar Formulário',
             'Tem certeza que deseja limpar todos os campos?',
@@ -101,17 +102,33 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
                 {
                     text: 'Limpar',
                     style: 'destructive',
-                    onPress: () => {
-                        setData(null);
-                        setHora(null);
-                        setEndereco('');
-                        setColaborador('');
-                        setRelatorioBruto('');
-                        setRelatorioLimpo('');
-                        setVtr('');
-                        setColabSugestoes([]);
-                        setEnderecoSugestoes([]);
-                        AsyncStorage.removeItem(FORM_KEY);
+                    onPress: async () => {
+                        console.log('Iniciando limpeza do formulário');
+                        try {
+                            // Limpar todos os estados
+                            setData(null);
+                            setHora(null);
+                            setEndereco('');
+                            setColaborador('');
+                            setRelatorioBruto('');
+                            setRelatorioLimpo('');
+                            setVtr('');
+                            setColabSugestoes([]);
+                            setEnderecoSugestoes([]);
+                            setLoading(false);
+                            setColabLoading(false);
+                            
+                            console.log('Estados limpos, removendo AsyncStorage');
+                            // Limpar AsyncStorage
+                            await AsyncStorage.removeItem(FORM_KEY);
+                            
+                            console.log('Formulário limpo com sucesso');
+                            // Feedback visual
+                            Alert.alert('Sucesso', 'Formulário limpo com sucesso!');
+                        } catch (error) {
+                            console.error('Erro ao limpar formulário:', error);
+                            Alert.alert('Erro', 'Erro ao limpar formulário. Tente novamente.');
+                        }
                     }
                 }
             ]
@@ -483,7 +500,23 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                 {relatorioLimpo && (
                     <View style={styles.resultBox}>
                         <Text style={styles.resultTitle}>Relatório Limpo</Text>
-                        <Text selectable style={styles.resultText}>{relatorioLimpo}</Text>
+                        {Platform.OS === 'web' ? (
+                            <pre style={{
+                                color: '#333',
+                                fontSize: 16,
+                                lineHeight: '22px',
+                                fontFamily: 'inherit',
+                                whiteSpace: 'pre-line',
+                                margin: 0,
+                                padding: 0,
+                                background: 'none',
+                                border: 'none',
+                            }}>{relatorioLimpo}</pre>
+                        ) : (
+                            relatorioLimpo.split('\n').map((line, idx) => (
+                                <Text key={idx} selectable style={styles.resultText}>{line || ' '}</Text>
+                            ))
+                        )}
                         <View style={styles.resultButtons}>
                             <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.resultButton} />
                             <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.resultButton} />

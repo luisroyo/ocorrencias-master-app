@@ -35,8 +35,8 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
 
     return (
         <BaseScreen title="Relatório Corrigido">
-            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
-                <View style={styles.resultBox}>
+            <View style={{ flex: 1 }}>
+                <View style={[styles.resultBox, { flex: 1, marginBottom: 16 }]}>
                     {Platform.OS === 'web' ? (
                         <pre style={{
                             color: '#333',
@@ -48,13 +48,15 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
                             padding: 0,
                             background: 'none',
                             border: 'none',
-                            maxHeight: '60vh',
+                            height: '100%',
                             overflow: 'auto',
                         }}>{relatorio}</pre>
                     ) : (
-                        relatorio.split('\n').map((line, idx) => (
-                            <Text key={idx} selectable style={styles.resultText}>{line || ' '}</Text>
-                        ))
+                        <ScrollView style={{ flex: 1 }}>
+                            {relatorio.split('\n').map((line, idx) => (
+                                <Text key={idx} selectable style={styles.resultText}>{line || ' '}</Text>
+                            ))}
+                        </ScrollView>
                     )}
                 </View>
                 <View style={styles.buttonRow}>
@@ -62,7 +64,7 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
                     <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />
                 </View>
                 <Button title="Voltar" onPress={onVoltar} style={styles.buttonVoltar} variant="secondary" />
-            </ScrollView>
+            </View>
         </BaseScreen>
     );
 }; 

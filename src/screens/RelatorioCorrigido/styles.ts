@@ -20,13 +20,14 @@ export const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 20,
         marginBottom: 24,
-        maxHeight: 320,
+        maxHeight: 400, // Aumentar altura máxima
         minHeight: 120,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 6,
         elevation: 3,
+        flex: 1, // Permitir que ocupe espaço disponível
     },
     resultText: {
         color: '#333',
@@ -38,6 +39,7 @@ export const styles = StyleSheet.create({
         justifyContent: 'space-between',
         gap: 12,
         marginBottom: 16,
+        marginTop: 16, // Adicionar margem superior
     },
     button: {
         flex: 1,

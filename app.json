@@ -112,6 +112,9 @@
       "**/*"
     ],
     "runtimeVersion": "1.0.1",
-    "jsEngine": "hermes"
+    "jsEngine": "hermes",
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

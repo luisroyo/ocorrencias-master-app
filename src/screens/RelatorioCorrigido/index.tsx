@@ -35,9 +35,9 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
 
     return (
         <BaseScreen title="Relatório Corrigido">
-            <View style={{ flex: 1, paddingBottom: 20 }}>
-                {/* Área do texto - ocupa a maior parte do espaço */}
-                <View style={[styles.resultBox, { flex: 1, marginBottom: 20 }]}>
+            <View style={{ flex: 1 }}>
+                {/* Área do texto - ocupa espaço disponível mas não toda a tela */}
+                <View style={[styles.resultBox, { flex: 1, maxHeight: '70%' }]}>
                     {Platform.OS === 'web' ? (
                         <pre style={{
                             color: '#333',
@@ -61,8 +61,14 @@ export const RelatorioCorrigidoScreen: React.FC<RelatorioCorrigidoScreenProps> =
                     )}
                 </View>
                 
-                {/* Área dos botões - fica completamente separada */}
-                <View style={{ paddingHorizontal: 20 }}>
+                {/* Área dos botões - COMPLETAMENTE SEPARADA da caixa de texto */}
+                <View style={{ 
+                    paddingHorizontal: 20, 
+                    paddingTop: 20,
+                    backgroundColor: 'transparent',
+                    position: 'relative',
+                    zIndex: 1
+                }}>
                     <View style={styles.buttonRow}>
                         <Button title="Copiar Relatório" onPress={handleCopiar} style={styles.button} />
                         <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.button} variant="success" />

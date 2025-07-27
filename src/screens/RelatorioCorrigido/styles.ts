@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 16,
         padding: 20,
-        marginBottom: 0, // Remover marginBottom do resultBox
+        marginBottom: 0,
         maxHeight: 400,
         minHeight: 120,
         shadowColor: '#000',
@@ -28,6 +28,8 @@ export const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 3,
         flex: 1,
+        marginHorizontal: 20,
+        marginTop: 20,
     },
     resultText: {
         color: '#333',
@@ -39,7 +41,7 @@ export const styles = StyleSheet.create({
         justifyContent: 'space-between',
         gap: 12,
         marginBottom: 16,
-        marginTop: 0, // Remover marginTop
+        marginTop: 0,
     },
     button: {
         flex: 1,

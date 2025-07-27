@@ -94,45 +94,29 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
     // Função para limpar formulário
     const handleLimparFormulario = () => {
         console.log('Botão Limpar Formulário clicado');
-        Alert.alert(
-            'Limpar Formulário',
-            'Tem certeza que deseja limpar todos os campos?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Limpar',
-                    style: 'destructive',
-                    onPress: async () => {
-                        console.log('Iniciando limpeza do formulário');
-                        try {
-                            // Limpar todos os estados
-                            setData(null);
-                            setHora(null);
-                            setEndereco('');
-                            setColaborador('');
-                            setRelatorioBruto('');
-                            setRelatorioLimpo('');
-                            setVtr('');
-                            setColabSugestoes([]);
-                            setEnderecoSugestoes([]);
-                            setLoading(false);
-                            setColabLoading(false);
-                            
-                            console.log('Estados limpos, removendo AsyncStorage');
-                            // Limpar AsyncStorage
-                            await AsyncStorage.removeItem(FORM_KEY);
-                            
-                            console.log('Formulário limpo com sucesso');
-                            // Feedback visual
-                            Alert.alert('Sucesso', 'Formulário limpo com sucesso!');
-                        } catch (error) {
-                            console.error('Erro ao limpar formulário:', error);
-                            Alert.alert('Erro', 'Erro ao limpar formulário. Tente novamente.');
-                        }
-                    }
-                }
-            ]
-        );
+        
+        // Limpar imediatamente sem confirmação para testar
+        setData(null);
+        setHora(null);
+        setEndereco('');
+        setColaborador('');
+        setRelatorioBruto('');
+        setRelatorioLimpo('');
+        setVtr('');
+        setColabSugestoes([]);
+        setEnderecoSugestoes([]);
+        setLoading(false);
+        setColabLoading(false);
+        
+        // Limpar AsyncStorage
+        AsyncStorage.removeItem(FORM_KEY).then(() => {
+            console.log('AsyncStorage limpo');
+            Alert.alert('Sucesso', 'Formulário limpo com sucesso!');
+        }).catch((error) => {
+            console.error('Erro ao limpar AsyncStorage:', error);
+        });
+        
+        console.log('Estados limpos');
     };
 
     // Limpar dados quando o componente for desmontado (logout)
@@ -164,6 +148,42 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelat
         }, 350);
     };
 
+    // Função para aplicar o template ao relatório processado
+    const aplicarTemplate = (relatorioProcessado: string) => {
+        // Se o relatório já está no formato do template, retorna como está
+        if (relatorioProcessado.includes('Data:') && relatorioProcessado.includes('Hora:')) {
+            return relatorioProcessado;
+        }
+        
+        // Caso contrário, aplica o template básico
+        const dataAtual = data ? data.toLocaleDateString('pt-BR') : '[Preencher data]';
+        const horaAtual = hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '[Preencher hora]';
+        const enderecoAtual = endereco || '[Preencher endereço]';
+        
+        return `Data: ${dataAtual}
+Hora: ${horaAtual}
+Local: ${enderecoAtual}
+
+Ocorrência: [Resumo da ocorrência]
+
+Relato:
+${relatorioProcessado}
+
+Ações Realizadas:
+- [Listar ações realizadas]
+
+Acionamentos:
+( ) Central ( ) Apoio 90 ( ) Polícia Militar ( ) Supervisor ( ) Coordenador
+
+Envolvidos/Testemunhas:
+[Informações dos envolvidos]
+
+Veículo (envolvido na ocorrência):
+[Descrição do veículo]
+
+Responsável pelo registro: [Nome do agente]`;
+    };
+
     const handleAnalisar = async () => {
         if (!relatorioBruto.trim()) {
             Alert.alert('Atenção', 'Cole ou digite o relatório bruto.');
@@ -183,9 +203,11 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
             if (response?.sucesso && response.dados) {
                 const relatorioCorrigido = response.dados.relatorio_corrigido || response.dados.relatorio || response.relatorio_corrigido || response.relatorio;
                 if (relatorioCorrigido) {
-                    setRelatorioLimpo(relatorioCorrigido);
+                    // Aplicar template ao relatório processado
+                    const relatorioComTemplate = aplicarTemplate(relatorioCorrigido);
+                    setRelatorioLimpo(relatorioComTemplate);
                     if (onRelatorioCorrigido) {
-                        onRelatorioCorrigido(relatorioCorrigido);
+                        onRelatorioCorrigido(relatorioComTemplate);
                     }
                 } else {
                     setRelatorioLimpo(JSON.stringify(response.dados, null, 2));

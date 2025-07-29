@@ -10,13 +10,13 @@
     "description": "Aplicativo para geração de relatórios de ocorrências de segurança patrimonial.",
     "icons": [
         {
-            "src": "public/assets/icon-1024.png",
+            "src": "/assets/icon-1024.png",
             "sizes": "1024x1024",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "public/assets/icon-512.png",
+            "src": "/assets/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
@@ -30,19 +30,19 @@
     ],
     "screenshots": [
         {
-            "src": "public/assets/screenshot-preenchimento.png",
+            "src": "/assets/screenshot-preenchimento.png",
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide"
         },
         {
-            "src": "public/assets/screenshot-relatorio.png",
+            "src": "/assets/screenshot-relatorio.png",
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide"
         },
         {
-            "src": "public/assets/screenshot-preenchimento.png",
+            "src": "/assets/screenshot-preenchimento.png",
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide"

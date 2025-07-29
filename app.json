@@ -1,37 +1,52 @@
-"web": {
-  "favicon": "./public/assets/icon-512.png",
-  "bundler": "metro",
-  "output": "static",
-  "build": {
-    "babel": {
-      "include": [
-        "@expo/vector-icons"
-      ]
-    }
-  },
-  "pwa": {
-    "name": "Ocorrencias - Relatórios de Segurança",
-    "shortName": "Ocorrencias",
-    "description": "Aplicativo para geração de relatórios de ocorrências de segurança",
-    "themeColor": "#1e3a8a",
-    "backgroundColor": "#ffffff",
-    "display": "standalone",
+{
+  "expo": {
+    "name": "Ocorrencias",
+    "slug": "ocorrencias-master-app",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "scope": "/",
-    "startUrl": "/",
-    "icons": [
-      {
-        "src": "/assets/icon-1024.png",
-        "sizes": "1024x1024",
-        "type": "image/png",
-        "purpose": "any"
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1e3a8a"
+    },
+    "web": {
+      "favicon": "./public/assets/icon-512.png",
+      "bundler": "metro",
+      "output": "static",
+      "build": {
+        "babel": {
+          "include": [
+            "@expo/vector-icons"
+          ]
+        }
       },
-      {
-        "src": "/assets/icon-512-maskable.png",
-        "sizes": "512x512",
-        "type": "image/png",
-        "purpose": "any maskable"
+      "pwa": {
+        "name": "Ocorrencias - Relatórios de Segurança",
+        "shortName": "Ocorrencias",
+        "description": "Aplicativo para geração de relatórios de ocorrências de segurança",
+        "themeColor": "#1e3a8a",
+        "backgroundColor": "#ffffff",
+        "display": "standalone",
+        "orientation": "portrait",
+        "scope": "/",
+        "startUrl": "/",
+        "icons": [
+          {
+            "src": "/assets/icon-1024.png",
+            "sizes": "1024x1024",
+            "type": "image/png",
+            "purpose": "any"
+          },
+          {
+            "src": "/assets/icon-512-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+          }
+        ]
       }
-    ]
+    }
   }
 }

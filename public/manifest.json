@@ -7,7 +7,7 @@
     "display": "standalone",
     "background_color": "#1e3a8a",
     "theme_color": "#1e3a8a",
-    "description": "Aplicativo para geração de relatórios de ocorrências de segurança patrimonial.",
+    "description": "Aplicativo para geração de relatórios de ocorrências de segurança",
     "icons": [
         {
             "src": "/assets/icon-1024.png",
@@ -16,10 +16,18 @@
             "purpose": "any"
         },
         {
-            "src": "/assets/icon-512.png",
+            "src": "/assets/icon-512-maskable.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/assets/splash-1280x720.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
         }
     ],
     "lang": "pt-BR",
@@ -27,25 +35,5 @@
     "categories": [
         "productivity",
         "business"
-    ],
-    "screenshots": [
-        {
-            "src": "/assets/screenshot-preenchimento.png",
-            "sizes": "1280x720",
-            "type": "image/png",
-            "form_factor": "wide"
-        },
-        {
-            "src": "/assets/screenshot-relatorio.png",
-            "sizes": "1280x720",
-            "type": "image/png",
-            "form_factor": "wide"
-        },
-        {
-            "src": "/assets/screenshot-preenchimento.png",
-            "sizes": "1280x720",
-            "type": "image/png",
-            "form_factor": "wide"
-        }
     ]
 }

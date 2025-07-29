@@ -1,22 +1,22 @@
 {
-    "name": "Ocorrencias - Relatórios de Segurança",
-    "short_name": "Ocorrencias",
+    "name": "Ocorrências - Relatórios de Segurança",
+    "short_name": "Ocorrências",
     "id": "/",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
     "background_color": "#1e3a8a",
     "theme_color": "#1e3a8a",
-    "description": "Aplicativo para geração de relatórios de ocorrências de segurança",
+    "description": "Aplicativo para geração de relatórios de ocorrências de segurança patrimonial.",
     "icons": [
         {
-            "src": "/assets/icon.png",
+            "src": "/assets/icon-1024.png",
             "sizes": "1024x1024",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/assets/icon.png",
+            "src": "/assets/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
@@ -30,7 +30,19 @@
     ],
     "screenshots": [
         {
-            "src": "/assets/splash.png",
+            "src": "/assets/splash-1280x720.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/assets/screenshot-relatorio.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/assets/screenshot-preenchimento.png",
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide"

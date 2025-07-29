@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RelatorioStack } from './RelatorioStack';
 import { OccurrencesStack } from './OccurrencesStack';
+import { RondaStack } from './RondaStack';
 import { ROUTES } from '../constants/routes';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -55,6 +56,21 @@ export const TabNavigator: React.FC<{
             }}
         >
             {() => <RelatorioStack token={token} onRelatorioCorrigido={onRelatorioCorrigido} />}
+        </Tab.Screen>
+        <Tab.Screen
+            name="RondaTab"
+            options={{
+                title: 'Ronda',
+                tabBarIcon: ({ color, size, focused }) => (
+                    <MaterialCommunityIcons
+                        name={focused ? "map-marker" : "map-marker-outline"}
+                        size={size}
+                        color={color}
+                    />
+                ),
+            }}
+        >
+            {() => <RondaStack token={token} />}
         </Tab.Screen>
         <Tab.Screen
             name="OccurrencesTab"

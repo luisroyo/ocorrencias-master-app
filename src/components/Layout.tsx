@@ -105,6 +105,22 @@ const Layout: React.FC<LayoutProps> = ({ onLogout }) => {
           >
             🚀 Ronda
           </Link>
+          <Link
+            to="/ocorrencias"
+            style={{
+              padding: '16px 24px',
+              textDecoration: 'none',
+              color: location.pathname === '/ocorrencias' ? colors.danger : colors.headingText,
+              borderBottom: location.pathname === '/ocorrencias' ? `3px solid ${colors.danger}` : '3px solid transparent',
+              fontWeight: location.pathname === '/ocorrencias' ? 'bold' : 'normal',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            📋 Ocorrências
+          </Link>
         </div>
       </nav>
 

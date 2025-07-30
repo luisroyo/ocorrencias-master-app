@@ -15,14 +15,14 @@ export interface Colaborador {
 export async function buscarColaboradores(nome: string, token?: string): Promise<{ colaboradores: Colaborador[], error?: string }> {
     try {
         console.log('Buscando colaboradores:', { nome });
-        
+
         const params = new URLSearchParams();
         if (nome) {
             params.append('nome', nome);
         }
-        
+
         const response = await apiFetch(`/api/colaboradores?${params.toString()}`, {}, token);
-        
+
         console.log('Resposta da busca de colaboradores:', response);
         return { colaboradores: response.colaboradores || [] };
     } catch (error: any) {
@@ -35,14 +35,14 @@ export async function buscarColaboradores(nome: string, token?: string): Promise
 export async function buscarColaboradoresView(nome: string, token?: string): Promise<{ colaboradores: Colaborador[], error?: string }> {
     try {
         console.log('Buscando colaboradores (view):', { nome });
-        
+
         const params = new URLSearchParams();
         if (nome) {
             params.append('nome', nome);
         }
-        
+
         const response = await apiFetch(`/api/colaboradores_view?${params.toString()}`, {}, token);
-        
+
         console.log('Resposta da busca de colaboradores (view):', response);
         return { colaboradores: response.colaboradores || [] };
     } catch (error: any) {

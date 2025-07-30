@@ -15,14 +15,14 @@ export interface Endereco {
 export async function buscarEnderecos(nome: string, token?: string): Promise<{ enderecos: Endereco[], error?: string }> {
     try {
         console.log('Buscando endereços:', { nome });
-        
+
         const params = new URLSearchParams();
         if (nome) {
             params.append('nome', nome);
         }
-        
+
         const response = await apiFetch(`/api/logradouros_view?${params.toString()}`, {}, token);
-        
+
         console.log('Resposta da busca de endereços:', response);
         return { enderecos: response.logradouros || [] };
     } catch (error: any) {
@@ -42,6 +42,6 @@ export function formatarEndereco(endereco: Endereco): string {
         endereco.estado,
         endereco.cep
     ].filter(Boolean);
-    
+
     return partes.join(', ');
 } 

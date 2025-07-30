@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { LoginScreen } from './pages/Login';
 import { RelatorioScreen } from './pages/Relatorio';
 import { RondaScreen } from './pages/Ronda';
+import { OcorrenciasListScreen } from './pages/OcorrenciasList';
 import Layout from './components/Layout';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
                     <Route index element={<RelatorioScreen token={token} />} />
                     <Route path="relatorio" element={<RelatorioScreen token={token} />} />
                     <Route path="ronda" element={<RondaScreen token={token} />} />
+                    <Route path="ocorrencias" element={<OcorrenciasListScreen token={token} />} />
                 </Route>
             </Routes>
         </div>

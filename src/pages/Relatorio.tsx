@@ -152,7 +152,7 @@ Responsável pelo registro: [Nome do agente]`;
             alert('Cole ou digite o relatório bruto.');
             return;
         }
-        
+
         // Monta o texto com os campos preenchidos acima do relatório bruto
         const textoMontado = `
 Data: ${data || '[Preencher data]'}
@@ -161,7 +161,7 @@ Colaborador: ${colaborador || '[Preencher colaborador]'}
 Endereço: ${endereco || '[Preencher endereço]'}
 Viatura/VTR: ${vtr || '[Preencher viatura]'}
 \n${relatorioBruto}`;
-        
+
         setLoading(true);
         try {
             const response = await analisarRelatorio(token, textoMontado);
@@ -177,7 +177,7 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                 } else {
                     setRelatorioLimpo(JSON.stringify(response.dados, null, 2));
                 }
-                
+
                 const { data_hora_ocorrencia, endereco_especifico, colaboradores_envolvidos } = response.dados;
                 if (data_hora_ocorrencia) {
                     const [d, h] = data_hora_ocorrencia.split('T');
@@ -432,15 +432,15 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                             {relatorioLimpo}
                         </pre>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
-                            <Button 
-                                title="📋 Copiar Relatório" 
-                                onClick={handleCopiar} 
+                            <Button
+                                title="📋 Copiar Relatório"
+                                onClick={handleCopiar}
                                 variant="success"
                                 style={{ flex: 1, minWidth: '150px' }}
                             />
-                            <Button 
-                                title="📱 Enviar via WhatsApp" 
-                                onClick={handleEnviarWhatsApp} 
+                            <Button
+                                title="📱 Enviar via WhatsApp"
+                                onClick={handleEnviarWhatsApp}
                                 variant="success"
                                 style={{ flex: 1, minWidth: '150px' }}
                             />

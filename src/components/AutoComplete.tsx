@@ -89,7 +89,7 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
                     position: 'relative'
                 }}
             />
-            
+
             {loading && (
                 <div style={{
                     position: 'absolute',

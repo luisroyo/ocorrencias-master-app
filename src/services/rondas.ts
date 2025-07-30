@@ -38,10 +38,16 @@ export interface RelatorioRonda {
 // Listar rondas do dia
 export async function listarRondasDoDia(token: string, condominioId: number, data: string) {
     try {
-        return await apiFetch(`/api/rondas/do-dia/${condominioId}/${data}`, {
+        console.log('Listando rondas do dia:', { condominioId, data });
+        
+        const response = await apiFetch(`/api/rondas/do-dia/${condominioId}/${data}`, {
             method: 'GET',
         }, token);
+        
+        console.log('Resposta das rondas:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao listar rondas:', error);
         return { sucesso: false, message: 'Erro ao listar rondas', error };
     }
 }
@@ -49,10 +55,16 @@ export async function listarRondasDoDia(token: string, condominioId: number, dat
 // Verificar ronda em andamento
 export async function verificarRondaEmAndamento(token: string, condominioId: number): Promise<RondaEmAndamento> {
     try {
-        return await apiFetch(`/api/rondas/em-andamento/${condominioId}`, {
+        console.log('Verificando ronda em andamento:', { condominioId });
+        
+        const response = await apiFetch(`/api/rondas/em-andamento/${condominioId}`, {
             method: 'GET',
         }, token);
+        
+        console.log('Status da ronda:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao verificar ronda em andamento:', error);
         return { em_andamento: false, ronda: undefined };
     }
 }
@@ -65,11 +77,17 @@ export async function iniciarRonda(token: string, dados: {
     supervisor_id?: number;
 }) {
     try {
-        return await apiFetch('/api/rondas/iniciar', {
+        console.log('Iniciando ronda:', dados);
+        
+        const response = await apiFetch('/api/rondas/iniciar', {
             method: 'POST',
             body: JSON.stringify(dados),
         }, token);
+        
+        console.log('Resposta do início da ronda:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao iniciar ronda:', error);
         return { sucesso: false, message: 'Erro ao iniciar ronda', error };
     }
 }
@@ -77,10 +95,16 @@ export async function iniciarRonda(token: string, dados: {
 // Finalizar ronda
 export async function finalizarRonda(token: string, rondaId: number) {
     try {
-        return await apiFetch(`/api/rondas/finalizar/${rondaId}`, {
+        console.log('Finalizando ronda:', { rondaId });
+        
+        const response = await apiFetch(`/api/rondas/finalizar/${rondaId}`, {
             method: 'PUT',
         }, token);
+        
+        console.log('Resposta da finalização:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao finalizar ronda:', error);
         return { sucesso: false, message: 'Erro ao finalizar ronda', error };
     }
 }
@@ -91,11 +115,17 @@ export async function atualizarRonda(token: string, rondaId: number, dados: {
     escala_plantao?: string;
 }) {
     try {
-        return await apiFetch(`/api/rondas/atualizar/${rondaId}`, {
+        console.log('Atualizando ronda:', { rondaId, dados });
+        
+        const response = await apiFetch(`/api/rondas/atualizar/${rondaId}`, {
             method: 'PUT',
             body: JSON.stringify(dados),
         }, token);
+        
+        console.log('Resposta da atualização:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao atualizar ronda:', error);
         return { sucesso: false, message: 'Erro ao atualizar ronda', error };
     }
 }
@@ -103,10 +133,16 @@ export async function atualizarRonda(token: string, rondaId: number, dados: {
 // Gerar relatório de ronda
 export async function gerarRelatorioRonda(token: string, condominioId: number, data: string): Promise<RelatorioRonda> {
     try {
-        return await apiFetch(`/api/rondas/gerar-relatorio/${condominioId}/${data}`, {
+        console.log('Gerando relatório de ronda:', { condominioId, data });
+        
+        const response = await apiFetch(`/api/rondas/gerar-relatorio/${condominioId}/${data}`, {
             method: 'POST',
         }, token);
+        
+        console.log('Relatório gerado:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao gerar relatório de ronda:', error);
         return { sucesso: false, message: 'Erro ao gerar relatório de ronda', error };
     }
 }
@@ -114,10 +150,16 @@ export async function gerarRelatorioRonda(token: string, condominioId: number, d
 // Enviar relatório via WhatsApp
 export async function enviarRelatorioWhatsApp(token: string, condominioId: number, data: string) {
     try {
-        return await apiFetch(`/api/rondas/enviar-whatsapp/${condominioId}/${data}`, {
+        console.log('Enviando relatório via WhatsApp:', { condominioId, data });
+        
+        const response = await apiFetch(`/api/rondas/enviar-whatsapp/${condominioId}/${data}`, {
             method: 'POST',
         }, token);
+        
+        console.log('Resposta do envio WhatsApp:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao enviar relatório via WhatsApp:', error);
         return { sucesso: false, message: 'Erro ao enviar relatório via WhatsApp', error };
     }
 }
@@ -125,10 +167,16 @@ export async function enviarRelatorioWhatsApp(token: string, condominioId: numbe
 // Detalhes de uma ronda específica
 export async function detalheRonda(token: string, rondaId: number): Promise<Ronda | null> {
     try {
-        return await apiFetch(`/api/rondas/${rondaId}`, {
+        console.log('Buscando detalhes da ronda:', { rondaId });
+        
+        const response = await apiFetch(`/api/rondas/${rondaId}`, {
             method: 'GET',
         }, token);
+        
+        console.log('Detalhes da ronda:', response);
+        return response;
     } catch (error) {
+        console.error('Erro ao buscar detalhes da ronda:', error);
         return null;
     }
 } 

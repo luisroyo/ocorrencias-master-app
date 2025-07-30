@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
+import { loginUser } from '../services/api';
 
 interface LoginScreenProps {
     onLogin: (token: string) => void;
@@ -46,8 +47,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         try {
             console.log('Tentando login com:', { email, password: '***' });
 
-            // Simulação de login - você pode implementar a chamada real da API aqui
-            const response = await mockLogin(email, password);
+            // Usar autenticação real do backend
+            const response = await loginUser(email, password);
 
             console.log('Resposta do login:', response);
 
@@ -63,23 +64,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         } finally {
             setLoading(false);
         }
-    };
-
-    // Mock da função de login - substitua pela implementação real
-    const mockLogin = async (email: string, password: string) => {
-        // Simula uma chamada de API
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        console.log('Mock login - email:', email, 'password:', password);
-
-        // Validação mais clara
-        if (email.toLowerCase() === 'admin@master.com' && password === '123456') {
-            console.log('Login bem-sucedido!');
-            return { token: 'mock-token-123' };
-        }
-
-        console.log('Credenciais inválidas');
-        throw new Error('E-mail ou senha inválidos. Use: admin@master.com / 123456');
     };
 
     return (
@@ -216,6 +200,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     color: '#6c757d',
                     textAlign: 'center'
                 }}>
+                    <strong>Conectando ao Backend Local</strong><br />
+                    Certifique-se de que o servidor Flask está rodando em:<br />
+                    <code>http://localhost:5000</code><br />
+                    <br />
                     <strong>Credenciais de Teste:</strong><br />
                     Email: admin@master.com<br />
                     Senha: 123456

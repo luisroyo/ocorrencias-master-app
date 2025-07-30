@@ -101,7 +101,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         try {
             const resultado = await validarHorarioEntrada(token, horaEntrada);
             setValidacaoHorario(resultado);
-            
+
             if (!resultado.horario_valido) {
                 alert(resultado.mensagem);
             }
@@ -122,7 +122,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         setLoading(true);
         try {
             let resultado;
-            
+
             if (tipoRonda === 'regular') {
                 resultado = await iniciarRonda(token, {
                     condominio_id: condominioId,
@@ -164,7 +164,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
 
     const handleFinalizarRonda = async () => {
         const rondaAtiva = tipoRonda === 'regular' ? rondaEmAndamento?.ronda : rondaEsporadicaEmAndamento?.ronda;
-        
+
         if (!rondaAtiva) {
             alert('Nenhuma ronda em andamento encontrada.');
             return;
@@ -173,7 +173,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         setLoading(true);
         try {
             let resultado;
-            
+
             if (tipoRonda === 'regular') {
                 resultado = await finalizarRonda(token, rondaAtiva.id, {
                     log_bruto: logBruto,
@@ -218,7 +218,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         setLoading(true);
         try {
             const resultado = await gerarRelatorioRonda(token, condominioId, dataPlantao);
-            
+
             if (resultado.sucesso && resultado.relatorio) {
                 navigator.clipboard.writeText(resultado.relatorio);
                 alert('Relatório copiado para a área de transferência!');
@@ -242,7 +242,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         setLoading(true);
         try {
             const resultado = await enviarRondaWhatsApp(token, condominioId, dataPlantao);
-            
+
             if (resultado.sucesso) {
                 alert('Relatório enviado via WhatsApp!');
             } else {
@@ -267,7 +267,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         try {
             const resultado = await consolidarTurnoRondasEsporadicas(token, condominioId, dataPlantao);
             setResultadoConsolidacao(resultado);
-            
+
             if (resultado.sucesso) {
                 alert('Turno consolidado com sucesso!');
             } else {
@@ -291,7 +291,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         try {
             const resultado = await processoCompletoConsolidacao(token, condominioId, dataPlantao);
             setResultadoConsolidacao(resultado);
-            
+
             if (resultado.sucesso) {
                 alert('Processo completo executado com sucesso!');
             } else {
@@ -314,7 +314,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
         setLoading(true);
         try {
             const resultado = await marcarRondasProcessadas(token, condominioId, dataPlantao);
-            
+
             if (resultado.sucesso) {
                 alert('Rondas marcadas como processadas!');
             } else {
@@ -372,7 +372,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                     <h3 style={{ marginBottom: '16px', color: colors.headingText }}>
                         ⚙️ Configurações
                     </h3>
-                    
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
@@ -559,7 +559,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                         <h3 style={{ marginBottom: '16px', color: colors.headingText }}>
                             {rondaAtiva.em_andamento ? '🟢 Ronda em Andamento' : '🔴 Nenhuma Ronda Ativa'}
                         </h3>
-                        
+
                         {rondaAtiva.em_andamento && rondaAtiva.ronda && (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                                 <div>
@@ -570,7 +570,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                                         {rondaAtiva.ronda.id}
                                     </p>
                                 </div>
-                                
+
                                 {rondaAtiva.ronda.inicio && (
                                     <div>
                                         <p style={{ margin: '0 0 4px 0', color: colors.headingText, fontWeight: 'bold' }}>
@@ -581,7 +581,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                                         </p>
                                     </div>
                                 )}
-                                
+
                                 {rondaAtiva.ronda.hora_entrada && (
                                     <div>
                                         <p style={{ margin: '0 0 4px 0', color: colors.headingText, fontWeight: 'bold' }}>
@@ -592,7 +592,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                                         </p>
                                     </div>
                                 )}
-                                
+
                                 {rondaAtiva.ronda.escala_plantao && (
                                     <div>
                                         <p style={{ margin: '0 0 4px 0', color: colors.headingText, fontWeight: 'bold' }}>
@@ -603,7 +603,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                                         </p>
                                     </div>
                                 )}
-                                
+
                                 {rondaAtiva.ronda.turno && (
                                     <div>
                                         <p style={{ margin: '0 0 4px 0', color: colors.headingText, fontWeight: 'bold' }}>
@@ -631,7 +631,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                     <h3 style={{ marginBottom: '16px', color: colors.headingText }}>
                         🎮 Controles
                     </h3>
-                    
+
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
                         <Button
                             title="🚀 Iniciar Ronda"
@@ -639,7 +639,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                             disabled={loading || (rondaAtiva?.em_andamento || false)}
                             style={{ minWidth: '140px' }}
                         />
-                        
+
                         <Button
                             title="⏹️ Finalizar Ronda"
                             onClick={handleFinalizarRonda}
@@ -647,7 +647,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                             variant="danger"
                             style={{ minWidth: '140px' }}
                         />
-                        
+
                         <Button
                             title="📄 Gerar Relatório"
                             onClick={handleGerarRelatorio}
@@ -655,7 +655,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                             variant="secondary"
                             style={{ minWidth: '140px' }}
                         />
-                        
+
                         <Button
                             title="📱 Enviar WhatsApp"
                             onClick={handleEnviarWhatsApp}
@@ -671,7 +671,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                             <h4 style={{ marginBottom: '12px', color: colors.headingText }}>
                                 📝 Dados para Finalização
                             </h4>
-                            
+
                             {tipoRonda === 'regular' && (
                                 <div style={{ marginBottom: '12px' }}>
                                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
@@ -756,7 +756,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                         <h3 style={{ marginBottom: '16px', color: colors.headingText }}>
                             📊 Consolidação de Rondas Esporádicas
                         </h3>
-                        
+
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
@@ -807,7 +807,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                                 variant="secondary"
                                 style={{ minWidth: '140px' }}
                             />
-                            
+
                             <Button
                                 title="🔄 Processo Completo"
                                 onClick={handleProcessoCompleto}
@@ -815,7 +815,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                                 variant="primary"
                                 style={{ minWidth: '140px' }}
                             />
-                            
+
                             <Button
                                 title="✅ Marcar Processadas"
                                 onClick={handleMarcarProcessadas}

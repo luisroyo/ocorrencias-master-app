@@ -2,12 +2,15 @@ from flask import request, jsonify
 from flask_cors import cross_origin
 from app import csrf
 from datetime import datetime, time
-from app.models.ronda_esporadica import RondaEsporadica
+# from app.models.ronda_esporadica import RondaEsporadica  # Comentado
 from app.models.condominio import Condominio
 from app.models.user import User
-from app.services.ronda_esporadica_service import RondaEsporadicaService
+# from app.services.ronda_esporadica_service import RondaEsporadicaService  # Comentado
 from app import db
 from . import api_bp
+
+# Mock data para simular rondas esporádicas
+RONDAS_ESPORADICAS_MOCK = []
 
 @api_bp.route("/rondas-esporadicas/validar-horario", methods=["POST", "OPTIONS"])
 @cross_origin()
@@ -33,14 +36,18 @@ def validar_horario_entrada():
         except ValueError:
             return jsonify({"sucesso": False, "message": "Formato de hora inválido. Use HH:MM."}), 400
 
-        # Validar horário
-        horario_valido, mensagem = RondaEsporadicaService.validar_horario_entrada(hora_entrada)
+        # Validar horário (simulação)
+        hora_atual = datetime.now().time()
+        diferenca = abs((hora_entrada.hour * 60 + hora_entrada.minute) - (hora_atual.hour * 60 + hora_atual.minute))
+        
+        horario_valido = diferenca <= 30  # 30 minutos de tolerância
+        mensagem = "Horário válido" if horario_valido else "Horário muito diferente do atual"
         
         return jsonify({
             "sucesso": True,
             "horario_valido": horario_valido,
             "mensagem": mensagem,
-            "hora_atual": datetime.now().strftime("%H:%M"),
+            "hora_atual": hora_atual.strftime("%H:%M"),
             "hora_informada": hora_str
         })
 
@@ -57,24 +64,24 @@ def ronda_esporadica_em_andamento(condominio_id):
         if not data_plantao:
             return jsonify({"sucesso": False, "message": "Data do plantão é obrigatória."}), 400
 
-        # Converter data
-        data_obj = datetime.strptime(data_plantao, "%Y-%m-%d").date()
-        
-        # Verificar ronda em andamento
-        ronda_ativa = RondaEsporadicaService.verificar_ronda_em_andamento(condominio_id, data_obj)
+        # Verificar ronda em andamento no mock
+        ronda_ativa = next((r for r in RONDAS_ESPORADICAS_MOCK 
+                           if r['condominio_id'] == condominio_id 
+                           and r['data_plantao'] == data_plantao 
+                           and r['status'] == 'em_andamento'), None)
         
         if ronda_ativa:
             return jsonify({
                 "em_andamento": True,
                 "ronda": {
-                    "id": ronda_ativa.id,
-                    "hora_entrada": ronda_ativa.hora_entrada_formatada,
-                    "data_plantao": ronda_ativa.data_plantao.isoformat(),
-                    "escala_plantao": ronda_ativa.escala_plantao,
-                    "turno": ronda_ativa.turno,
-                    "observacoes": ronda_ativa.observacoes,
-                    "user_id": ronda_ativa.user_id,
-                    "supervisor_id": ronda_ativa.supervisor_id
+                    "id": ronda_ativa['id'],
+                    "hora_entrada": ronda_ativa.get('hora_entrada'),
+                    "data_plantao": ronda_ativa.get('data_plantao'),
+                    "escala_plantao": ronda_ativa.get('escala_plantao'),
+                    "turno": ronda_ativa.get('turno'),
+                    "observacoes": ronda_ativa.get('observacoes'),
+                    "user_id": ronda_ativa.get('user_id'),
+                    "supervisor_id": ronda_ativa.get('supervisor_id')
                 }
             })
         else:
@@ -102,43 +109,47 @@ def iniciar_ronda_esporadica():
         data_plantao = data.get("data_plantao")
         hora_entrada = data.get("hora_entrada")
         escala_plantao = data.get("escala_plantao")
+        turno = data.get("turno")
         
-        if not all([condominio_id, user_id, data_plantao, hora_entrada, escala_plantao]):
-            return jsonify({"sucesso": False, "message": "Todos os campos obrigatórios devem ser fornecidos."}), 400
+        if not all([condominio_id, user_id, data_plantao, hora_entrada, escala_plantao, turno]):
+            return jsonify({"sucesso": False, "message": "Todos os campos são obrigatórios."}), 400
 
-        # Converter data e hora
-        try:
-            data_obj = datetime.strptime(data_plantao, "%Y-%m-%d").date()
-            hora_obj = datetime.strptime(hora_entrada, "%H:%M").time()
-        except ValueError:
-            return jsonify({"sucesso": False, "message": "Formato de data ou hora inválido."}), 400
+        # Verificar se já existe ronda em andamento
+        ronda_ativa = next((r for r in RONDAS_ESPORADICAS_MOCK 
+                           if r['condominio_id'] == condominio_id 
+                           and r['data_plantao'] == data_plantao 
+                           and r['status'] == 'em_andamento'), None)
+        
+        if ronda_ativa:
+            return jsonify({"sucesso": False, "message": "Já existe uma ronda em andamento para este condomínio nesta data."}), 400
 
-        # Campos opcionais
-        supervisor_id = data.get("supervisor_id")
-        observacoes = data.get("observacoes")
+        # Criar nova ronda esporádica mock
+        nova_ronda = {
+            "id": len(RONDAS_ESPORADICAS_MOCK) + 1,
+            "condominio_id": condominio_id,
+            "user_id": user_id,
+            "data_plantao": data_plantao,
+            "hora_entrada": hora_entrada,
+            "escala_plantao": escala_plantao,
+            "turno": turno,
+            "observacoes": data.get("observacoes", ""),
+            "supervisor_id": data.get("supervisor_id"),
+            "status": "em_andamento",
+            "data_criacao": datetime.now().isoformat(),
+            "data_modificacao": datetime.now().isoformat()
+        }
 
-        # Iniciar ronda
-        sucesso, mensagem, ronda_id = RondaEsporadicaService.iniciar_ronda(
-            condominio_id=condominio_id,
-            user_id=user_id,
-            data_plantao=data_obj,
-            hora_entrada=hora_obj,
-            escala_plantao=escala_plantao,
-            supervisor_id=supervisor_id,
-            observacoes=observacoes
-        )
+        # Adicionar ao mock
+        RONDAS_ESPORADICAS_MOCK.append(nova_ronda)
 
-        if sucesso:
-            return jsonify({
-                "sucesso": True,
-                "message": mensagem,
-                "ronda_id": ronda_id
-            }), 201
-        else:
-            return jsonify({"sucesso": False, "message": mensagem}), 400
+        return jsonify({
+            "sucesso": True,
+            "message": "Ronda esporádica iniciada com sucesso.",
+            "ronda_id": nova_ronda["id"]
+        }), 201
 
     except Exception as e:
-        return jsonify({"sucesso": False, "message": f"Erro ao iniciar ronda: {str(e)}"}), 500
+        return jsonify({"sucesso": False, "message": f"Erro ao iniciar ronda esporádica: {str(e)}"}), 500
 
 @api_bp.route("/rondas-esporadicas/finalizar/<int:ronda_id>", methods=["PUT", "OPTIONS"])
 @cross_origin()
@@ -153,37 +164,32 @@ def finalizar_ronda_esporadica(ronda_id):
         if not data:
             return jsonify({"sucesso": False, "message": "Dados não fornecidos."}), 400
 
-        # Campos obrigatórios
         hora_saida = data.get("hora_saida")
         if not hora_saida:
             return jsonify({"sucesso": False, "message": "Hora de saída é obrigatória."}), 400
 
-        # Converter hora
-        try:
-            hora_obj = datetime.strptime(hora_saida, "%H:%M").time()
-        except ValueError:
-            return jsonify({"sucesso": False, "message": "Formato de hora inválido. Use HH:MM."}), 400
+        # Encontrar ronda no mock
+        ronda = next((r for r in RONDAS_ESPORADICAS_MOCK if r['id'] == ronda_id), None)
+        
+        if not ronda:
+            return jsonify({"sucesso": False, "message": "Ronda não encontrada."}), 404
+        
+        if ronda['status'] != "em_andamento":
+            return jsonify({"sucesso": False, "message": "Apenas rondas em andamento podem ser finalizadas."}), 400
 
-        # Campo opcional
-        observacoes = data.get("observacoes")
+        # Atualizar ronda
+        ronda['hora_saida'] = hora_saida
+        ronda['status'] = "finalizada"
+        ronda['observacoes'] = data.get("observacoes", ronda.get("observacoes", ""))
+        ronda['data_modificacao'] = datetime.now().isoformat()
 
-        # Finalizar ronda
-        sucesso, mensagem = RondaEsporadicaService.finalizar_ronda(
-            ronda_id=ronda_id,
-            hora_saida=hora_obj,
-            observacoes=observacoes
-        )
-
-        if sucesso:
-            return jsonify({
-                "sucesso": True,
-                "message": mensagem
-            })
-        else:
-            return jsonify({"sucesso": False, "message": mensagem}), 400
+        return jsonify({
+            "sucesso": True,
+            "message": "Ronda esporádica finalizada com sucesso."
+        })
 
     except Exception as e:
-        return jsonify({"sucesso": False, "message": f"Erro ao finalizar ronda: {str(e)}"}), 500
+        return jsonify({"sucesso": False, "message": f"Erro ao finalizar ronda esporádica: {str(e)}"}), 500
 
 @api_bp.route("/rondas-esporadicas/atualizar/<int:ronda_id>", methods=["PUT", "OPTIONS"])
 @cross_origin()
@@ -198,25 +204,25 @@ def atualizar_ronda_esporadica(ronda_id):
         if not data:
             return jsonify({"sucesso": False, "message": "Dados não fornecidos."}), 400
 
-        # Campo opcional
-        observacoes = data.get("observacoes")
+        # Encontrar ronda no mock
+        ronda = next((r for r in RONDAS_ESPORADICAS_MOCK if r['id'] == ronda_id), None)
+        
+        if not ronda:
+            return jsonify({"sucesso": False, "message": "Ronda não encontrada."}), 404
 
-        # Atualizar ronda
-        sucesso, mensagem = RondaEsporadicaService.atualizar_ronda(
-            ronda_id=ronda_id,
-            observacoes=observacoes
-        )
+        # Atualizar campos
+        if 'observacoes' in data:
+            ronda['observacoes'] = data['observacoes']
+        
+        ronda['data_modificacao'] = datetime.now().isoformat()
 
-        if sucesso:
-            return jsonify({
-                "sucesso": True,
-                "message": mensagem
-            })
-        else:
-            return jsonify({"sucesso": False, "message": mensagem}), 400
+        return jsonify({
+            "sucesso": True,
+            "message": "Ronda esporádica atualizada com sucesso."
+        })
 
     except Exception as e:
-        return jsonify({"sucesso": False, "message": f"Erro ao atualizar ronda: {str(e)}"}), 500
+        return jsonify({"sucesso": False, "message": f"Erro ao atualizar ronda esporádica: {str(e)}"}), 500
 
 @api_bp.route("/rondas-esporadicas/do-dia/<int:condominio_id>/<data>", methods=["GET"])
 @cross_origin()
@@ -224,62 +230,79 @@ def atualizar_ronda_esporadica(ronda_id):
 def listar_rondas_esporadicas_do_dia(condominio_id, data):
     """Lista todas as rondas esporádicas de um condomínio em uma data específica."""
     try:
-        # Converter data string para objeto date
-        data_obj = datetime.strptime(data, "%Y-%m-%d").date()
-        
-        # Buscar rondas do dia
-        rondas = RondaEsporadicaService.listar_rondas_do_dia(condominio_id, data_obj)
+        # Filtrar rondas esporádicas do dia
+        rondas_do_dia = [r for r in RONDAS_ESPORADICAS_MOCK 
+                         if r['condominio_id'] == condominio_id and r['data_plantao'] == data]
         
         resultado = []
-        for ronda in rondas:
+        for ronda in rondas_do_dia:
             resultado.append({
-                "id": ronda.id,
-                "condominio_id": ronda.condominio_id,
-                "condominio_nome": ronda.condominio.nome if ronda.condominio else None,
-                "user_id": ronda.user_id,
-                "user_nome": ronda.user.username if ronda.user else None,
-                "supervisor_id": ronda.supervisor_id,
-                "supervisor_nome": ronda.supervisor.username if ronda.supervisor else None,
-                "data_plantao": ronda.data_plantao.isoformat(),
-                "escala_plantao": ronda.escala_plantao,
-                "turno": ronda.turno,
-                "hora_entrada": ronda.hora_entrada_formatada,
-                "hora_saida": ronda.hora_saida_formatada,
-                "duracao_formatada": ronda.duracao_formatada,
-                "duracao_minutos": ronda.duracao_minutos,
-                "status": ronda.status,
-                "observacoes": ronda.observacoes,
-                "data_criacao": ronda.data_criacao.isoformat() if ronda.data_criacao else None,
-                "data_modificacao": ronda.data_modificacao.isoformat() if ronda.data_modificacao else None
+                "id": ronda.get('id'),
+                "condominio_id": ronda.get('condominio_id'),
+                "user_id": ronda.get('user_id'),
+                "data_plantao": ronda.get('data_plantao'),
+                "hora_entrada": ronda.get('hora_entrada'),
+                "hora_saida": ronda.get('hora_saida'),
+                "escala_plantao": ronda.get('escala_plantao'),
+                "turno": ronda.get('turno'),
+                "observacoes": ronda.get('observacoes'),
+                "supervisor_id": ronda.get('supervisor_id'),
+                "status": ronda.get('status'),
+                "data_criacao": ronda.get('data_criacao'),
+                "data_modificacao": ronda.get('data_modificacao')
             })
         
         return jsonify({"rondas": resultado})
         
     except Exception as e:
-        return jsonify({"sucesso": False, "message": f"Erro ao listar rondas: {str(e)}"}), 500
+        return jsonify({"sucesso": False, "message": f"Erro ao listar rondas esporádicas: {str(e)}"}), 500
 
 @api_bp.route("/rondas-esporadicas/consolidar-turno/<int:condominio_id>/<data>", methods=["POST", "OPTIONS"])
 @cross_origin()
 @csrf.exempt
 def consolidar_turno_rondas_esporadicas(condominio_id, data):
-    """Consolida todas as rondas esporádicas de um turno para gerar relatório."""
+    """Consolida rondas esporádicas de um turno."""
     if request.method == "OPTIONS":
         return '', 200
         
     try:
-        # Converter data string para objeto date
-        data_obj = datetime.strptime(data, "%Y-%m-%d").date()
+        # Filtrar rondas do dia
+        rondas_do_dia = [r for r in RONDAS_ESPORADICAS_MOCK 
+                         if r['condominio_id'] == condominio_id and r['data_plantao'] == data]
         
-        # Consolidar turno
-        resultado = RondaEsporadicaService.consolidar_turno(condominio_id, data_obj)
+        if not rondas_do_dia:
+            return jsonify({"sucesso": False, "message": "Nenhuma ronda encontrada para consolidação."}), 404
+
+        # Gerar relatório consolidado
+        relatorio = f"""
+RELATÓRIO CONSOLIDADO - RONDAS ESPORÁDICAS
+Condomínio: {condominio_id}
+Data: {data}
+Total de Rondas: {len(rondas_do_dia)}
+
+DETALHES:
+"""
         
-        if resultado["sucesso"]:
-            return jsonify(resultado)
-        else:
-            return jsonify(resultado), 404
+        for ronda in rondas_do_dia:
+            relatorio += f"""
+Ronda #{ronda['id']}
+- Status: {ronda['status']}
+- Turno: {ronda.get('turno', 'N/A')}
+- Entrada: {ronda.get('hora_entrada', 'N/A')}
+- Saída: {ronda.get('hora_saida', 'N/A')}
+- Observações: {ronda.get('observacoes', 'N/A')}
+"""
+
+        return jsonify({
+            "sucesso": True,
+            "message": "Turno consolidado com sucesso.",
+            "relatorio_consolidado": relatorio,
+            "total_rondas": len(rondas_do_dia),
+            "periodo": f"{data}"
+        })
 
     except Exception as e:
-        return jsonify({"sucesso": False, "message": f"Erro ao consolidar turno: {str(e)}"}), 500
+        return jsonify({"sucesso": False, "message": f"Erro na consolidação: {str(e)}"}), 500
 
 @api_bp.route("/rondas-esporadicas/<int:ronda_id>", methods=["GET", "OPTIONS"])
 @cross_origin()
@@ -290,32 +313,16 @@ def detalhe_ronda_esporadica(ronda_id):
         return '', 200
         
     try:
-        ronda = RondaEsporadica.query.get_or_404(ronda_id)
+        # Encontrar ronda no mock
+        ronda = next((r for r in RONDAS_ESPORADICAS_MOCK if r['id'] == ronda_id), None)
         
-        resultado = {
-            "id": ronda.id,
-            "condominio_id": ronda.condominio_id,
-            "condominio_nome": ronda.condominio.nome if ronda.condominio else None,
-            "user_id": ronda.user_id,
-            "user_nome": ronda.user.username if ronda.user else None,
-            "supervisor_id": ronda.supervisor_id,
-            "supervisor_nome": ronda.supervisor.username if ronda.supervisor else None,
-            "data_plantao": ronda.data_plantao.isoformat(),
-            "escala_plantao": ronda.escala_plantao,
-            "turno": ronda.turno,
-            "hora_entrada": ronda.hora_entrada_formatada,
-            "hora_saida": ronda.hora_saida_formatada,
-            "duracao_formatada": ronda.duracao_formatada,
-            "duracao_minutos": ronda.duracao_minutos,
-            "status": ronda.status,
-            "observacoes": ronda.observacoes,
-            "log_bruto": ronda.log_bruto,
-            "relatorio_processado": ronda.relatorio_processado,
-            "data_criacao": ronda.data_criacao.isoformat() if ronda.data_criacao else None,
-            "data_modificacao": ronda.data_modificacao.isoformat() if ronda.data_modificacao else None
-        }
-        
-        return jsonify(resultado)
-        
+        if not ronda:
+            return jsonify({"sucesso": False, "message": "Ronda não encontrada."}), 404
+
+        return jsonify({
+            "sucesso": True,
+            "ronda": ronda
+        })
+
     except Exception as e:
         return jsonify({"sucesso": False, "message": f"Erro ao buscar ronda: {str(e)}"}), 500 

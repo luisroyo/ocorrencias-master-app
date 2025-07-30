@@ -200,9 +200,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     color: '#6c757d',
                     textAlign: 'center'
                 }}>
-                    <strong>Conectando ao Backend Local</strong><br />
-                    Certifique-se de que o servidor Flask está rodando em:<br />
-                    <code>http://localhost:5000</code><br />
+                    <strong>Conectando ao Backend de Produção</strong><br />
+                    Backend: https://processador-relatorios-ia.onrender.com<br />
                     <br />
                     <strong>Credenciais de Teste:</strong><br />
                     Email: admin@master.com<br />

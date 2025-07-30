@@ -27,7 +27,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
             try {
                 const ocorrenciaId = parseInt(id);
                 const detalhes = await buscarDetalhesOcorrencia(token, ocorrenciaId);
-                
+
                 if (detalhes) {
                     setOcorrencia(detalhes);
                 } else {

@@ -1,12 +1,13 @@
 import { apiFetch } from './api';
 
+// Interfaces para Rondas Regulares
 export interface Ronda {
     id: number;
     condominio_id: number;
     condominio_nome?: string;
     data_plantao: string;
     escala_plantao: string;
-    log_bruto: string;
+    log_bruto?: string;
     total_rondas?: number;
     duracao_total_minutos?: number;
     primeiro_evento_utc?: string;
@@ -18,165 +19,372 @@ export interface Ronda {
     data_modificacao?: string;
 }
 
+// Interfaces para Rondas Esporádicas
+export interface RondaEsporadica {
+    id: number;
+    condominio_id: number;
+    user_id: number;
+    data_plantao: string;
+    hora_entrada: string;
+    hora_saida?: string;
+    escala_plantao: string;
+    turno: string;
+    observacoes?: string;
+    supervisor_id?: number;
+    status: string;
+    data_criacao?: string;
+    data_modificacao?: string;
+}
+
 export interface RondaEmAndamento {
     em_andamento: boolean;
     ronda?: {
         id: number;
-        inicio: string;
-        data_plantao: string;
+        inicio?: string;
+        data_plantao?: string;
+        hora_entrada?: string;
+        escala_plantao?: string;
+        turno?: string;
+        observacoes?: string;
+        user_id?: number;
+        supervisor_id?: number;
     };
 }
 
-export interface RelatorioRonda {
+export interface ValidacaoHorario {
     sucesso: boolean;
-    relatorio?: string;
-    total_rondas?: number;
-    duracao_total_minutos?: number;
-    message?: string;
+    horario_valido: boolean;
+    mensagem: string;
+    hora_atual: string;
+    hora_informada: string;
 }
 
-// Listar rondas do dia
-export async function listarRondasDoDia(token: string, condominioId: number, data: string) {
+export interface ConsolidacaoResultado {
+    sucesso: boolean;
+    message: string;
+    relatorio_consolidado?: string;
+    total_rondas?: number;
+    periodo?: string;
+}
+
+// ===== RONDAS REGULARES =====
+
+export async function listarRondasDoDia(token: string, condominioId: number, data: string): Promise<{ rondas: Ronda[], error?: string }> {
     try {
-        console.log('Listando rondas do dia:', { condominioId, data });
-        
-        const response = await apiFetch(`/api/rondas/do-dia/${condominioId}/${data}`, {
-            method: 'GET',
-        }, token);
-        
-        console.log('Resposta das rondas:', response);
-        return response;
-    } catch (error) {
-        console.error('Erro ao listar rondas:', error);
-        return { sucesso: false, message: 'Erro ao listar rondas', error };
+        console.log('Buscando rondas do dia:', { condominioId, data });
+        const response = await apiFetch(`/api/rondas/do-dia/${condominioId}/${data}`, {}, token);
+        console.log('Resposta da busca de rondas:', response);
+        return { rondas: response.rondas || [] };
+    } catch (error: any) {
+        console.error('Erro ao buscar rondas do dia:', error);
+        return { rondas: [], error: error.message };
     }
 }
 
-// Verificar ronda em andamento
 export async function verificarRondaEmAndamento(token: string, condominioId: number): Promise<RondaEmAndamento> {
     try {
         console.log('Verificando ronda em andamento:', { condominioId });
-        
-        const response = await apiFetch(`/api/rondas/em-andamento/${condominioId}`, {
-            method: 'GET',
-        }, token);
-        
-        console.log('Status da ronda:', response);
+        const response = await apiFetch(`/api/rondas/em-andamento/${condominioId}`, {}, token);
+        console.log('Resposta da verificação de ronda:', response);
         return response;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro ao verificar ronda em andamento:', error);
-        return { em_andamento: false, ronda: undefined };
+        return { em_andamento: false };
     }
 }
 
-// Iniciar ronda
 export async function iniciarRonda(token: string, dados: {
     condominio_id: number;
     data_plantao: string;
     escala_plantao?: string;
     supervisor_id?: number;
-}) {
+}): Promise<{ sucesso: boolean; message: string; ronda_id?: number }> {
     try {
         console.log('Iniciando ronda:', dados);
-        
         const response = await apiFetch('/api/rondas/iniciar', {
             method: 'POST',
-            body: JSON.stringify(dados),
+            body: JSON.stringify(dados)
         }, token);
-        
         console.log('Resposta do início da ronda:', response);
         return response;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro ao iniciar ronda:', error);
-        return { sucesso: false, message: 'Erro ao iniciar ronda', error };
+        return { sucesso: false, message: error.message };
     }
 }
 
-// Finalizar ronda
-export async function finalizarRonda(token: string, rondaId: number) {
+export async function finalizarRonda(token: string, rondaId: number, dados: {
+    log_bruto?: string;
+    observacoes?: string;
+}): Promise<{ sucesso: boolean; message: string }> {
     try {
-        console.log('Finalizando ronda:', { rondaId });
-        
+        console.log('Finalizando ronda:', { rondaId, dados });
         const response = await apiFetch(`/api/rondas/finalizar/${rondaId}`, {
             method: 'PUT',
+            body: JSON.stringify(dados)
         }, token);
-        
-        console.log('Resposta da finalização:', response);
+        console.log('Resposta da finalização da ronda:', response);
         return response;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro ao finalizar ronda:', error);
-        return { sucesso: false, message: 'Erro ao finalizar ronda', error };
+        return { sucesso: false, message: error.message };
     }
 }
 
-// Atualizar ronda
 export async function atualizarRonda(token: string, rondaId: number, dados: {
+    log_bruto?: string;
     observacoes?: string;
-    escala_plantao?: string;
-}) {
+}): Promise<{ sucesso: boolean; message: string }> {
     try {
         console.log('Atualizando ronda:', { rondaId, dados });
-        
         const response = await apiFetch(`/api/rondas/atualizar/${rondaId}`, {
             method: 'PUT',
-            body: JSON.stringify(dados),
+            body: JSON.stringify(dados)
         }, token);
-        
-        console.log('Resposta da atualização:', response);
+        console.log('Resposta da atualização da ronda:', response);
         return response;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro ao atualizar ronda:', error);
-        return { sucesso: false, message: 'Erro ao atualizar ronda', error };
+        return { sucesso: false, message: error.message };
     }
 }
 
-// Gerar relatório de ronda
-export async function gerarRelatorioRonda(token: string, condominioId: number, data: string): Promise<RelatorioRonda> {
+export async function gerarRelatorioRonda(token: string, condominioId: number, data: string): Promise<{ sucesso: boolean; message: string; relatorio?: string }> {
     try {
         console.log('Gerando relatório de ronda:', { condominioId, data });
-        
         const response = await apiFetch(`/api/rondas/gerar-relatorio/${condominioId}/${data}`, {
-            method: 'POST',
+            method: 'POST'
         }, token);
-        
-        console.log('Relatório gerado:', response);
+        console.log('Resposta do relatório de ronda:', response);
         return response;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro ao gerar relatório de ronda:', error);
-        return { sucesso: false, message: 'Erro ao gerar relatório de ronda', error };
+        return { sucesso: false, message: error.message };
     }
 }
 
-// Enviar relatório via WhatsApp
-export async function enviarRelatorioWhatsApp(token: string, condominioId: number, data: string) {
+export async function enviarRondaWhatsApp(token: string, condominioId: number, data: string): Promise<{ sucesso: boolean; message: string }> {
     try {
-        console.log('Enviando relatório via WhatsApp:', { condominioId, data });
-        
+        console.log('Enviando ronda via WhatsApp:', { condominioId, data });
         const response = await apiFetch(`/api/rondas/enviar-whatsapp/${condominioId}/${data}`, {
-            method: 'POST',
+            method: 'POST'
         }, token);
-        
         console.log('Resposta do envio WhatsApp:', response);
         return response;
-    } catch (error) {
-        console.error('Erro ao enviar relatório via WhatsApp:', error);
-        return { sucesso: false, message: 'Erro ao enviar relatório via WhatsApp', error };
+    } catch (error: any) {
+        console.error('Erro ao enviar ronda via WhatsApp:', error);
+        return { sucesso: false, message: error.message };
     }
 }
 
-// Detalhes de uma ronda específica
-export async function detalheRonda(token: string, rondaId: number): Promise<Ronda | null> {
+export async function buscarDetalhesRonda(token: string, rondaId: number): Promise<Ronda | null> {
     try {
         console.log('Buscando detalhes da ronda:', { rondaId });
-        
-        const response = await apiFetch(`/api/rondas/${rondaId}`, {
-            method: 'GET',
-        }, token);
-        
-        console.log('Detalhes da ronda:', response);
-        return response;
-    } catch (error) {
+        const response = await apiFetch(`/api/rondas/${rondaId}`, {}, token);
+        console.log('Resposta dos detalhes da ronda:', response);
+        return response.ronda || null;
+    } catch (error: any) {
         console.error('Erro ao buscar detalhes da ronda:', error);
         return null;
+    }
+}
+
+// ===== RONDAS ESPORÁDICAS =====
+
+export async function validarHorarioEntrada(token: string, horaEntrada: string): Promise<ValidacaoHorario> {
+    try {
+        console.log('Validando horário de entrada:', { horaEntrada });
+        const response = await apiFetch('/api/rondas-esporadicas/validar-horario', {
+            method: 'POST',
+            body: JSON.stringify({ hora_entrada: horaEntrada })
+        }, token);
+        console.log('Resposta da validação de horário:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao validar horário:', error);
+        return {
+            sucesso: false,
+            horario_valido: false,
+            mensagem: error.message,
+            hora_atual: '',
+            hora_informada: horaEntrada
+        };
+    }
+}
+
+export async function verificarRondaEsporadicaEmAndamento(token: string, condominioId: number, dataPlantao: string): Promise<RondaEmAndamento> {
+    try {
+        console.log('Verificando ronda esporádica em andamento:', { condominioId, dataPlantao });
+        const response = await apiFetch(`/api/rondas-esporadicas/em-andamento/${condominioId}?data_plantao=${dataPlantao}`, {}, token);
+        console.log('Resposta da verificação de ronda esporádica:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao verificar ronda esporádica em andamento:', error);
+        return { em_andamento: false };
+    }
+}
+
+export async function iniciarRondaEsporadica(token: string, dados: {
+    condominio_id: number;
+    user_id: number;
+    data_plantao: string;
+    hora_entrada: string;
+    escala_plantao: string;
+    turno: string;
+    supervisor_id?: number;
+    observacoes?: string;
+}): Promise<{ sucesso: boolean; message: string; ronda_id?: number }> {
+    try {
+        console.log('Iniciando ronda esporádica:', dados);
+        const response = await apiFetch('/api/rondas-esporadicas/iniciar', {
+            method: 'POST',
+            body: JSON.stringify(dados)
+        }, token);
+        console.log('Resposta do início da ronda esporádica:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao iniciar ronda esporádica:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function finalizarRondaEsporadica(token: string, rondaId: number, dados: {
+    hora_saida: string;
+    observacoes?: string;
+}): Promise<{ sucesso: boolean; message: string }> {
+    try {
+        console.log('Finalizando ronda esporádica:', { rondaId, dados });
+        const response = await apiFetch(`/api/rondas-esporadicas/finalizar/${rondaId}`, {
+            method: 'PUT',
+            body: JSON.stringify(dados)
+        }, token);
+        console.log('Resposta da finalização da ronda esporádica:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao finalizar ronda esporádica:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function atualizarRondaEsporadica(token: string, rondaId: number, dados: {
+    observacoes?: string;
+}): Promise<{ sucesso: boolean; message: string }> {
+    try {
+        console.log('Atualizando ronda esporádica:', { rondaId, dados });
+        const response = await apiFetch(`/api/rondas-esporadicas/atualizar/${rondaId}`, {
+            method: 'PUT',
+            body: JSON.stringify(dados)
+        }, token);
+        console.log('Resposta da atualização da ronda esporádica:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao atualizar ronda esporádica:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function listarRondasEsporadicasDoDia(token: string, condominioId: number, data: string): Promise<{ rondas: RondaEsporadica[], error?: string }> {
+    try {
+        console.log('Buscando rondas esporádicas do dia:', { condominioId, data });
+        const response = await apiFetch(`/api/rondas-esporadicas/do-dia/${condominioId}/${data}`, {}, token);
+        console.log('Resposta da busca de rondas esporádicas:', response);
+        return { rondas: response.rondas || [] };
+    } catch (error: any) {
+        console.error('Erro ao buscar rondas esporádicas do dia:', error);
+        return { rondas: [], error: error.message };
+    }
+}
+
+export async function buscarDetalhesRondaEsporadica(token: string, rondaId: number): Promise<RondaEsporadica | null> {
+    try {
+        console.log('Buscando detalhes da ronda esporádica:', { rondaId });
+        const response = await apiFetch(`/api/rondas-esporadicas/${rondaId}`, {}, token);
+        console.log('Resposta dos detalhes da ronda esporádica:', response);
+        return response.ronda || null;
+    } catch (error: any) {
+        console.error('Erro ao buscar detalhes da ronda esporádica:', error);
+        return null;
+    }
+}
+
+// ===== CONSOLIDAÇÃO DE RONDAS ESPORÁDICAS =====
+
+export async function consolidarTurnoRondasEsporadicas(token: string, condominioId: number, data: string): Promise<ConsolidacaoResultado> {
+    try {
+        console.log('Consolidando turno de rondas esporádicas:', { condominioId, data });
+        const response = await apiFetch(`/api/rondas-esporadicas/consolidar-turno/${condominioId}/${data}`, {
+            method: 'POST'
+        }, token);
+        console.log('Resposta da consolidação:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao consolidar turno:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function consolidarEEEnviarWhatsApp(token: string, condominioId: number, data: string): Promise<ConsolidacaoResultado> {
+    try {
+        console.log('Consolidando e enviando WhatsApp:', { condominioId, data });
+        const response = await apiFetch(`/api/rondas-esporadicas/consolidar-e-enviar/${condominioId}/${data}`, {
+            method: 'POST'
+        }, token);
+        console.log('Resposta da consolidação e envio:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao consolidar e enviar WhatsApp:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function marcarRondasProcessadas(token: string, condominioId: number, data: string): Promise<{ sucesso: boolean; message: string }> {
+    try {
+        console.log('Marcando rondas como processadas:', { condominioId, data });
+        const response = await apiFetch(`/api/rondas-esporadicas/marcar-processadas/${condominioId}/${data}`, {
+            method: 'PUT'
+        }, token);
+        console.log('Resposta da marcação como processadas:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao marcar rondas como processadas:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function obterEstatisticasConsolidacao(token: string, condominioId: number, dataInicio: string, dataFim: string): Promise<{ sucesso: boolean; message: string; estatisticas?: any }> {
+    try {
+        console.log('Obtendo estatísticas de consolidação:', { condominioId, dataInicio, dataFim });
+        const response = await apiFetch(`/api/rondas-esporadicas/estatisticas/${condominioId}?data_inicio=${dataInicio}&data_fim=${dataFim}`, {}, token);
+        console.log('Resposta das estatísticas:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao obter estatísticas:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function processoCompletoConsolidacao(token: string, condominioId: number, data: string): Promise<ConsolidacaoResultado> {
+    try {
+        console.log('Executando processo completo de consolidação:', { condominioId, data });
+        const response = await apiFetch(`/api/rondas-esporadicas/processo-completo/${condominioId}/${data}`, {
+            method: 'POST'
+        }, token);
+        console.log('Resposta do processo completo:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro no processo completo:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+export async function statusConsolidacao(token: string, condominioId: number, data: string): Promise<{ sucesso: boolean; message: string; status?: any }> {
+    try {
+        console.log('Verificando status da consolidação:', { condominioId, data });
+        const response = await apiFetch(`/api/rondas-esporadicas/status-consolidacao/${condominioId}/${data}`, {}, token);
+        console.log('Resposta do status:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao verificar status:', error);
+        return { sucesso: false, message: error.message };
     }
 } 

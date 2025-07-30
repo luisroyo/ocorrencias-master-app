@@ -4,7 +4,6 @@ const urlsToCache = [
   '/static/js/bundle.js',
   '/static/css/main.css',
   '/manifest.json',
-  '/favicon.ico',
   '/assets/icon-512.png',
   '/assets/icon-1024.png'
 ];

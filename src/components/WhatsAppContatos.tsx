@@ -1,6 +1,4 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Linking, StyleSheet, Platform } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 const contatos = [
@@ -8,37 +6,53 @@ const contatos = [
     { label: 'Supervisão', numero: '+5519997304337' },
 ];
 
-export const WhatsAppContatos = () => (
-    <View style={styles.container}>
-        {contatos.map(({ label, numero }) => (
-            <TouchableOpacity
-                key={numero}
-                style={styles.contato}
-                onPress={() => Linking.openURL(`https://wa.me/${numero}`)}
-            >
-                <FontAwesome name="whatsapp" size={22} color={colors.success} style={{ marginRight: 8 }} />
-                <Text style={styles.text}>{label}: {numero.replace('+55', '+55 ')}</Text>
-            </TouchableOpacity>
-        ))}
-    </View>
-);
+export const WhatsAppContatos = () => {
+    const handleWhatsAppClick = (numero: string) => {
+        window.open(`https://wa.me/${numero}`, '_blank');
+    };
 
-const styles = StyleSheet.create({
-    container: {
-        borderTopWidth: 2,
-        borderTopColor: colors.warning, // Dourado para contraste
-        padding: 12,
-        backgroundColor: colors.primaryBg,
-        alignItems: 'center',
-        paddingBottom: Platform.OS === 'android' ? 32 : 16, // Espaço extra no Android
-    },
-    contato: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 4,
-    },
-    text: {
-        color: '#fff',
-        fontSize: 16,
-    },
-}); 
+    return (
+        <div style={{
+            borderTop: `2px solid ${colors.warning}`,
+            padding: '12px',
+            backgroundColor: colors.primaryBg,
+            alignItems: 'center',
+            textAlign: 'center'
+        }}>
+            {contatos.map(({ label, numero }) => (
+                <button
+                    key={numero}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        margin: '4px 0',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#fff',
+                        fontSize: '16px',
+                        padding: '8px',
+                        borderRadius: '8px',
+                        transition: 'background-color 0.2s ease'
+                    }}
+                    onClick={() => handleWhatsAppClick(numero)}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                >
+                    <span style={{
+                        color: colors.success,
+                        marginRight: '8px',
+                        fontSize: '22px'
+                    }}>
+                        📱
+                    </span>
+                    <span>{label}: {numero.replace('+55', '+55 ')}</span>
+                </button>
+            ))}
+        </div>
+    );
+}; 

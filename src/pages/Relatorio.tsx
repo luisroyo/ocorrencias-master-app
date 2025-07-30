@@ -1,188 +1,413 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
+import { AnimatedInput } from '../components/AnimatedInput';
+import { BaseScreen } from '../components/BaseScreen';
+import { colors } from '../theme/colors';
+import { analisarRelatorio } from '../services/relatorios';
 
-const Relatorio: React.FC = () => {
-  const [data, setData] = useState<Date | null>(null);
-  const [hora, setHora] = useState<Date | null>(null);
-  const [vtr, setVtr] = useState('');
-  const [local, setLocal] = useState('');
-  const [ocorrencia, setOcorrencia] = useState('');
-  const [envolvidos, setEnvolvidos] = useState('');
-  const [medidas, setMedidas] = useState('');
-  const [observacoes, setObservacoes] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string>('');
+interface RelatorioScreenProps {
+    token?: string;
+    onRelatorioCorrigido?: (relatorio: string) => void;
+}
 
-  const vtrOptions = ['', 'VTR-001', 'VTR-002', 'VTR-003', 'VTR-004', 'VTR-005'];
+export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token = 'mock-token', onRelatorioCorrigido }) => {
+    const [data, setData] = useState<string>('');
+    const [hora, setHora] = useState<string>('');
+    const [endereco, setEndereco] = useState('');
+    const [colaborador, setColaborador] = useState('');
+    const [relatorioBruto, setRelatorioBruto] = useState('');
+    const [relatorioLimpo, setRelatorioLimpo] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [vtr, setVtr] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    const vtrOptions = [
+        '',
+        'VTR 03',
+        'VTR 04',
+        'VTR 05',
+        'VTR 06',
+        'VTR 07',
+        'VTR 08',
+        'VTR 09',
+        'VTR 10',
+        'VTR 11',
+    ];
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/relatorio', {
-        data: data?.toISOString().split('T')[0],
-        hora: hora?.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        vtr,
-        local,
-        ocorrencia,
-        envolvidos,
-        medidas,
-        observacoes
-      });
+    const FORM_KEY = 'relatorio_form_state_v1';
 
-      if (response.data.success) {
-        setResult(response.data.relatorio_corrigido || response.data.relatorio);
-      } else {
-        setResult('Erro ao gerar relatório');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      setResult('Erro ao conectar com o servidor');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Carregar estado salvo ao montar
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(FORM_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.data) setData(parsed.data);
+                if (parsed.hora) setHora(parsed.hora);
+                if (parsed.endereco) setEndereco(parsed.endereco);
+                if (parsed.colaborador) setColaborador(parsed.colaborador);
+                if (parsed.relatorioBruto) setRelatorioBruto(parsed.relatorioBruto);
+                if (parsed.vtr) setVtr(parsed.vtr);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados salvos:', error);
+        }
+    }, []);
 
-  return (
-    <div>
-      <h1 style={{ color: '#1e3a8a', marginBottom: '30px' }}>
-        Gerador de Relatório
-      </h1>
+    // Salvar estado sempre que algum campo mudar
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            localStorage.setItem(
+                FORM_KEY,
+                JSON.stringify({
+                    data,
+                    hora,
+                    endereco,
+                    colaborador,
+                    relatorioBruto,
+                    vtr,
+                })
+            );
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [data, hora, endereco, colaborador, relatorioBruto, vtr]);
 
-      <div className="card">
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <div className="form-group">
-              <label htmlFor="data">Data</label>
-              <input
-                type="date"
-                id="data"
-                value={data ? data.toISOString().split('T')[0] : ''}
-                onChange={(e) => {
-                  if (e.target.value) setData(new Date(e.target.value));
-                }}
-                required
-              />
+    // Função para limpar formulário
+    const handleLimparFormulario = () => {
+        setData('');
+        setHora('');
+        setEndereco('');
+        setColaborador('');
+        setRelatorioBruto('');
+        setRelatorioLimpo('');
+        setVtr('');
+        localStorage.removeItem(FORM_KEY);
+        alert('Formulário limpo com sucesso!');
+    };
+
+    // Função para aplicar o template ao relatório processado
+    const aplicarTemplate = (relatorioProcessado: string) => {
+        // Se o relatório já está no formato do template, retorna como está
+        if (relatorioProcessado.includes('Data:') && relatorioProcessado.includes('Hora:')) {
+            return relatorioProcessado;
+        }
+
+        // Caso contrário, aplica o template básico
+        const dataAtual = data || '[Preencher data]';
+        const horaAtual = hora || '[Preencher hora]';
+        const enderecoAtual = endereco || '[Preencher endereço]';
+
+        return `Data: ${dataAtual}
+Hora: ${horaAtual}
+Local: ${enderecoAtual}
+
+Ocorrência: [Resumo da ocorrência]
+
+Relato:
+${relatorioProcessado}
+
+Ações Realizadas:
+- [Listar ações realizadas]
+
+Acionamentos:
+( ) Central ( ) Apoio 90 ( ) Polícia Militar ( ) Supervisor ( ) Coordenador
+
+Envolvidos/Testemunhas:
+[Informações dos envolvidos]
+
+Veículo (envolvido na ocorrência):
+[Descrição do veículo]
+
+Responsável pelo registro: [Nome do agente]`;
+    };
+
+    const handleAnalisar = async () => {
+        if (!relatorioBruto.trim()) {
+            alert('Cole ou digite o relatório bruto.');
+            return;
+        }
+        
+        // Monta o texto com os campos preenchidos acima do relatório bruto
+        const textoMontado = `
+Data: ${data || '[Preencher data]'}
+Hora: ${hora || '[Preencher hora]'}
+Colaborador: ${colaborador || '[Preencher colaborador]'}
+Endereço: ${endereco || '[Preencher endereço]'}
+Viatura/VTR: ${vtr || '[Preencher viatura]'}
+\n${relatorioBruto}`;
+        
+        setLoading(true);
+        try {
+            const response = await analisarRelatorio(token, textoMontado);
+            if (response?.sucesso && response.dados) {
+                const relatorioCorrigido = response.dados.relatorio_corrigido || response.dados.relatorio || response.relatorio_corrigido || response.relatorio;
+                if (relatorioCorrigido) {
+                    // Aplicar template ao relatório processado
+                    const relatorioComTemplate = aplicarTemplate(relatorioCorrigido);
+                    setRelatorioLimpo(relatorioComTemplate);
+                    if (onRelatorioCorrigido) {
+                        onRelatorioCorrigido(relatorioComTemplate);
+                    }
+                } else {
+                    setRelatorioLimpo(JSON.stringify(response.dados, null, 2));
+                }
+                
+                const { data_hora_ocorrencia, endereco_especifico, colaboradores_envolvidos } = response.dados;
+                if (data_hora_ocorrencia) {
+                    const [d, h] = data_hora_ocorrencia.split('T');
+                    const [ano, mes, dia] = d.split('-');
+                    const [horaStr, minStr] = h.split(':');
+                    setData(`${dia}/${mes}/${ano}`);
+                    setHora(`${horaStr}:${minStr}`);
+                }
+                if (endereco_especifico) setEndereco(endereco_especifico);
+                if (colaboradores_envolvidos?.length > 0) setColaborador(colaboradores_envolvidos[0]);
+            } else {
+                alert(response.message || 'Não foi possível analisar o relatório.');
+            }
+        } catch (e: any) {
+            alert(e.message || 'Erro ao analisar relatório.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Limpar estado salvo ao enviar via WhatsApp
+    const handleEnviarWhatsApp = () => {
+        if (!relatorioLimpo) {
+            alert('Gere o relatório limpo antes de enviar.');
+            return;
+        }
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
+        window.open(whatsappUrl, '_blank');
+    };
+
+    const handleCopiar = () => {
+        navigator.clipboard.writeText(relatorioLimpo);
+        alert('Relatório limpo copiado para a área de transferência.');
+    };
+
+    return (
+        <BaseScreen title="Relatório de Ocorrência" subtitle="Preencha os dados abaixo">
+            <div style={{ padding: '20px' }}>
+                <div style={{ marginBottom: '20px' }}>
+                    {/* Data */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
+                            📅 Data
+                        </label>
+                        <input
+                            type="date"
+                            value={data}
+                            onChange={(e) => setData(e.target.value)}
+                            style={{
+                                backgroundColor: '#F9F9F9',
+                                color: '#333',
+                                fontSize: '16px',
+                                borderRadius: '10px',
+                                padding: '12px 15px',
+                                border: '1px solid #E0E0E0',
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                height: '48px'
+                            }}
+                        />
+                    </div>
+
+                    {/* Hora */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
+                            🕐 Hora
+                        </label>
+                        <input
+                            type="time"
+                            value={hora}
+                            onChange={(e) => setHora(e.target.value)}
+                            style={{
+                                backgroundColor: '#F9F9F9',
+                                color: '#333',
+                                fontSize: '16px',
+                                borderRadius: '10px',
+                                padding: '12px 15px',
+                                border: '1px solid #E0E0E0',
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                height: '48px'
+                            }}
+                        />
+                    </div>
+
+                    {/* Endereço */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
+                            📍 Endereço
+                        </label>
+                        <Input
+                            placeholder="Ex: Rua Exemplo, 123"
+                            value={endereco}
+                            onChange={(e) => setEndereco(e.target.value)}
+                            style={{
+                                backgroundColor: '#F9F9F9',
+                                color: '#333',
+                                fontSize: '16px',
+                                borderRadius: '10px',
+                                padding: '12px 15px',
+                                border: '1px solid #E0E0E0',
+                                width: '100%',
+                                boxSizing: 'border-box'
+                            }}
+                        />
+                    </div>
+
+                    {/* Colaborador */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
+                            👤 Colaborador/Responsável
+                        </label>
+                        <Input
+                            placeholder="Nome do responsável"
+                            value={colaborador}
+                            onChange={(e) => setColaborador(e.target.value)}
+                            style={{
+                                backgroundColor: '#F9F9F9',
+                                color: '#333',
+                                fontSize: '16px',
+                                borderRadius: '10px',
+                                padding: '12px 15px',
+                                border: '1px solid #E0E0E0',
+                                width: '100%',
+                                boxSizing: 'border-box'
+                            }}
+                        />
+                    </div>
+
+                    {/* VTR */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
+                            🚗 Viatura/VTR
+                        </label>
+                        <select
+                            value={vtr}
+                            onChange={(e) => setVtr(e.target.value)}
+                            style={{
+                                backgroundColor: '#F9F9F9',
+                                color: '#333',
+                                fontSize: '16px',
+                                borderRadius: '10px',
+                                padding: '12px 15px',
+                                border: '1px solid #E0E0E0',
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                height: '48px'
+                            }}
+                        >
+                            {vtrOptions.map(opt => (
+                                <option key={opt} value={opt}>
+                                    {opt || 'Selecione'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Relatório Bruto */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
+                            📄 Relatório Bruto
+                        </label>
+                        <textarea
+                            placeholder="Cole ou digite o relatório bruto aqui..."
+                            value={relatorioBruto}
+                            onChange={(e) => setRelatorioBruto(e.target.value)}
+                            style={{
+                                backgroundColor: '#F9F9F9',
+                                color: '#333',
+                                fontSize: '16px',
+                                borderRadius: '10px',
+                                padding: '12px 15px',
+                                border: '1px solid #E0E0E0',
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                minHeight: '120px',
+                                resize: 'vertical',
+                                fontFamily: 'inherit'
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        <Button
+                            title={loading ? 'Analisando...' : 'Analisar Relatório'}
+                            onClick={handleAnalisar}
+                            disabled={loading}
+                            style={{
+                                backgroundColor: colors.danger,
+                                flex: 1,
+                                minWidth: '200px'
+                            }}
+                        />
+                        <Button
+                            title="Limpar Formulário"
+                            onClick={handleLimparFormulario}
+                            variant="secondary"
+                            style={{
+                                flex: 1,
+                                minWidth: '200px'
+                            }}
+                        />
+                    </div>
+                    {loading && (
+                        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                            <span>⏳ Analisando...</span>
+                        </div>
+                    )}
+                </div>
+
+                {relatorioLimpo && (
+                    <div style={{
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        border: '1px solid #e9ecef'
+                    }}>
+                        <h3 style={{ marginBottom: '16px', color: colors.headingText }}>
+                            📋 Relatório Limpo
+                        </h3>
+                        <pre style={{
+                            color: '#333',
+                            fontSize: '16px',
+                            lineHeight: '22px',
+                            fontFamily: 'inherit',
+                            whiteSpace: 'pre-line',
+                            margin: 0,
+                            padding: 0,
+                            background: 'none',
+                            border: 'none',
+                            backgroundColor: '#fff',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            border: '1px solid #dee2e6'
+                        }}>
+                            {relatorioLimpo}
+                        </pre>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
+                            <Button 
+                                title="📋 Copiar Relatório" 
+                                onClick={handleCopiar} 
+                                variant="success"
+                                style={{ flex: 1, minWidth: '150px' }}
+                            />
+                            <Button 
+                                title="📱 Enviar via WhatsApp" 
+                                onClick={handleEnviarWhatsApp} 
+                                variant="success"
+                                style={{ flex: 1, minWidth: '150px' }}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
-
-            <div className="form-group">
-              <label htmlFor="hora">Hora</label>
-              <input
-                type="time"
-                id="hora"
-                value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    const [h, m] = e.target.value.split(':');
-                    const newDate = new Date();
-                    newDate.setHours(Number(h));
-                    newDate.setMinutes(Number(m));
-                    setHora(newDate);
-                  }
-                }}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="vtr">VTR</label>
-            <select
-              id="vtr"
-              value={vtr}
-              onChange={(e) => setVtr(e.target.value)}
-              required
-            >
-              {vtrOptions.map(opt => (
-                <option key={opt} value={opt}>
-                  {opt || 'Selecione'}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="local">Local</label>
-            <input
-              type="text"
-              id="local"
-              value={local}
-              onChange={(e) => setLocal(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="ocorrencia">Ocorrência</label>
-            <textarea
-              id="ocorrencia"
-              value={ocorrencia}
-              onChange={(e) => setOcorrencia(e.target.value)}
-              rows={4}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="envolvidos">Envolvidos</label>
-            <textarea
-              id="envolvidos"
-              value={envolvidos}
-              onChange={(e) => setEnvolvidos(e.target.value)}
-              rows={3}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="medidas">Medidas Adotadas</label>
-            <textarea
-              id="medidas"
-              value={medidas}
-              onChange={(e) => setMedidas(e.target.value)}
-              rows={3}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="observacoes">Observações</label>
-            <textarea
-              id="observacoes"
-              value={observacoes}
-              onChange={(e) => setObservacoes(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            className="btn" 
-            disabled={loading}
-            style={{ width: '100%' }}
-          >
-            {loading ? 'Gerando...' : 'Gerar Relatório'}
-          </button>
-        </form>
-      </div>
-
-      {result && (
-        <div className="card">
-          <h3>Relatório Gerado:</h3>
-          <div style={{ 
-            backgroundColor: '#f8f9fa', 
-            padding: '20px', 
-            borderRadius: '8px',
-            whiteSpace: 'pre-wrap',
-            fontFamily: 'monospace'
-          }}>
-            {result}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Relatorio; 
+        </BaseScreen>
+    );
+}; 

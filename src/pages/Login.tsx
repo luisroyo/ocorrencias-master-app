@@ -1,64 +1,198 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
+import { colors } from '../theme/colors';
 
-const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+interface LoginScreenProps {
+    onLogin: (token: string) => void;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simular login bem-sucedido
-    if (username && password) {
-      localStorage.setItem('isLoggedIn', 'true');
-      navigate('/');
-    }
-  };
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
-  return (
-    <div className="container" style={{ maxWidth: '400px', marginTop: '100px' }}>
-      <div className="card">
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <img 
-            src="/assets/logo_master.png" 
-            alt="Logo" 
-            style={{ width: '200px', height: 'auto' }}
-          />
-          <h2 style={{ marginTop: '20px', color: '#1e3a8a' }}>
-            Ocorrências Master
-          </h2>
+    useEffect(() => {
+        const loadEmail = async () => {
+            try {
+                const savedEmail = localStorage.getItem('savedEmail');
+                if (savedEmail) setEmail(savedEmail);
+            } catch (error) {
+                console.error('Erro ao carregar e-mail salvo:', error);
+            }
+        };
+        loadEmail();
+    }, []);
+
+    const validateEmail = (email: string) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email.toLowerCase());
+    };
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            alert('Por favor, preencha todos os campos.');
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            alert('E-mail inválido.');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // Simulação de login - você pode implementar a chamada real da API aqui
+            const response = await mockLogin(email, password);
+            if (response?.token) {
+                localStorage.setItem('savedEmail', email);
+                onLogin(response.token);
+            } else {
+                alert('E-mail ou senha inválidos.');
+            }
+        } catch (error: any) {
+            alert(error.message || 'Erro ao fazer login');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Mock da função de login - substitua pela implementação real
+    const mockLogin = async (email: string, password: string) => {
+        // Simula uma chamada de API
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (email === 'admin@master.com' && password === '123456') {
+            return { token: 'mock-token-123' };
+        }
+        throw new Error('Credenciais inválidas');
+    };
+
+    return (
+        <div style={{
+            minHeight: '100vh',
+            backgroundColor: colors.primaryBg,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '16px'
+        }}>
+            <div style={{
+                backgroundColor: '#fff',
+                borderRadius: '16px',
+                padding: '24px',
+                width: '100%',
+                maxWidth: '380px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                alignItems: 'center'
+            }}>
+                <img
+                    src="/assets/logo_master.png"
+                    alt="Logo Master"
+                    style={{
+                        width: '100px',
+                        height: '100px',
+                        marginBottom: '16px'
+                    }}
+                />
+                
+                <p style={{
+                    textAlign: 'center',
+                    fontSize: '16px',
+                    lineHeight: '22px',
+                    color: colors.primaryBg,
+                    marginBottom: '24px',
+                    margin: '0 0 24px 0'
+                }}>
+                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>segurança</span>. 
+                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>manutenção</span>. 
+                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>sustentabilidade</span>. 
+                    É <span style={{ fontWeight: 'bold', color: colors.danger, letterSpacing: '0.5px' }}>ASSOCIAÇÃO MASTER</span>
+                </p>
+
+                <Input
+                    placeholder="E-mail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{
+                        backgroundColor: '#fff',
+                        borderColor: colors.primaryBg,
+                        border: `1.5px solid ${colors.primaryBg}`,
+                        borderRadius: '10px',
+                        padding: '12px 14px',
+                        fontSize: '16px',
+                        color: colors.headingText,
+                        width: '100%',
+                        marginBottom: '16px',
+                        boxSizing: 'border-box'
+                    }}
+                />
+
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginBottom: '16px'
+                }}>
+                    <Input
+                        placeholder="Senha"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        type={showPassword ? 'text' : 'password'}
+                        style={{
+                            backgroundColor: '#fff',
+                            borderColor: colors.primaryBg,
+                            border: `1.5px solid ${colors.primaryBg}`,
+                            borderRadius: '10px',
+                            padding: '12px 14px',
+                            fontSize: '16px',
+                            color: colors.headingText,
+                            flex: 1,
+                            marginBottom: 0,
+                            boxSizing: 'border-box'
+                        }}
+                    />
+                    <button
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                            padding: '10px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            marginLeft: '8px'
+                        }}
+                        title="Mostrar ou ocultar senha"
+                    >
+                        <span style={{
+                            fontSize: '22px',
+                            color: colors.danger
+                        }}>
+                            {showPassword ? '👁️‍🗨️' : '👁️'}
+                        </span>
+                    </button>
+                </div>
+
+                <Button
+                    title={loading ? 'Entrando...' : 'Entrar'}
+                    onClick={handleLogin}
+                    disabled={loading}
+                    style={{
+                        backgroundColor: colors.danger,
+                        padding: '14px',
+                        borderRadius: '8px',
+                        width: '100%',
+                        marginTop: '8px'
+                    }}
+                    textStyle={{
+                        color: '#fff',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        letterSpacing: '1px'
+                    }}
+                />
+            </div>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Usuário</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Senha</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn" style={{ width: '100%' }}>
-            Entrar
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-export default Login; 
+    );
+}; 

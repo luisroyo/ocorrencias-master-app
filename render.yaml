@@ -1,9 +1,8 @@
 services:
-  - type: web
+  - type: static
     name: ocorrencias-master-app
-    env: node
     buildCommand: npm run build
-    startCommand: npx serve dist -s
+    staticPublishPath: dist
     envVars:
       - key: NODE_ENV
         value: production 

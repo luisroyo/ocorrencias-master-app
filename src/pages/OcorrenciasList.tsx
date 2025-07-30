@@ -24,7 +24,7 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                 data_inicio: dataInicio || undefined,
                 data_fim: dataFim || undefined,
             };
-            
+
             const response = await buscarHistoricoOcorrencias(token, filtrosCompletos);
             if (response.historico) {
                 setOcorrencias(response.historico);
@@ -90,7 +90,7 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                     <h3 style={{ marginBottom: '16px', color: colors.headingText }}>
                         🔍 Filtros
                     </h3>
-                    
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
@@ -252,8 +252,8 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                                         <p style={{ margin: '0 0 8px 0', color: colors.headingText, fontWeight: 'bold' }}>
                                             📄 Relatório:
                                         </p>
-                                        <p style={{ 
-                                            margin: '0', 
+                                        <p style={{
+                                            margin: '0',
                                             color: colors.mutedText,
                                             maxHeight: '100px',
                                             overflow: 'hidden',

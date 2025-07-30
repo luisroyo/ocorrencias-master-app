@@ -85,8 +85,16 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
                 onBlur={handleBlur}
                 onFocus={() => value.length >= 2 && suggestions.length > 0 && setIsOpen(true)}
                 style={{
-                    ...style,
-                    position: 'relative'
+                    backgroundColor: '#F9F9F9',
+                    color: '#333',
+                    fontSize: '16px',
+                    borderRadius: '10px',
+                    padding: '12px 15px',
+                    border: '1px solid #E0E0E0',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    position: 'relative',
+                    ...style
                 }}
             />
 
@@ -108,8 +116,8 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
                     top: '100%',
                     left: 0,
                     right: 0,
-                    backgroundColor: colors.surface,
-                    border: `1px solid ${colors.secondaryBg}`,
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E0E0E0',
                     borderRadius: '8px',
                     maxHeight: '200px',
                     overflowY: 'auto',
@@ -123,15 +131,16 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
                             style={{
                                 padding: '12px 16px',
                                 cursor: 'pointer',
-                                borderBottom: index < suggestions.length - 1 ? `1px solid ${colors.secondaryBg}` : 'none',
-                                color: colors.headingText,
-                                fontSize: '14px'
+                                borderBottom: index < suggestions.length - 1 ? '1px solid #E0E0E0' : 'none',
+                                color: '#333',
+                                fontSize: '14px',
+                                backgroundColor: '#FFFFFF'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = colors.secondaryBg;
+                                e.currentTarget.style.backgroundColor = '#F5F5F5';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = colors.surface;
+                                e.currentTarget.style.backgroundColor = '#FFFFFF';
                             }}
                         >
                             {item[displayField]}

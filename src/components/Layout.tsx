@@ -21,21 +21,21 @@ const Layout: React.FC<LayoutProps> = ({ onLogout }) => {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img 
-            src="/assets/logo_master.png" 
-            alt="Logo Master" 
+          <img
+            src="/assets/logo_master.png"
+            alt="Logo Master"
             style={{ width: '40px', height: '40px', marginRight: '12px' }}
           />
-          <h1 style={{ 
-            color: colors.mainText, 
-            margin: 0, 
+          <h1 style={{
+            color: colors.mainText,
+            margin: 0,
             fontSize: '20px',
             fontWeight: 'bold'
           }}>
             Ocorrências Master
           </h1>
         </div>
-        
+
         {onLogout && (
           <button
             onClick={onLogout}

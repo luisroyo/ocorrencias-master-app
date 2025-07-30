@@ -4,7 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start --web",
-    "build": "echo 'Build step not needed for PWA on Render'",
+    "build": "npx expo export:web",
     "dev": "expo start --web"
   },
   "dependencies": {

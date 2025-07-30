@@ -37,13 +37,13 @@
         "startUrl": "/",
         "icons": [
           {
-            "src": "/assets/icon-1024.png",
+            "src": "./public/assets/icon-1024.png",
             "sizes": "1024x1024",
             "type": "image/png",
             "purpose": "any"
           },
           {
-            "src": "/assets/icon-512-maskable.png",
+            "src": "./public/assets/icon-512-maskable.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"

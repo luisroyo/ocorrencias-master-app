@@ -4,8 +4,10 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start --web",
-    "build": "npx expo export:web",
-    "dev": "expo start --web"
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build": "echo 'Build step not needed for PWA on Render'"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",

@@ -274,10 +274,10 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                             onChange={setEndereco}
                             onSelect={(item) => {
                                 setSelectedEndereco(item);
-                                setEndereco(item.logradouro || item.nome || '');
+                                setEndereco(item.nome || '');
                             }}
                             searchFunction={buscarEnderecosAutocomplete}
-                            displayField="logradouro"
+                            displayField="nome"
                             token={token}
                             style={{
                                 backgroundColor: '#F9F9F9',
@@ -421,9 +421,6 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                             fontFamily: 'inherit',
                             whiteSpace: 'pre-line',
                             margin: 0,
-                            padding: 0,
-                            background: 'none',
-                            border: 'none',
                             backgroundColor: '#fff',
                             padding: '16px',
                             borderRadius: '8px',

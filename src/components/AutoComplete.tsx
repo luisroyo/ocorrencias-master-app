@@ -26,12 +26,21 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<any>(null);
     const timeoutRef = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
+        // Se um item foi selecionado e o valor atual corresponde ao item selecionado, não buscar
+        if (selectedItem && value === selectedItem[displayField]) {
+            setSuggestions([]);
+            setIsOpen(false);
+            return;
+        }
+
         if (value.length < 2) {
             setSuggestions([]);
             setIsOpen(false);
+            setSelectedItem(null);
             return;
         }
 
@@ -60,9 +69,10 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
                 clearTimeout(timeoutRef.current);
             }
         };
-    }, [value, searchFunction]);
+    }, [value, searchFunction, selectedItem, displayField]);
 
     const handleSelect = (item: any) => {
+        setSelectedItem(item);
         onChange(item[displayField]);
         onSelect(item);
         setIsOpen(false);
@@ -81,7 +91,13 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
             <Input
                 placeholder={placeholder}
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => {
+                    // Reset selected item when user starts typing again
+                    if (selectedItem && e.target.value !== selectedItem[displayField]) {
+                        setSelectedItem(null);
+                    }
+                    onChange(e.target.value);
+                }}
                 onBlur={handleBlur}
                 onFocus={() => value.length >= 2 && suggestions.length > 0 && setIsOpen(true)}
                 style={{
@@ -121,8 +137,9 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
                     borderRadius: '8px',
                     maxHeight: '200px',
                     overflowY: 'auto',
-                    zIndex: 1000,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                    zIndex: 9999,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    marginTop: '2px'
                 }}>
                     {suggestions.map((item, index) => (
                         <div

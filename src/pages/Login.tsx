@@ -189,24 +189,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     }}
                 />
 
-                {/* Dica para desenvolvimento */}
-                <div style={{
-                    marginTop: '16px',
-                    padding: '12px',
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '8px',
-                    border: '1px solid #e9ecef',
-                    fontSize: '12px',
-                    color: '#6c757d',
-                    textAlign: 'center'
-                }}>
-                    <strong>Conectando ao Backend de Produção</strong><br />
-                    Backend: https://processador-relatorios-ia.onrender.com<br />
-                    <br />
-                    <strong>Credenciais de Teste:</strong><br />
-                    Email: admin@master.com<br />
-                    Senha: 123456
-                </div>
+                {/* Dica para desenvolvimento - Oculto em produção */}
+                {process.env.NODE_ENV === 'development' && (
+                    <div style={{
+                        marginTop: '16px',
+                        padding: '12px',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '8px',
+                        border: '1px solid #e9ecef',
+                        fontSize: '12px',
+                        color: '#6c757d',
+                        textAlign: 'center'
+                    }}>
+                        <strong>Modo Desenvolvimento</strong><br />
+                        Backend: https://processador-relatorios-ia.onrender.com<br />
+                        <br />
+                        <strong>Credenciais de Teste:</strong><br />
+                        Email: admin@master.com<br />
+                        Senha: 123456
+                    </div>
+                )}
             </div>
         </div>
     );

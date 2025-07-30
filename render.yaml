@@ -2,7 +2,7 @@ services:
   - type: web
     name: ocorrencias-master-app
     env: node
-    buildCommand: expo export --platform web
+    buildCommand: npm run build
     startCommand: npx serve dist -s
     envVars:
       - key: NODE_ENV

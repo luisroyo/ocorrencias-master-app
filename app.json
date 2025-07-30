@@ -18,13 +18,6 @@
       "favicon": "./public/assets/icon-512.png",
       "bundler": "metro",
       "output": "static",
-      "build": {
-        "babel": {
-          "include": [
-            "@expo/vector-icons"
-          ]
-        }
-      },
       "pwa": {
         "name": "Ocorrencias - Relatórios de Segurança",
         "shortName": "Ocorrencias",
@@ -50,10 +43,6 @@
           }
         ]
       }
-    },
-    "experiments": {
-      "tsconfigPaths": true
-    },
-    "plugins": []
+    }
   }
 }

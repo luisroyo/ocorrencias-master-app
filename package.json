@@ -4,7 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start --web",
-    "build": "expo export --platform web",
+    "build": "EXPO_PUBLIC_PLATFORM=web expo export --platform web --clear",
     "dev": "expo start --web"
   },
   "dependencies": {

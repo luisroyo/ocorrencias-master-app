@@ -53,6 +53,7 @@
     },
     "experiments": {
       "tsconfigPaths": true
-    }
+    },
+    "plugins": []
   }
 }

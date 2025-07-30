@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ocorrencias-master-app
+    env: node
+    buildCommand: expo export --platform web
+    startCommand: npx serve dist -s
+    envVars:
+      - key: NODE_ENV
+        value: production 

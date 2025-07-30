@@ -1,4 +1,5 @@
 import {
+    listarCondominios,
     validarHorarioEntrada,
     iniciarRonda,
     finalizarRonda,
@@ -9,11 +10,27 @@ import {
     consolidarTurnoRondasEsporadicas,
     processoCompletoConsolidacao,
     marcarRondasProcessadas,
+    statusConsolidacao,
     ValidacaoHorario,
-    ConsolidacaoResultado
+    ConsolidacaoResultado,
+    StatusConsolidacao,
+    ListaCondominios
 } from '../services/rondas';
 
 export const useRondaActions = (token: string, setLoading: (loading: boolean) => void) => {
+    const handleListarCondominios = async (): Promise<ListaCondominios> => {
+        try {
+            setLoading(true);
+            const resultado = await listarCondominios(token);
+            return resultado;
+        } catch (error) {
+            console.error('Erro ao listar condomínios:', error);
+            return { sucesso: false, condominios: [], total: 0 };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleValidarHorario = async (horaEntrada: string) => {
         if (!horaEntrada) {
             alert('Por favor, informe a hora de entrada.');
@@ -278,7 +295,55 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
         }
     };
 
+    const handleStatusConsolidacao = async (condominioId: number, dataPlantao: string): Promise<StatusConsolidacao> => {
+        if (!dataPlantao) {
+            alert('Por favor, informe a data.');
+            return {
+                sucesso: false,
+                data: dataPlantao,
+                condominio_id: condominioId,
+                status: {
+                    total_rondas_esporadicas: 0,
+                    rondas_finalizadas: 0,
+                    rondas_processadas: 0,
+                    duracao_total_minutos: 0,
+                    ronda_principal_criada: false,
+                    pode_consolidar: false,
+                    ja_consolidado: false
+                },
+                rondas: []
+            };
+        }
+
+        try {
+            setLoading(true);
+            const resultado = await statusConsolidacao(token, condominioId, dataPlantao);
+            return resultado;
+        } catch (error) {
+            console.error('Erro ao verificar status de consolidação:', error);
+            alert('Erro ao verificar status de consolidação.');
+            return {
+                sucesso: false,
+                data: dataPlantao,
+                condominio_id: condominioId,
+                status: {
+                    total_rondas_esporadicas: 0,
+                    rondas_finalizadas: 0,
+                    rondas_processadas: 0,
+                    duracao_total_minutos: 0,
+                    ronda_principal_criada: false,
+                    pode_consolidar: false,
+                    ja_consolidado: false
+                },
+                rondas: []
+            };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
+        handleListarCondominios,
         handleValidarHorario,
         handleIniciarRonda,
         handleFinalizarRonda,
@@ -286,6 +351,7 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
         handleEnviarWhatsApp,
         handleConsolidarTurno,
         handleProcessoCompleto,
-        handleMarcarProcessadas
+        handleMarcarProcessadas,
+        handleStatusConsolidacao
     };
 }; 

@@ -1,5 +1,17 @@
 import { apiFetch } from './api';
 
+// Interfaces para Condomínios
+export interface Condominio {
+    id: number;
+    nome: string;
+}
+
+export interface ListaCondominios {
+    sucesso: boolean;
+    condominios: Condominio[];
+    total: number;
+}
+
 // Interfaces para Rondas Regulares
 export interface Ronda {
     id: number;
@@ -23,14 +35,21 @@ export interface Ronda {
 export interface RondaEsporadica {
     id: number;
     condominio_id: number;
+    condominio_nome?: string;
     user_id: number;
+    user_nome?: string;
+    supervisor_id?: number;
+    supervisor_nome?: string;
     data_plantao: string;
     hora_entrada: string;
     hora_saida?: string;
+    duracao_formatada?: string;
+    duracao_minutos?: number;
     escala_plantao: string;
     turno: string;
     observacoes?: string;
-    supervisor_id?: number;
+    log_bruto?: string;
+    relatorio_processado?: string;
     status: string;
     data_criacao?: string;
     data_modificacao?: string;
@@ -65,6 +84,40 @@ export interface ConsolidacaoResultado {
     relatorio_consolidado?: string;
     total_rondas?: number;
     periodo?: string;
+    duracao_total_minutos?: number;
+    whatsapp_enviado?: boolean;
+    ronda_principal_id?: number;
+}
+
+export interface StatusConsolidacao {
+    sucesso: boolean;
+    data: string;
+    condominio_id: number;
+    status: {
+        total_rondas_esporadicas: number;
+        rondas_finalizadas: number;
+        rondas_processadas: number;
+        duracao_total_minutos: number;
+        ronda_principal_criada: boolean;
+        ronda_principal_id?: number;
+        pode_consolidar: boolean;
+        ja_consolidado: boolean;
+    };
+    rondas: RondaEsporadica[];
+}
+
+// ===== CONDOMÍNIOS =====
+
+export async function listarCondominios(token: string): Promise<ListaCondominios> {
+    try {
+        console.log('Buscando condomínios');
+        const response = await apiFetch('/api/condominios', {}, token);
+        console.log('Resposta da busca de condomínios:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao buscar condomínios:', error);
+        return { sucesso: false, condominios: [], total: 0 };
+    }
 }
 
 // ===== RONDAS REGULARES =====
@@ -105,7 +158,7 @@ export async function iniciarRonda(token: string, dados: {
             method: 'POST',
             body: JSON.stringify(dados)
         }, token);
-        console.log('Resposta do início da ronda:', response);
+        console.log('Resposta do início de ronda:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao iniciar ronda:', error);
@@ -123,7 +176,7 @@ export async function finalizarRonda(token: string, rondaId: number, dados: {
             method: 'PUT',
             body: JSON.stringify(dados)
         }, token);
-        console.log('Resposta da finalização da ronda:', response);
+        console.log('Resposta da finalização de ronda:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao finalizar ronda:', error);
@@ -141,7 +194,7 @@ export async function atualizarRonda(token: string, rondaId: number, dados: {
             method: 'PUT',
             body: JSON.stringify(dados)
         }, token);
-        console.log('Resposta da atualização da ronda:', response);
+        console.log('Resposta da atualização de ronda:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao atualizar ronda:', error);
@@ -155,7 +208,7 @@ export async function gerarRelatorioRonda(token: string, condominioId: number, d
         const response = await apiFetch(`/api/rondas/gerar-relatorio/${condominioId}/${data}`, {
             method: 'POST'
         }, token);
-        console.log('Resposta do relatório de ronda:', response);
+        console.log('Resposta da geração de relatório:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao gerar relatório de ronda:', error);
@@ -169,7 +222,7 @@ export async function enviarRondaWhatsApp(token: string, condominioId: number, d
         const response = await apiFetch(`/api/rondas/enviar-whatsapp/${condominioId}/${data}`, {
             method: 'POST'
         }, token);
-        console.log('Resposta do envio WhatsApp:', response);
+        console.log('Resposta do envio via WhatsApp:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao enviar ronda via WhatsApp:', error);
@@ -240,7 +293,7 @@ export async function iniciarRondaEsporadica(token: string, dados: {
             method: 'POST',
             body: JSON.stringify(dados)
         }, token);
-        console.log('Resposta do início da ronda esporádica:', response);
+        console.log('Resposta do início de ronda esporádica:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao iniciar ronda esporádica:', error);
@@ -258,7 +311,7 @@ export async function finalizarRondaEsporadica(token: string, rondaId: number, d
             method: 'PUT',
             body: JSON.stringify(dados)
         }, token);
-        console.log('Resposta da finalização da ronda esporádica:', response);
+        console.log('Resposta da finalização de ronda esporádica:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao finalizar ronda esporádica:', error);
@@ -275,7 +328,7 @@ export async function atualizarRondaEsporadica(token: string, rondaId: number, d
             method: 'PUT',
             body: JSON.stringify(dados)
         }, token);
-        console.log('Resposta da atualização da ronda esporádica:', response);
+        console.log('Resposta da atualização de ronda esporádica:', response);
         return response;
     } catch (error: any) {
         console.error('Erro ao atualizar ronda esporádica:', error);
@@ -315,10 +368,10 @@ export async function consolidarTurnoRondasEsporadicas(token: string, condominio
         const response = await apiFetch(`/api/rondas-esporadicas/consolidar-turno/${condominioId}/${data}`, {
             method: 'POST'
         }, token);
-        console.log('Resposta da consolidação:', response);
+        console.log('Resposta da consolidação de turno:', response);
         return response;
     } catch (error: any) {
-        console.error('Erro ao consolidar turno:', error);
+        console.error('Erro ao consolidar turno de rondas esporádicas:', error);
         return { sucesso: false, message: error.message };
     }
 }
@@ -355,10 +408,10 @@ export async function obterEstatisticasConsolidacao(token: string, condominioId:
     try {
         console.log('Obtendo estatísticas de consolidação:', { condominioId, dataInicio, dataFim });
         const response = await apiFetch(`/api/rondas-esporadicas/estatisticas/${condominioId}?data_inicio=${dataInicio}&data_fim=${dataFim}`, {}, token);
-        console.log('Resposta das estatísticas:', response);
+        console.log('Resposta das estatísticas de consolidação:', response);
         return response;
     } catch (error: any) {
-        console.error('Erro ao obter estatísticas:', error);
+        console.error('Erro ao obter estatísticas de consolidação:', error);
         return { sucesso: false, message: error.message };
     }
 }
@@ -372,19 +425,33 @@ export async function processoCompletoConsolidacao(token: string, condominioId: 
         console.log('Resposta do processo completo:', response);
         return response;
     } catch (error: any) {
-        console.error('Erro no processo completo:', error);
+        console.error('Erro no processo completo de consolidação:', error);
         return { sucesso: false, message: error.message };
     }
 }
 
-export async function statusConsolidacao(token: string, condominioId: number, data: string): Promise<{ sucesso: boolean; message: string; status?: any }> {
+export async function statusConsolidacao(token: string, condominioId: number, data: string): Promise<StatusConsolidacao> {
     try {
-        console.log('Verificando status da consolidação:', { condominioId, data });
+        console.log('Verificando status de consolidação:', { condominioId, data });
         const response = await apiFetch(`/api/rondas-esporadicas/status-consolidacao/${condominioId}/${data}`, {}, token);
-        console.log('Resposta do status:', response);
+        console.log('Resposta do status de consolidação:', response);
         return response;
     } catch (error: any) {
-        console.error('Erro ao verificar status:', error);
-        return { sucesso: false, message: error.message };
+        console.error('Erro ao verificar status de consolidação:', error);
+        return {
+            sucesso: false,
+            data: data,
+            condominio_id: condominioId,
+            status: {
+                total_rondas_esporadicas: 0,
+                rondas_finalizadas: 0,
+                rondas_processadas: 0,
+                duracao_total_minutos: 0,
+                ronda_principal_criada: false,
+                pode_consolidar: false,
+                ja_consolidado: false
+            },
+            rondas: []
+        };
     }
 } 

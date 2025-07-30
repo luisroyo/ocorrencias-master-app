@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { BaseScreen } from '../components/BaseScreen';
-import { RondaProductionMessage } from '../components/RondaProductionMessage';
 import { useRondaState } from '../hooks/useRondaState';
 import { useRondaActions } from '../hooks/useRondaActions';
-import { isProduction } from '../utils/environment';
 import { RondaTipoSelector } from '../components/ronda/RondaTipoSelector';
 import { RondaConfiguracoes } from '../components/ronda/RondaConfiguracoes';
 import { RondaStatus } from '../components/ronda/RondaStatus';
@@ -17,11 +15,6 @@ interface RondaScreenProps {
 }
 
 export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }) => {
-    // Verificar se está em produção
-    if (isProduction()) {
-        return <RondaProductionMessage />;
-    }
-
     // Usar hooks personalizados
     const rondaState = useRondaState(token);
     const rondaActions = useRondaActions(token, rondaState.setLoading);
@@ -109,6 +102,8 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                 {/* Configurações Básicas */}
                 <RondaConfiguracoes
                     tipoRonda={rondaState.tipoRonda}
+                    condominios={rondaState.condominios}
+                    condominiosLoading={rondaState.condominiosLoading}
                     condominioId={rondaState.condominioId}
                     setCondominioId={rondaState.setCondominioId}
                     dataPlantao={rondaState.dataPlantao}

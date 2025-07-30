@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react';
 import {
     verificarRondaEmAndamento,
     verificarRondaEsporadicaEmAndamento,
-    RondaEmAndamento
+    listarCondominios,
+    RondaEmAndamento,
+    Condominio
 } from '../services/rondas';
 
 export const useRondaState = (token: string) => {
+    // Estados para Condomínios
+    const [condominios, setCondominios] = useState<Condominio[]>([]);
+    const [condominiosLoading, setCondominiosLoading] = useState(false);
+
     // Estados para Rondas Regulares
     const [condominioId, setCondominioId] = useState<number>(1);
     const [dataPlantao, setDataPlantao] = useState<string>('');
@@ -39,12 +45,35 @@ export const useRondaState = (token: string) => {
         setDataFimConsolidacao(dataFormatada);
     }, []);
 
+    // Carregar condomínios na inicialização
+    useEffect(() => {
+        carregarCondominios();
+    }, []);
+
     // Verificar ronda atual
     useEffect(() => {
         if (dataPlantao) {
             verificarRondaAtual();
         }
     }, [dataPlantao, tipoRonda]);
+
+    const carregarCondominios = async () => {
+        try {
+            setCondominiosLoading(true);
+            const resultado = await listarCondominios(token);
+            if (resultado.sucesso) {
+                setCondominios(resultado.condominios);
+                // Se não há condomínios selecionados, selecionar o primeiro
+                if (resultado.condominios.length > 0 && condominioId === 1) {
+                    setCondominioId(resultado.condominios[0].id);
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar condomínios:', error);
+        } finally {
+            setCondominiosLoading(false);
+        }
+    };
 
     const verificarRondaAtual = async () => {
         try {
@@ -68,6 +97,12 @@ export const useRondaState = (token: string) => {
     const rondaAtiva = tipoRonda === 'regular' ? rondaEmAndamento : rondaEsporadicaEmAndamento;
 
     return {
+        // Estados de Condomínios
+        condominios,
+        setCondominios,
+        condominiosLoading,
+        setCondominiosLoading,
+        carregarCondominios,
         // Estados
         condominioId, setCondominioId,
         dataPlantao, setDataPlantao,

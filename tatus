@@ -1,0 +1,161 @@
+[1mdiff --git a/src/components/ronda/RondaConfiguracoes.tsx b/src/components/ronda/RondaConfiguracoes.tsx[m
+[1mindex a552480..e0a0bf9 100644[m
+[1m--- a/src/components/ronda/RondaConfiguracoes.tsx[m
+[1m+++ b/src/components/ronda/RondaConfiguracoes.tsx[m
+[36m@@ -2,9 +2,12 @@[m [mimport React from 'react';[m
+ import { Input } from '../Input';[m
+ import { Button } from '../Button';[m
+ import { colors } from '../../theme/colors';[m
+[32m+[m[32mimport { Condominio } from '../../services/rondas';[m
+ [m
+ interface RondaConfiguracoesProps {[m
+     tipoRonda: 'regular' | 'esporadica';[m
+[32m+[m[32m    condominios: Condominio[];[m
+[32m+[m[32m    condominiosLoading: boolean;[m
+     condominioId: number;[m
+     setCondominioId: (id: number) => void;[m
+     dataPlantao: string;[m
+[36m@@ -26,6 +29,8 @@[m [minterface RondaConfiguracoesProps {[m
+ [m
+ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({[m
+     tipoRonda,[m
+[32m+[m[32m    condominios,[m
+[32m+[m[32m    condominiosLoading,[m
+     condominioId,[m
+     setCondominioId,[m
+     dataPlantao,[m
+[36m@@ -62,14 +67,31 @@[m [mexport const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({[m
+             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>[m
+                 <div>[m
+                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>[m
+[31m-                        Condomínio ID[m
+[32m+[m[32m                        Condomínio[m
+                     </label>[m
+[31m-                    <Input[m
+[31m-                        type="number"[m
+[31m-                        value={condominioId}[m
+[31m-                        onChange={(e) => setCondominioId(Number(e.target.value))}[m
+[31m-                        placeholder="ID do condomínio"[m
+[31m-                    />[m
+[32m+[m[32m                    {condominiosLoading ? ([m
+[32m+[m[32m                        <div style={{ padding: '8px', backgroundColor: '#e9ecef', borderRadius: '4px', textAlign: 'center' }}>[m
+[32m+[m[32m                            Carregando condomínios...[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    ) : ([m
+[32m+[m[32m                        <select[m
+[32m+[m[32m                            value={condominioId}[m
+[32m+[m[32m                            onChange={(e) => setCondominioId(Number(e.target.value))}[m
+[32m+[m[32m                            style={{[m
+[32m+[m[32m                                width: '100%',[m
+[32m+[m[32m                                padding: '8px',[m
+[32m+[m[32m                                border: '1px solid #ced4da',[m
+[32m+[m[32m                                borderRadius: '4px',[m
+[32m+[m[32m                                backgroundColor: 'white'[m
+[32m+[m[32m                            }}[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                            {condominios.map((condominio) => ([m
+[32m+[m[32m                                <option key={condominio.id} value={condominio.id}>[m
+[32m+[m[32m                                    {condominio.nome}[m
+[32m+[m[32m                                </option>[m
+[32m+[m[32m                            ))}[m
+[32m+[m[32m                        </select>[m
+[32m+[m[32m                    )}[m
+                 </div>[m
+                 <div>[m
+                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>[m
+[1mdiff --git a/src/hooks/useRondaActions.ts b/src/hooks/useRondaActions.ts[m
+[1mindex 85052cd..f7ec0b5 100644[m
+[1m--- a/src/hooks/useRondaActions.ts[m
+[1m+++ b/src/hooks/useRondaActions.ts[m
+[36m@@ -1,4 +1,5 @@[m
+ import {[m
+[32m+[m[32m    listarCondominios,[m
+     validarHorarioEntrada,[m
+     iniciarRonda,[m
+     finalizarRonda,[m
+[36m@@ -9,11 +10,27 @@[m [mimport {[m
+     consolidarTurnoRondasEsporadicas,[m
+     processoCompletoConsolidacao,[m
+     marcarRondasProcessadas,[m
+[32m+[m[32m    statusConsolidacao,[m
+     ValidacaoHorario,[m
+[31m-    ConsolidacaoResultado[m
+[32m+[m[32m    ConsolidacaoResultado,[m
+[32m+[m[32m    StatusConsolidacao,[m
+[32m+[m[32m    ListaCondominios[m
+ } from '../services/rondas';[m
+ [m
+ export const useRondaActions = (token: string, setLoading: (loading: boolean) => void) => {[m
+[32m+[m[32m    const handleListarCondominios = async (): Promise<ListaCondominios> => {[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            setLoading(true);[m
+[32m+[m[32m            const resultado = await listarCondominios(token);[m
+[32m+[m[32m            return resultado;[m
+[32m+[m[32m        } catch (error) {[m
+[32m+[m[32m            console.error('Erro ao listar condomínios:', error);[m
+[32m+[m[32m            return { sucesso: false, condominios: [], total: 0 };[m
+[32m+[m[32m        } finally {[m
+[32m+[m[32m            setLoading(false);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    };[m
+[32m+[m
+     const handleValidarHorario = async (horaEntrada: string) => {[m
+         if (!horaEntrada) {[m
+             alert('Por favor, informe a hora de entrada.');[m
+[36m@@ -278,7 +295,55 @@[m [mexport const useRondaActions = (token: string, setLoading: (loading: boolean) =>[m
+         }[m
+     };[m
+ [m
+[32m+[m[32m    const handleStatusConsolidacao = async (condominioId: number, dataPlantao: string): Promise<StatusConsolidacao> => {[m
+[32m+[m[32m        if (!dataPlantao) {[m
+[32m+[m[32m            alert('Por favor, informe a data.');[m
+[32m+[m[32m            return {[m
+[32m+[m[32m                sucesso: false,[m
+[32m+[m[32m                data: dataPlantao,[m
+[32m+[m[32m                condominio_id: condominioId,[m
+[32m+[m[32m                status: {[m
+[32m+[m[32m                    total_rondas_esporadicas: 0,[m
+[32m+[m[32m                    rondas_finalizadas: 0,[m
+[32m+[m[32m                    rondas_processadas: 0,[m
+[32m+[m[32m                    duracao_total_minutos: 0,[m
+[32m+[m[32m                    ronda_principal_criada: false,[m
+[32m+[m[32m                    pode_consolidar: false,[m
+[32m+[m[32m                    ja_consolidado: false[m
+[32m+[m[32m                },[m
+[32m+[m[32m                rondas: [][m
+[32m+[m[32m            };[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            setLoading(true);[m
+[32m+[m[32m            const resultado = await statusConsolidacao(token, condominioId, dataPlantao);[m
+[32m+[m[32m            return resultado;[m
+[32m+[m[32m        } catch (error) {[m
+[32m+[m[32m            console.error('Erro ao verificar status de consolidação:', error);[m
+[32m+[m[32m            alert('Erro ao verificar status de consolidação.');[m
+[32m+[m[32m            return {[m
+[32m+[m[32m                sucesso: false,[m
+[32m+[m[32m                data: dataPlantao,[m
+[32m+[m[32m                condominio_id: condominioId,[m
+[32m+[m[32m                status: {[m
+[32m+[m[32m                    total_rondas_esporadicas: 0,[m
+[32m+[m[32m                    rondas_finalizadas: 0,[m
+[32m+[m[32m                    rondas_processadas: 0,[m
+[32m+[m[32m                    duracao_total_minutos: 0,[m
+[32m+[m[32m                    ronda_principal_criada: false,[m
+[32m+[m[32m                    pode_consolidar: false,[m
+[32m+[m[32m                    ja_consolidado: false[m
+[32m+[m[32m                },[m
+[32m+[m[32m                rondas: [][m
+[32m+[m[32m            };[m
+[32m+[m[32m        } finally {[m
+[32m+[m[32m            setLoading(false);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    };[m
+[32m+[m
+     return {[m
+[32m+[m[32m        handleListarCondominios,[m
+         handleValidarHorario,[m
+         handleIniciarRonda,[m
+         handleFinalizarRonda,[m
+[36m@@ -286,6 +351,7 @@[m [mexport const useRondaActions = (token: string, setLoading: (lo

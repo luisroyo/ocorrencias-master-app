@@ -2,9 +2,12 @@ import React from 'react';
 import { Input } from '../Input';
 import { Button } from '../Button';
 import { colors } from '../../theme/colors';
+import { Condominio } from '../../services/rondas';
 
 interface RondaConfiguracoesProps {
     tipoRonda: 'regular' | 'esporadica';
+    condominios: Condominio[];
+    condominiosLoading: boolean;
     condominioId: number;
     setCondominioId: (id: number) => void;
     dataPlantao: string;
@@ -26,6 +29,8 @@ interface RondaConfiguracoesProps {
 
 export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
     tipoRonda,
+    condominios,
+    condominiosLoading,
     condominioId,
     setCondominioId,
     dataPlantao,
@@ -62,14 +67,31 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                        Condomínio ID
+                        Condomínio
                     </label>
-                    <Input
-                        type="number"
-                        value={condominioId}
-                        onChange={(e) => setCondominioId(Number(e.target.value))}
-                        placeholder="ID do condomínio"
-                    />
+                    {condominiosLoading ? (
+                        <div style={{ padding: '8px', backgroundColor: '#e9ecef', borderRadius: '4px', textAlign: 'center' }}>
+                            Carregando condomínios...
+                        </div>
+                    ) : (
+                        <select
+                            value={condominioId}
+                            onChange={(e) => setCondominioId(Number(e.target.value))}
+                            style={{
+                                width: '100%',
+                                padding: '8px',
+                                border: '1px solid #ced4da',
+                                borderRadius: '4px',
+                                backgroundColor: 'white'
+                            }}
+                        >
+                            {condominios.map((condominio) => (
+                                <option key={condominio.id} value={condominio.id}>
+                                    {condominio.nome}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>

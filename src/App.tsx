@@ -4,6 +4,7 @@ import { LoginScreen } from './pages/Login';
 import { RelatorioScreen } from './pages/Relatorio';
 import { RondaScreen } from './pages/Ronda';
 import { OcorrenciasListScreen } from './pages/OcorrenciasList';
+import { OcorrenciaDetailScreen } from './pages/OcorrenciaDetail';
 import Layout from './components/Layout';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
                     <Route path="relatorio" element={<RelatorioScreen token={token} />} />
                     <Route path="ronda" element={<RondaScreen token={token} />} />
                     <Route path="ocorrencias" element={<OcorrenciasListScreen token={token} />} />
+                    <Route path="ocorrencias/:id" element={<OcorrenciaDetailScreen token={token} />} />
                 </Route>
             </Routes>
         </div>

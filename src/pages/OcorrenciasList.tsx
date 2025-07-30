@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BaseScreen } from '../components/BaseScreen';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -10,6 +11,7 @@ interface OcorrenciasListScreenProps {
 }
 
 export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ token = 'mock-token' }) => {
+    const navigate = useNavigate();
     const [ocorrencias, setOcorrencias] = useState<Ocorrencia[]>([]);
     const [loading, setLoading] = useState(false);
     const [filtros, setFiltros] = useState<FiltrosOcorrencia>({});
@@ -281,8 +283,7 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                                         <Button
                                             title="👁️ Ver Detalhes"
                                             onClick={() => {
-                                                // TODO: Implementar visualização detalhada
-                                                alert('Funcionalidade em desenvolvimento');
+                                                navigate(`/ocorrencias/${ocorrencia.id}`);
                                             }}
                                             variant="secondary"
                                             style={{ fontSize: '12px', padding: '8px 12px' }}

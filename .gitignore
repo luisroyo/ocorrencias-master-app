@@ -1,12 +1,9 @@
-# Node
+# Dependencies
 node_modules/
 
-# Expo/React Native
-.expo/
-.expo-shared/
-dist/
+# Production
 build/
-web-build/
+dist/
 
 # Logs
 npm-debug.log*
@@ -28,7 +25,6 @@ Thumbs.db
 
 # Misc
 *.log
-*.lock
 
 # Test coverage
 coverage/
@@ -36,5 +32,5 @@ coverage/
 # TypeScript
 *.tsbuildinfo
 
-# Expo Go
-*.expo
+# PWA
+sw.js

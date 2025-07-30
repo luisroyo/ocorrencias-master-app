@@ -1,85 +1,120 @@
-# Ocorrências Master App - PWA
+# Ocorrências Master App
 
-Aplicativo PWA (Progressive Web App) para geração de relatórios de ocorrências de segurança.
+Aplicativo PWA para geração de relatórios de ocorrências de segurança e registro de rondas.
 
-## 🚀 Funcionalidades
+## 🚀 Tecnologias
 
-- **Relatórios**: Geração de relatórios de ocorrências
-- **Rondas**: Controle completo de rondas (iniciar, atualizar, finalizar, gerar relatório)
-- **Ocorrências**: Listagem e detalhes de ocorrências
+- **React 18** - Framework principal
+- **TypeScript** - Tipagem estática
+- **React Router DOM** - Navegação
+- **Axios** - Requisições HTTP
+- **Create React App** - Build e desenvolvimento
 
-## 🛠️ Tecnologias
+## 📱 Funcionalidades
 
-- React Native Web
-- Expo
-- TypeScript
-- React Navigation
+### 🔐 Login
+- Autenticação simples
+- Interface limpa e responsiva
 
-## 📱 Como Usar
+### 📋 Relatórios
+- Geração de relatórios de ocorrências
+- Formulário completo com validação
+- Integração com API Flask
 
-### Desenvolvimento
+### 🚔 Rondas
+- Registro de rondas de segurança
+- Controle de horários e rotas
+- Observações detalhadas
+
+### 📊 Ocorrências
+- Lista de ocorrências registradas
+- Visualização detalhada
+- Status e histórico
+
+## 🛠️ Instalação
 
 ```bash
-# Instalar dependências
+# Clone o repositório
+git clone https://github.com/luisroyo/ocorrencias-master-app.git
+
+# Entre na pasta
+cd ocorrencias-master-app
+
+# Instale as dependências
 npm install
 
-# Iniciar servidor de desenvolvimento
+# Inicie o servidor de desenvolvimento
 npm start
 ```
 
-### Build para Produção
+## 📦 Build
 
 ```bash
-# Gerar build para PWA
+# Gera build de produção
 npm run build
+
+# Serve os arquivos estáticos
+npx serve -s build
 ```
 
-## 🌐 Acesso
+## 🌐 Deploy
 
-O aplicativo está disponível como PWA e pode ser acessado via navegador web.
+O projeto está configurado para deploy no Render.com:
 
-## 📋 Pré-requisitos
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npx serve -s build -l $PORT`
+- **Environment**: `NODE_ENV=production`
 
-- Node.js 18+
-- npm ou yarn
-
-## 🔧 Configuração
-
-1. Clone o repositório
-2. Instale as dependências: `npm install`
-3. Inicie o servidor: `npm start`
-4. Acesse no navegador: `http://localhost:8081`
-
-## 📦 Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 src/
-├── components/     # Componentes reutilizáveis
-├── screens/        # Telas do aplicativo
-├── navigation/     # Configuração de navegação
-├── services/       # Serviços de API
-├── theme/          # Configurações de tema
-└── constants/      # Constantes do aplicativo
+├── components/
+│   └── Layout.tsx          # Layout principal com navegação
+├── pages/
+│   ├── Login.tsx           # Página de login
+│   ├── Relatorio.tsx       # Gerador de relatórios
+│   ├── Ronda.tsx           # Registro de rondas
+│   ├── OccurrencesList.tsx # Lista de ocorrências
+│   └── OccurrenceDetail.tsx # Detalhes da ocorrência
+├── App.tsx                 # Componente principal
+├── index.tsx               # Ponto de entrada
+└── index.css               # Estilos globais
+
+public/
+├── assets/                 # Ícones e imagens
+├── index.html              # HTML principal
+├── manifest.json           # Manifest PWA
+└── sw.js                   # Service Worker
 ```
 
-## 🎯 Funcionalidades Principais
+## 🔧 Configuração da API
 
-### Relatórios
-- Geração de relatórios de ocorrências
-- Formatação automática
-- Exportação de dados
+O aplicativo se conecta com uma API Flask local:
 
-### Rondas
-- Iniciar ronda
-- Atualizar ronda com observações
-- Finalizar ronda
-- Gerar relatório consolidado
-- Enviar relatório via WhatsApp
+- **URL Base**: `http://localhost:5000`
+- **Endpoints**:
+  - `POST /api/relatorio` - Gerar relatório
+  - `POST /api/ronda` - Registrar ronda
+  - `GET /api/ocorrencias` - Listar ocorrências
+  - `GET /api/ocorrencias/:id` - Detalhes da ocorrência
 
-### Ocorrências
-- Listagem de ocorrências
-- Detalhes de cada ocorrência
-- Filtros e busca
+## 📱 PWA
+
+O aplicativo funciona como Progressive Web App (PWA):
+
+- ✅ Instalável
+- ✅ Offline capability
+- ✅ Service Worker
+- ✅ Manifest otimizado
+- ✅ Ícones responsivos
+
+## 🎨 Design
+
+- Interface limpa e moderna
+- Cores: Azul (#1e3a8a) como cor principal
+- Responsivo para mobile e desktop
+- Componentes reutilizáveis
 
 ## 📄 Licença
 

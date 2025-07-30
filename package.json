@@ -4,7 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start --web",
-    "build": "npx expo export",
+    "build": "expo export --platform web",
     "dev": "expo start --web"
   },
   "dependencies": {

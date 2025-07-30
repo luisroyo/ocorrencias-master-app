@@ -4,24 +4,20 @@
     "slug": "ocorrencias-master-app",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./public/assets/icon-512.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./public/assets/splash-1280x720.png",
       "resizeMode": "contain",
       "backgroundColor": "#1e3a8a"
     },
+    "platforms": [
+      "web"
+    ],
     "web": {
       "favicon": "./public/assets/icon-512.png",
       "bundler": "metro",
       "output": "static",
-      "build": {
-        "babel": {
-          "include": [
-            "@expo/vector-icons"
-          ]
-        }
-      },
       "pwa": {
         "name": "Ocorrencias - Relatórios de Segurança",
         "shortName": "Ocorrencias",
@@ -46,11 +42,6 @@
             "purpose": "any maskable"
           }
         ]
-      }
-    },
-    "extra": {
-      "eas": {
-        "projectId": "f5598c2e-0de7-42d0-9439-555a36b86d4d"
       }
     }
   }

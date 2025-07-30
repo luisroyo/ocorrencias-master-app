@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View, Text, Alert, Platform, TouchableOpacity, Linking, ScrollView, ActivityIndicator
+    View, Text, Alert, TouchableOpacity, Linking, ScrollView, ActivityIndicator
 } from 'react-native';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { BaseScreen } from '../../components/BaseScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import {
     verificarRondaEmAndamento,
     iniciarRonda,
@@ -30,7 +28,6 @@ interface RondaScreenProps {
 
 export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const [data, setData] = useState<Date>(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false);
     const [condominio, setCondominio] = useState('');
     const [supervisor, setSupervisor] = useState('');
     const [escalaPlantao, setEscalaPlantao] = useState('06h às 18h');
@@ -238,15 +235,13 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     };
 
     const handleCopiarRelatorio = () => {
-        if (Platform.OS === 'web') {
+        if (navigator.clipboard) {
             navigator.clipboard.writeText(relatorioGerado);
-        } else {
-            // Para React Native, você precisaria de uma biblioteca como @react-native-clipboard/clipboard
             Alert.alert('Copiado', 'Relatório copiado para a área de transferência.');
+        } else {
+            Alert.alert('Erro', 'Não foi possível copiar o relatório.');
         }
     };
-
-    const openDatePicker = () => setShowDatePicker(true);
 
     return (
         <BaseScreen subtitle="Controle de Rondas">
@@ -259,45 +254,23 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                         </View>
                         <View style={styles.inputGroupFlex}>
                             <Text style={styles.label}>Data do Plantão</Text>
-                            {Platform.OS === 'web' ? (
-                                <input
-                                    type="date"
-                                    value={data.toISOString().substring(0, 10)}
-                                    onChange={e => setData(new Date(e.target.value))}
-                                    style={{
-                                        backgroundColor: '#F9F9F9',
-                                        color: '#333',
-                                        fontSize: 16,
-                                        borderRadius: 10,
-                                        padding: '12px 15px',
-                                        border: '1px solid #E0E0E0',
-                                        width: '100%',
-                                        marginBottom: 0,
-                                        boxSizing: 'border-box',
-                                        height: 48,
-                                    }}
-                                />
-                            ) : (
-                                <TouchableOpacity onPress={openDatePicker} activeOpacity={0.7}>
-                                    <Input
-                                        placeholder="DD/MM/AAAA"
-                                        value={data.toLocaleDateString('pt-BR')}
-                                        editable={false}
-                                        style={styles.input}
-                                    />
-                                </TouchableOpacity>
-                            )}
-                            {showDatePicker && Platform.OS !== 'web' && (
-                                <DateTimePicker
-                                    value={data}
-                                    mode="date"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={(_, selectedDate) => {
-                                        setShowDatePicker(false);
-                                        if (selectedDate) setData(selectedDate);
-                                    }}
-                                />
-                            )}
+                            <input
+                                type="date"
+                                value={data.toISOString().substring(0, 10)}
+                                onChange={e => setData(new Date(e.target.value))}
+                                style={{
+                                    backgroundColor: '#F9F9F9',
+                                    color: '#333',
+                                    fontSize: 16,
+                                    borderRadius: 10,
+                                    padding: '12px 15px',
+                                    border: '1px solid #E0E0E0',
+                                    width: '100%',
+                                    marginBottom: 0,
+                                    boxSizing: 'border-box',
+                                    height: 48,
+                                }}
+                            />
                         </View>
                     </View>
 
@@ -376,18 +349,26 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                         </View>
                         <View style={styles.inputGroupFlex}>
                             <Text style={styles.label}>Escala do Plantão</Text>
-                            <View style={styles.pickerBox}>
-                                <Picker
-                                    selectedValue={escalaPlantao}
-                                    onValueChange={setEscalaPlantao}
-                                    style={styles.picker}
-                                    dropdownIconColor={colors.primaryBg}
-                                >
-                                    {escalaOptions.map(opt => (
-                                        <Picker.Item key={opt} label={opt} value={opt} />
-                                    ))}
-                                </Picker>
-                            </View>
+                            <select
+                                value={escalaPlantao}
+                                onChange={e => setEscalaPlantao(e.target.value)}
+                                style={{
+                                    backgroundColor: '#F9F9F9',
+                                    color: '#333',
+                                    fontSize: 16,
+                                    borderRadius: 10,
+                                    padding: '12px 15px',
+                                    border: '1px solid #E0E0E0',
+                                    width: '100%',
+                                    marginBottom: 0,
+                                    boxSizing: 'border-box',
+                                    height: 48,
+                                }}
+                            >
+                                {escalaOptions.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
                         </View>
                     </View>
 
@@ -398,12 +379,22 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                         </View>
                         <View style={styles.inputGroupFlex}>
                             <Text style={styles.label}>Observações</Text>
-                            <Input
+                            <textarea
                                 placeholder="Observações sobre a ronda..."
                                 value={observacoes}
-                                onChangeText={setObservacoes}
-                                multiline
-                                style={[styles.input, styles.multilineInput]}
+                                onChange={e => setObservacoes(e.target.value)}
+                                style={{
+                                    backgroundColor: '#F9F9F9',
+                                    color: '#333',
+                                    fontSize: 16,
+                                    borderRadius: 10,
+                                    padding: '12px 15px',
+                                    border: '1px solid #E0E0E0',
+                                    width: '100%',
+                                    minHeight: 80,
+                                    resize: 'vertical',
+                                    fontFamily: 'inherit',
+                                }}
                             />
                         </View>
                     </View>
@@ -466,23 +457,17 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                 {relatorioGerado && (
                     <View style={styles.resultBox}>
                         <Text style={styles.resultTitle}>Relatório de Rondas</Text>
-                        {Platform.OS === 'web' ? (
-                            <pre style={{
-                                color: '#333',
-                                fontSize: 16,
-                                lineHeight: '22px',
-                                fontFamily: 'inherit',
-                                whiteSpace: 'pre-line',
-                                margin: 0,
-                                padding: 0,
-                                background: 'none',
-                                border: 'none',
-                            }}>{relatorioGerado}</pre>
-                        ) : (
-                            relatorioGerado.split('\n').map((line, idx) => (
-                                <Text key={idx} selectable style={styles.resultText}>{line || ' '}</Text>
-                            ))
-                        )}
+                        <pre style={{
+                            color: '#333',
+                            fontSize: 16,
+                            lineHeight: '22px',
+                            fontFamily: 'inherit',
+                            whiteSpace: 'pre-line',
+                            margin: 0,
+                            padding: 0,
+                            background: 'none',
+                            border: 'none',
+                        }}>{relatorioGerado}</pre>
                         <View style={styles.resultButtons}>
                             <Button title="Copiar Relatório" onPress={handleCopiarRelatorio} style={styles.resultButton} />
                             <Button title="Enviar via WhatsApp" onPress={handleEnviarWhatsApp} style={styles.resultButton} />

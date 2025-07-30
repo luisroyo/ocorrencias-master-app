@@ -95,7 +95,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     >
                         <View style={styles.loginBox}>
                             <Image
-                                source={require('../../../assets/logo_master.png')}
+                                source={require('../../../public/assets/logo_master.png')}
                                 style={styles.logoImg}
                                 resizeMode="contain"
                             />
@@ -153,7 +153,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         >
                             <View style={styles.loginBox}>
                                 <Image
-                                    source={require('../../../assets/logo_master.png')}
+                                    source={require('../../../public/assets/logo_master.png')}
                                     style={styles.logoImg}
                                     resizeMode="contain"
                                 />

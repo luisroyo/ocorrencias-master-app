@@ -6,11 +6,9 @@ import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { colors } from '../../theme/colors';
 import { analisarRelatorio } from '../../services/relatorios';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { ActivityIndicator } from 'react-native';
 import { AnimatedInput } from '../../components/AnimatedInput';
 import { buscarColaboradores } from '../../services/colaboradores';
-import { Picker } from '@react-native-picker/picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { buscarEnderecos } from '../../services/enderecos';
 import { styles } from './styles';
@@ -324,13 +322,24 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                                 </TouchableOpacity>
                             )}
                             {showDatePicker && Platform.OS !== 'web' && (
-                                <DateTimePicker
-                                    value={data || new Date()}
-                                    mode="date"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={(_, selectedDate) => {
+                                <input
+                                    type="date"
+                                    value={data ? data.toISOString().split('T')[0] : ''}
+                                    onChange={e => {
                                         setShowDatePicker(false);
-                                        if (selectedDate) setData(selectedDate);
+                                        if (e.target.value) setData(new Date(e.target.value));
+                                    }}
+                                    style={{
+                                        backgroundColor: '#F9F9F9',
+                                        color: '#333',
+                                        fontSize: 16,
+                                        borderRadius: 10,
+                                        padding: '12px 15px',
+                                        border: '1px solid #E0E0E0',
+                                        width: '100%',
+                                        marginBottom: 0,
+                                        boxSizing: 'border-box',
+                                        height: 48,
                                     }}
                                 />
                             )}
@@ -379,13 +388,30 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                                 </TouchableOpacity>
                             )}
                             {showTimePicker && Platform.OS !== 'web' && (
-                                <DateTimePicker
-                                    value={hora || new Date()}
-                                    mode="time"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={(_, selectedTime) => {
+                                <input
+                                    type="time"
+                                    value={hora ? hora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                    onChange={e => {
                                         setShowTimePicker(false);
-                                        if (selectedTime) setHora(selectedTime);
+                                        if (e.target.value) {
+                                            const [h, m] = e.target.value.split(':');
+                                            const newDate = new Date();
+                                            newDate.setHours(Number(h));
+                                            newDate.setMinutes(Number(m));
+                                            setHora(newDate);
+                                        }
+                                    }}
+                                    style={{
+                                        backgroundColor: '#F9F9F9',
+                                        color: '#333',
+                                        fontSize: 16,
+                                        borderRadius: 10,
+                                        padding: '12px 15px',
+                                        border: '1px solid #E0E0E0',
+                                        width: '100%',
+                                        marginBottom: 0,
+                                        boxSizing: 'border-box',
+                                        height: 48,
                                     }}
                                 />
                             )}
@@ -468,18 +494,26 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                         </View>
                         <View style={styles.inputGroupFlex}>
                             <Text style={styles.label}>Viatura/VTR</Text>
-                            <View style={styles.pickerBox}>
-                                <Picker
-                                    selectedValue={vtr}
-                                    onValueChange={setVtr}
-                                    style={styles.picker}
-                                    dropdownIconColor={colors.primaryBg}
-                                >
-                                    {vtrOptions.map(opt => (
-                                        <Picker.Item key={opt} label={opt || 'Selecione'} value={opt} />
-                                    ))}
-                                </Picker>
-                            </View>
+                            <select
+                                value={vtr}
+                                onChange={e => setVtr(e.target.value)}
+                                style={{
+                                    backgroundColor: '#F9F9F9',
+                                    color: '#333',
+                                    fontSize: 16,
+                                    borderRadius: 10,
+                                    padding: '12px 15px',
+                                    border: '1px solid #E0E0E0',
+                                    width: '100%',
+                                    marginBottom: 0,
+                                    boxSizing: 'border-box',
+                                    height: 48,
+                                }}
+                            >
+                                {vtrOptions.map(opt => (
+                                    <option key={opt} value={opt}>{opt || 'Selecione'}</option>
+                                ))}
+                            </select>
                         </View>
                     </View>
 

@@ -3,8 +3,11 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { AnimatedInput } from '../components/AnimatedInput';
 import { BaseScreen } from '../components/BaseScreen';
+import { AutoComplete } from '../components/AutoComplete';
 import { colors } from '../theme/colors';
 import { analisarRelatorio } from '../services/relatorios';
+import { buscarColaboradores } from '../services/colaboradores';
+import { buscarEnderecos } from '../services/enderecos';
 
 interface RelatorioScreenProps {
     token?: string;
@@ -20,6 +23,29 @@ export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token = 'mock-
     const [relatorioLimpo, setRelatorioLimpo] = useState('');
     const [loading, setLoading] = useState(false);
     const [vtr, setVtr] = useState('');
+    const [selectedColaborador, setSelectedColaborador] = useState<any>(null);
+    const [selectedEndereco, setSelectedEndereco] = useState<any>(null);
+
+    // Funções de busca para autocompletar
+    const buscarColaboradoresAutocomplete = async (query: string): Promise<any[]> => {
+        try {
+            const response = await buscarColaboradores(query, token);
+            return response.colaboradores || [];
+        } catch (error) {
+            console.error('Erro ao buscar colaboradores:', error);
+            return [];
+        }
+    };
+
+    const buscarEnderecosAutocomplete = async (query: string): Promise<any[]> => {
+        try {
+            const response = await buscarEnderecos(query, token);
+            return response.enderecos || [];
+        } catch (error) {
+            console.error('Erro ao buscar endereços:', error);
+            return [];
+        }
+    };
 
     const vtrOptions = [
         '',
@@ -242,10 +268,17 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
                             📍 Endereço
                         </label>
-                        <Input
-                            placeholder="Ex: Rua Exemplo, 123"
+                        <AutoComplete
+                            placeholder="Digite para buscar endereços..."
                             value={endereco}
-                            onChange={(e) => setEndereco(e.target.value)}
+                            onChange={setEndereco}
+                            onSelect={(item) => {
+                                setSelectedEndereco(item);
+                                setEndereco(item.logradouro || item.nome || '');
+                            }}
+                            searchFunction={buscarEnderecosAutocomplete}
+                            displayField="logradouro"
+                            token={token}
                             style={{
                                 backgroundColor: '#F9F9F9',
                                 color: '#333',
@@ -264,10 +297,17 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
                             👤 Colaborador/Responsável
                         </label>
-                        <Input
-                            placeholder="Nome do responsável"
+                        <AutoComplete
+                            placeholder="Digite para buscar colaboradores..."
                             value={colaborador}
-                            onChange={(e) => setColaborador(e.target.value)}
+                            onChange={setColaborador}
+                            onSelect={(item) => {
+                                setSelectedColaborador(item);
+                                setColaborador(item.nome_completo || '');
+                            }}
+                            searchFunction={buscarColaboradoresAutocomplete}
+                            displayField="nome_completo"
+                            token={token}
                             style={{
                                 backgroundColor: '#F9F9F9',
                                 color: '#333',

@@ -44,8 +44,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         setLoading(true);
 
         try {
+            console.log('Tentando login com:', { email, password: '***' });
+
             // Simulação de login - você pode implementar a chamada real da API aqui
             const response = await mockLogin(email, password);
+
+            console.log('Resposta do login:', response);
+
             if (response?.token) {
                 localStorage.setItem('savedEmail', email);
                 onLogin(response.token);
@@ -53,6 +58,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 alert('E-mail ou senha inválidos.');
             }
         } catch (error: any) {
+            console.error('Erro no login:', error);
             alert(error.message || 'Erro ao fazer login');
         } finally {
             setLoading(false);
@@ -63,11 +69,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     const mockLogin = async (email: string, password: string) => {
         // Simula uma chamada de API
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        if (email === 'admin@master.com' && password === '123456') {
+
+        console.log('Mock login - email:', email, 'password:', password);
+
+        // Validação mais clara
+        if (email.toLowerCase() === 'admin@master.com' && password === '123456') {
+            console.log('Login bem-sucedido!');
             return { token: 'mock-token-123' };
         }
-        throw new Error('Credenciais inválidas');
+
+        console.log('Credenciais inválidas');
+        throw new Error('E-mail ou senha inválidos. Use: admin@master.com / 123456');
     };
 
     return (
@@ -97,7 +109,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         marginBottom: '16px'
                     }}
                 />
-                
+
                 <p style={{
                     textAlign: 'center',
                     fontSize: '16px',
@@ -106,9 +118,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     marginBottom: '24px',
                     margin: '0 0 24px 0'
                 }}>
-                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>segurança</span>. 
-                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>manutenção</span>. 
-                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>sustentabilidade</span>. 
+                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>segurança</span>.
+                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>manutenção</span>.
+                    É <span style={{ fontWeight: 'bold', color: colors.headingText }}>sustentabilidade</span>.
                     É <span style={{ fontWeight: 'bold', color: colors.danger, letterSpacing: '0.5px' }}>ASSOCIAÇÃO MASTER</span>
                 </p>
 
@@ -192,6 +204,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         letterSpacing: '1px'
                     }}
                 />
+
+                {/* Dica para desenvolvimento */}
+                <div style={{
+                    marginTop: '16px',
+                    padding: '12px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #e9ecef',
+                    fontSize: '12px',
+                    color: '#6c757d',
+                    textAlign: 'center'
+                }}>
+                    <strong>Credenciais de Teste:</strong><br />
+                    Email: admin@master.com<br />
+                    Senha: 123456
+                </div>
             </div>
         </div>
     );

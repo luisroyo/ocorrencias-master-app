@@ -34,7 +34,6 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
             condominioId: rondaState.condominioId,
             dataPlantao: rondaState.dataPlantao,
             escalaPlantao: rondaState.escalaPlantao,
-            supervisorId: rondaState.supervisorId,
             horaEntrada: rondaState.horaEntrada,
             turno: rondaState.turno,
             userId: rondaState.userId,
@@ -106,21 +105,30 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token = 'mock-token' }
                     condominiosLoading={rondaState.condominiosLoading}
                     condominioId={rondaState.condominioId}
                     setCondominioId={rondaState.setCondominioId}
+                    colaboradores={rondaState.colaboradores}
+                    colaboradoresLoading={rondaState.colaboradoresLoading}
                     dataPlantao={rondaState.dataPlantao}
                     setDataPlantao={rondaState.setDataPlantao}
                     escalaPlantao={rondaState.escalaPlantao}
                     setEscalaPlantao={rondaState.setEscalaPlantao}
+                    logBruto={rondaState.logBruto}
+                    setLogBruto={rondaState.setLogBruto}
+                    observacoes={rondaState.observacoes}
+                    setObservacoes={rondaState.setObservacoes}
                     horaEntrada={rondaState.horaEntrada}
                     setHoraEntrada={rondaState.setHoraEntrada}
+                    horaSaida={rondaState.horaSaida}
+                    setHoraSaida={rondaState.setHoraSaida}
                     turno={rondaState.turno}
                     setTurno={rondaState.setTurno}
                     userId={rondaState.userId}
                     setUserId={rondaState.setUserId}
-                    supervisorId={rondaState.supervisorId}
-                    setSupervisorId={rondaState.setSupervisorId}
+                    colaboradorNome={rondaState.colaboradorNome}
+                    setColaboradorNome={rondaState.setColaboradorNome}
                     validacaoHorario={validacaoHorario}
                     onValidarHorario={handleValidarHorario}
                     loading={rondaState.loading}
+                    token={token}
                 />
 
                 {/* Status da Ronda */}

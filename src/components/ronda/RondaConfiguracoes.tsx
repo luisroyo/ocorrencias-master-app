@@ -1,8 +1,9 @@
 import React from 'react';
 import { Input } from '../Input';
 import { Button } from '../Button';
+import { AutoComplete } from '../AutoComplete';
 import { colors } from '../../theme/colors';
-import { Condominio } from '../../services/rondas';
+import { Condominio, Colaborador, buscarColaboradores } from '../../services/rondas';
 
 interface RondaConfiguracoesProps {
     tipoRonda: 'regular' | 'esporadica';
@@ -10,21 +11,30 @@ interface RondaConfiguracoesProps {
     condominiosLoading: boolean;
     condominioId: number;
     setCondominioId: (id: number) => void;
+    colaboradores: Colaborador[];
+    colaboradoresLoading: boolean;
     dataPlantao: string;
     setDataPlantao: (data: string) => void;
     escalaPlantao: string;
     setEscalaPlantao: (escala: string) => void;
+    logBruto: string;
+    setLogBruto: (log: string) => void;
+    observacoes: string;
+    setObservacoes: (obs: string) => void;
     horaEntrada: string;
     setHoraEntrada: (hora: string) => void;
+    horaSaida: string;
+    setHoraSaida: (hora: string) => void;
     turno: string;
     setTurno: (turno: string) => void;
     userId: number;
     setUserId: (id: number) => void;
-    supervisorId: number;
-    setSupervisorId: (id: number) => void;
+    colaboradorNome: string;
+    setColaboradorNome: (nome: string) => void;
     validacaoHorario: any;
     onValidarHorario: () => void;
     loading: boolean;
+    token?: string;
 }
 
 export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
@@ -33,21 +43,30 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
     condominiosLoading,
     condominioId,
     setCondominioId,
+    colaboradores,
+    colaboradoresLoading,
     dataPlantao,
     setDataPlantao,
     escalaPlantao,
     setEscalaPlantao,
+    logBruto,
+    setLogBruto,
+    observacoes,
+    setObservacoes,
     horaEntrada,
     setHoraEntrada,
+    horaSaida,
+    setHoraSaida,
     turno,
     setTurno,
     userId,
     setUserId,
-    supervisorId,
-    setSupervisorId,
+    colaboradorNome,
+    setColaboradorNome,
     validacaoHorario,
     onValidarHorario,
-    loading
+    loading,
+    token,
 }) => {
     return (
         <div style={{
@@ -107,15 +126,66 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                         Escala do Plantão
                     </label>
-                    <Input
-                        type="text"
+                    <select
                         value={escalaPlantao}
                         onChange={(e) => setEscalaPlantao(e.target.value)}
-                        placeholder="Ex: 06h às 18h"
-                    />
+                        style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ced4da',
+                            borderRadius: '4px',
+                            backgroundColor: 'white'
+                        }}
+                    >
+                        <option value="">Selecione a escala</option>
+                        <option value="06 às 18">06 às 18</option>
+                        <option value="18 às 06">18 às 06</option>
+                    </select>
                 </div>
                 {tipoRonda === 'esporadica' && (
                     <>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                                Colaborador
+                            </label>
+                            {colaboradoresLoading ? (
+                                <div style={{ padding: '10px', backgroundColor: colors.lightGray, borderRadius: '4px' }}>
+                                    Carregando colaboradores...
+                                </div>
+                            ) : (
+                                <>
+                                    <AutoComplete
+                                        placeholder="Digite o nome do colaborador"
+                                        value={colaboradorNome}
+                                        onChange={setColaboradorNome}
+                                        onSelect={(colaborador) => {
+                                            console.log('Colaborador selecionado:', colaborador);
+                                            setUserId(colaborador.id);
+                                            setColaboradorNome(colaborador.nome_completo);
+                                        }}
+                                        searchFunction={async (query: string) => {
+                                            try {
+                                                const response = await buscarColaboradores(query, token);
+                                                return response.colaboradores || [];
+                                            } catch (error) {
+                                                console.error('Erro ao buscar colaboradores:', error);
+                                                return [];
+                                            }
+                                        }}
+                                        displayField="nome_completo"
+                                        token={token}
+                                        style={{
+                                            backgroundColor: '#FFFFFF',
+                                            color: '#000000',
+                                            border: '2px solid #007bff'
+                                        }}
+                                    />
+                                    <div style={{ marginTop: '5px', fontSize: '12px', color: '#666' }}>
+                                        Valor atual: "{colaboradorNome}"
+                                    </div>
+                                </>
+                            )}
+                        </div>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                                 Hora de Entrada
@@ -124,6 +194,7 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
                                 type="time"
                                 value={horaEntrada}
                                 onChange={(e) => setHoraEntrada(e.target.value)}
+                                placeholder="HH:MM"
                             />
                         </div>
                         <div>
@@ -146,17 +217,6 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
                                 value={userId}
                                 onChange={(e) => setUserId(Number(e.target.value))}
                                 placeholder="ID do usuário"
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Supervisor ID
-                            </label>
-                            <Input
-                                type="number"
-                                value={supervisorId}
-                                onChange={(e) => setSupervisorId(Number(e.target.value))}
-                                placeholder="ID do supervisor"
                             />
                         </div>
                     </>

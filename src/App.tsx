@@ -6,6 +6,7 @@ import { RondaScreen } from './pages/Ronda';
 import { OcorrenciasListScreen } from './pages/OcorrenciasList';
 import { OcorrenciaDetailScreen } from './pages/OcorrenciaDetail';
 import Layout from './components/Layout';
+import { AdminRoute } from './components/AdminRoute';
 
 function App() {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -28,10 +29,14 @@ function App() {
     return (
         <div className="App">
             <Routes>
-                <Route path="/" element={<Layout onLogout={handleLogout} />}>
+                <Route path="/" element={<Layout onLogout={handleLogout} token={token} />}>
                     <Route index element={<RelatorioScreen token={token} />} />
                     <Route path="relatorio" element={<RelatorioScreen token={token} />} />
-                    <Route path="ronda" element={<RondaScreen token={token} />} />
+                    <Route path="ronda" element={
+                        <AdminRoute token={token}>
+                            <RondaScreen token={token} />
+                        </AdminRoute>
+                    } />
                     <Route path="ocorrencias" element={<OcorrenciasListScreen token={token} />} />
                     <Route path="ocorrencias/:id" element={<OcorrenciaDetailScreen token={token} />} />
                 </Route>

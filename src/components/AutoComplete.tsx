@@ -90,7 +90,7 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
         <div style={{ position: 'relative', width: '100%' }}>
             <Input
                 placeholder={placeholder}
-                value={value}
+                value={value || ''}
                 onChange={(e) => {
                     // Reset selected item when user starts typing again
                     if (selectedItem && e.target.value !== selectedItem[displayField]) {
@@ -99,10 +99,10 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
                     onChange(e.target.value);
                 }}
                 onBlur={handleBlur}
-                onFocus={() => value.length >= 2 && suggestions.length > 0 && setIsOpen(true)}
+                onFocus={() => (value || '').length >= 2 && suggestions && suggestions.length > 0 && setIsOpen(true)}
                 style={{
                     backgroundColor: '#F9F9F9',
-                    color: '#333',
+                    color: '#333333',
                     fontSize: '16px',
                     borderRadius: '10px',
                     padding: '12px 15px',

@@ -1,5 +1,6 @@
 import {
     listarCondominios,
+    listarColaboradores,
     validarHorarioEntrada,
     iniciarRonda,
     finalizarRonda,
@@ -14,7 +15,8 @@ import {
     ValidacaoHorario,
     ConsolidacaoResultado,
     StatusConsolidacao,
-    ListaCondominios
+    ListaCondominios,
+    ListaColaboradores
 } from '../services/rondas';
 
 export const useRondaActions = (token: string, setLoading: (loading: boolean) => void) => {
@@ -26,6 +28,19 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
         } catch (error) {
             console.error('Erro ao listar condomínios:', error);
             return { sucesso: false, condominios: [], total: 0 };
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleListarColaboradores = async (): Promise<ListaColaboradores> => {
+        try {
+            setLoading(true);
+            const resultado = await listarColaboradores(token);
+            return resultado;
+        } catch (error) {
+            console.error('Erro ao listar colaboradores:', error);
+            return { sucesso: false, colaboradores: [], total: 0 };
         } finally {
             setLoading(false);
         }
@@ -63,7 +78,6 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
             condominioId: number;
             dataPlantao: string;
             escalaPlantao: string;
-            supervisorId: number;
             horaEntrada?: string;
             turno?: string;
             userId?: number;
@@ -84,7 +98,7 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
                     condominio_id: dados.condominioId,
                     data_plantao: dados.dataPlantao,
                     escala_plantao: dados.escalaPlantao,
-                    supervisor_id: dados.supervisorId
+                    user_id: dados.userId
                 });
             } else {
                 if (!dados.horaEntrada || !dados.turno) {
@@ -98,7 +112,6 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
                     hora_entrada: dados.horaEntrada,
                     escala_plantao: dados.escalaPlantao,
                     turno: dados.turno,
-                    supervisor_id: dados.supervisorId,
                     observacoes: dados.observacoes
                 });
             }
@@ -344,6 +357,7 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
 
     return {
         handleListarCondominios,
+        handleListarColaboradores,
         handleValidarHorario,
         handleIniciarRonda,
         handleFinalizarRonda,

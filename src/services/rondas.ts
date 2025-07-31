@@ -12,6 +12,21 @@ export interface ListaCondominios {
     total: number;
 }
 
+// Interfaces para Colaboradores
+export interface Colaborador {
+    id: number;
+    nome: string;
+    nome_completo: string;
+    email?: string;
+    cargo?: string;
+}
+
+export interface ListaColaboradores {
+    sucesso: boolean;
+    colaboradores: Colaborador[];
+    total: number;
+}
+
 // Interfaces para Rondas Regulares
 export interface Ronda {
     id: number;
@@ -24,8 +39,8 @@ export interface Ronda {
     duracao_total_minutos?: number;
     primeiro_evento_utc?: string;
     ultimo_evento_utc?: string;
-    supervisor_id?: number;
-    supervisor_nome?: string;
+    user_id?: number;
+    user_nome?: string;
     status: string;
     data_criacao?: string;
     data_modificacao?: string;
@@ -38,8 +53,6 @@ export interface RondaEsporadica {
     condominio_nome?: string;
     user_id: number;
     user_nome?: string;
-    supervisor_id?: number;
-    supervisor_nome?: string;
     data_plantao: string;
     hora_entrada: string;
     hora_saida?: string;
@@ -66,7 +79,7 @@ export interface RondaEmAndamento {
         turno?: string;
         observacoes?: string;
         user_id?: number;
-        supervisor_id?: number;
+        user_nome?: string;
     };
 }
 
@@ -120,6 +133,40 @@ export async function listarCondominios(token: string): Promise<ListaCondominios
     }
 }
 
+// ===== COLABORADORES =====
+
+export async function listarColaboradores(token: string): Promise<ListaColaboradores> {
+    try {
+        console.log('Buscando colaboradores');
+        const response = await apiFetch('/api/colaboradores', {}, token);
+        console.log('Resposta da busca de colaboradores:', response);
+        return response;
+    } catch (error: any) {
+        console.error('Erro ao buscar colaboradores:', error);
+        return { sucesso: false, colaboradores: [], total: 0 };
+    }
+}
+
+// Buscar colaboradores com autocompletar (igual ao usado em ocorrências)
+export async function buscarColaboradores(nome: string, token?: string): Promise<{ colaboradores: Colaborador[], error?: string }> {
+    try {
+        console.log('Buscando colaboradores:', { nome });
+
+        const params = new URLSearchParams();
+        if (nome) {
+            params.append('nome', nome);
+        }
+
+        const response = await apiFetch(`/api/colaboradores?${params.toString()}`, {}, token);
+
+        console.log('Resposta da busca de colaboradores:', response);
+        return { colaboradores: response.colaboradores || [] };
+    } catch (error: any) {
+        console.error('Erro ao buscar colaboradores:', error);
+        return { colaboradores: [], error: error.message };
+    }
+}
+
 // ===== RONDAS REGULARES =====
 
 export async function listarRondasDoDia(token: string, condominioId: number, data: string): Promise<{ rondas: Ronda[], error?: string }> {
@@ -158,7 +205,7 @@ export async function iniciarRonda(token: string, dados: {
     condominio_id: number;
     data_plantao: string;
     escala_plantao?: string;
-    supervisor_id?: number;
+    user_id?: number;
 }): Promise<{ sucesso: boolean; message: string; ronda_id?: number }> {
     try {
         console.log('Iniciando ronda:', dados);
@@ -255,12 +302,35 @@ export async function buscarDetalhesRonda(token: string, rondaId: number): Promi
 export async function validarHorarioEntrada(token: string, horaEntrada: string): Promise<ValidacaoHorario> {
     try {
         console.log('Validando horário de entrada:', { horaEntrada });
-        const response = await apiFetch('/api/rondas-esporadicas/validar-horario', {
-            method: 'POST',
-            body: JSON.stringify({ hora_entrada: horaEntrada })
-        }, token);
-        console.log('Resposta da validação de horário:', response);
-        return response;
+
+        // Validação local do horário
+        const agora = new Date();
+        const horaAtual = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
+
+        // Converter hora de entrada para minutos para comparação
+        const [horaEntradaH, horaEntradaM] = horaEntrada.split(':').map(Number);
+        const [horaAtualH, horaAtualM] = horaAtual.split(':').map(Number);
+
+        const minutosEntrada = horaEntradaH * 60 + horaEntradaM;
+        const minutosAtual = horaAtualH * 60 + horaAtualM;
+
+        // Permitir uma tolerância de 30 minutos para trás ou para frente
+        const tolerancia = 30;
+        const horarioValido = Math.abs(minutosEntrada - minutosAtual) <= tolerancia;
+
+        const mensagem = horarioValido
+            ? `Horário válido. Hora atual: ${horaAtual}, Hora informada: ${horaEntrada}`
+            : `Horário inválido. Hora atual: ${horaAtual}, Hora informada: ${horaEntrada}. Tolerância: ±${tolerancia} minutos`;
+
+        console.log('Validação local:', { horaAtual, horaEntrada, horarioValido, mensagem });
+
+        return {
+            sucesso: true,
+            horario_valido: horarioValido,
+            mensagem: mensagem,
+            hora_atual: horaAtual,
+            hora_informada: horaEntrada
+        };
     } catch (error: any) {
         console.error('Erro ao validar horário:', error);
         return {
@@ -300,7 +370,6 @@ export async function iniciarRondaEsporadica(token: string, dados: {
     hora_entrada: string;
     escala_plantao: string;
     turno: string;
-    supervisor_id?: number;
     observacoes?: string;
 }): Promise<{ sucesso: boolean; message: string; ronda_id?: number }> {
     try {

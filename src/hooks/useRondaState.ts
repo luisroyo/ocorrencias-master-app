@@ -3,14 +3,20 @@ import {
     verificarRondaEmAndamento,
     verificarRondaEsporadicaEmAndamento,
     listarCondominios,
+    listarColaboradores,
     RondaEmAndamento,
-    Condominio
+    Condominio,
+    Colaborador
 } from '../services/rondas';
 
 export const useRondaState = (token: string) => {
     // Estados para Condomínios
     const [condominios, setCondominios] = useState<Condominio[]>([]);
     const [condominiosLoading, setCondominiosLoading] = useState(false);
+
+    // Estados para Colaboradores
+    const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
+    const [colaboradoresLoading, setColaboradoresLoading] = useState(false);
 
     // Estados para Rondas Regulares
     const [condominioId, setCondominioId] = useState<number>(1);
@@ -26,7 +32,7 @@ export const useRondaState = (token: string) => {
     const [horaSaida, setHoraSaida] = useState<string>('');
     const [turno, setTurno] = useState<string>('');
     const [userId, setUserId] = useState<number>(1);
-    const [supervisorId, setSupervisorId] = useState<number>(1);
+    const [colaboradorNome, setColaboradorNome] = useState<string>('');
     const [rondaEsporadicaEmAndamento, setRondaEsporadicaEmAndamento] = useState<RondaEmAndamento | null>(null);
 
     // Estados para Consolidação
@@ -48,6 +54,7 @@ export const useRondaState = (token: string) => {
     // Carregar condomínios na inicialização
     useEffect(() => {
         carregarCondominios();
+        carregarColaboradores();
     }, []);
 
     // Verificar ronda atual
@@ -72,6 +79,24 @@ export const useRondaState = (token: string) => {
             console.error('Erro ao carregar condomínios:', error);
         } finally {
             setCondominiosLoading(false);
+        }
+    };
+
+    const carregarColaboradores = async () => {
+        try {
+            setColaboradoresLoading(true);
+            const resultado = await listarColaboradores(token);
+            if (resultado.sucesso) {
+                setColaboradores(resultado.colaboradores);
+                // Se não há colaboradores selecionados, selecionar o primeiro
+                if (resultado.colaboradores.length > 0 && userId === 1) {
+                    setUserId(resultado.colaboradores[0].id);
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar colaboradores:', error);
+        } finally {
+            setColaboradoresLoading(false);
         }
     };
 
@@ -103,6 +128,12 @@ export const useRondaState = (token: string) => {
         condominiosLoading,
         setCondominiosLoading,
         carregarCondominios,
+        // Estados de Colaboradores
+        colaboradores,
+        setColaboradores,
+        colaboradoresLoading,
+        setColaboradoresLoading,
+        carregarColaboradores,
         // Estados
         condominioId, setCondominioId,
         dataPlantao, setDataPlantao,
@@ -115,7 +146,7 @@ export const useRondaState = (token: string) => {
         horaSaida, setHoraSaida,
         turno, setTurno,
         userId, setUserId,
-        supervisorId, setSupervisorId,
+        colaboradorNome, setColaboradorNome,
         rondaEsporadicaEmAndamento, setRondaEsporadicaEmAndamento,
         dataInicioConsolidacao, setDataInicioConsolidacao,
         dataFimConsolidacao, setDataFimConsolidacao,

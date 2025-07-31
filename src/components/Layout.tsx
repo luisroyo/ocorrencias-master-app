@@ -1,13 +1,16 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { colors } from '../theme/colors';
+import { useAdminCheck } from '../hooks/useAdminCheck';
 
 interface LayoutProps {
   onLogout?: () => void;
+  token?: string | null;
 }
 
-const Layout: React.FC<LayoutProps> = ({ onLogout }) => {
+const Layout: React.FC<LayoutProps> = ({ onLogout, token }) => {
   const location = useLocation();
+  const { isAdmin, loading } = useAdminCheck(token);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: colors.primaryBg }}>
@@ -89,22 +92,27 @@ const Layout: React.FC<LayoutProps> = ({ onLogout }) => {
           >
             📄 Relatório
           </Link>
-          <Link
-            to="/ronda"
-            style={{
-              padding: '16px 24px',
-              textDecoration: 'none',
-              color: location.pathname === '/ronda' ? colors.danger : colors.headingText,
-              borderBottom: location.pathname === '/ronda' ? `3px solid ${colors.danger}` : '3px solid transparent',
-              fontWeight: location.pathname === '/ronda' ? 'bold' : 'normal',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            🚀 Ronda
-          </Link>
+
+          {/* Link de Ronda - apenas para administradores */}
+          {!loading && isAdmin && (
+            <Link
+              to="/ronda"
+              style={{
+                padding: '16px 24px',
+                textDecoration: 'none',
+                color: location.pathname === '/ronda' ? colors.danger : colors.headingText,
+                borderBottom: location.pathname === '/ronda' ? `3px solid ${colors.danger}` : '3px solid transparent',
+                fontWeight: location.pathname === '/ronda' ? 'bold' : 'normal',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              🚀 Ronda
+            </Link>
+          )}
+
           <Link
             to="/ocorrencias"
             style={{

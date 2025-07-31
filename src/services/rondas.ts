@@ -158,13 +158,8 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
     try {
         console.log('Buscando rondas executadas:', { condominioId, dataInicio, dataFim });
 
-        const params = new URLSearchParams();
-        params.append('condominio_id', condominioId.toString());
-        if (dataInicio) params.append('data_inicio', dataInicio);
-        if (dataFim) params.append('data_fim', dataFim);
-
-        // Usar método GET simples para evitar CORS
-        const response = await apiFetch(`/api/rondas-esporadicas/executadas?${params.toString()}`, {
+        // Usar a API existente de rondas esporádicas
+        const response = await apiFetch(`/api/rondas-esporadicas`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -173,7 +168,24 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
         }, token);
 
         console.log('Resposta da busca de rondas executadas:', response);
-        return { rondas: response.rondas || [] };
+        
+        // Filtrar rondas do condomínio e período específicos
+        let rondas = response.rondas || [];
+        
+        if (condominioId) {
+            rondas = rondas.filter((ronda: any) => ronda.condominio_id === condominioId);
+        }
+        
+        if (dataInicio && dataFim) {
+            const inicio = new Date(dataInicio);
+            const fim = new Date(dataFim);
+            rondas = rondas.filter((ronda: any) => {
+                const dataRonda = new Date(ronda.data_plantao);
+                return dataRonda >= inicio && dataRonda <= fim;
+            });
+        }
+        
+        return { rondas };
     } catch (error: any) {
         console.error('Erro ao buscar rondas executadas:', error);
         // Retornar array vazio em caso de erro para não quebrar a interface

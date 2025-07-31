@@ -139,9 +139,17 @@ export async function verificarRondaEmAndamento(token: string, condominioId: num
         console.log('Verificando ronda em andamento:', { condominioId });
         const response = await apiFetch(`/api/rondas/em-andamento/${condominioId}`, {}, token);
         console.log('Resposta da verificação de ronda:', response);
-        return response;
+
+        // Verificar se a resposta tem a estrutura esperada
+        if (response && typeof response.em_andamento === 'boolean') {
+            return response;
+        } else {
+            console.warn('Resposta inesperada da API:', response);
+            return { em_andamento: false };
+        }
     } catch (error: any) {
         console.error('Erro ao verificar ronda em andamento:', error);
+        // Retornar estado padrão em caso de erro
         return { em_andamento: false };
     }
 }
@@ -270,9 +278,17 @@ export async function verificarRondaEsporadicaEmAndamento(token: string, condomi
         console.log('Verificando ronda esporádica em andamento:', { condominioId, dataPlantao });
         const response = await apiFetch(`/api/rondas-esporadicas/em-andamento/${condominioId}?data_plantao=${dataPlantao}`, {}, token);
         console.log('Resposta da verificação de ronda esporádica:', response);
-        return response;
+
+        // Verificar se a resposta tem a estrutura esperada
+        if (response && typeof response.em_andamento === 'boolean') {
+            return response;
+        } else {
+            console.warn('Resposta inesperada da API:', response);
+            return { em_andamento: false };
+        }
     } catch (error: any) {
         console.error('Erro ao verificar ronda esporádica em andamento:', error);
+        // Retornar estado padrão em caso de erro
         return { em_andamento: false };
     }
 }

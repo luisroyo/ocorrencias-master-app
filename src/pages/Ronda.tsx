@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BaseScreen } from '../components/BaseScreen';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { AutoComplete } from '../components/AutoComplete';
 import { colors } from '../theme/colors';
-import { salvarRondaCompleta, enviarRelatorioRondasWhatsApp } from '../services/rondas';
+import { salvarRondaCompleta, enviarRelatorioRondasWhatsApp, buscarCondominios } from '../services/rondas';
 
 interface RondaScreenProps {
     token: string;
@@ -13,9 +14,14 @@ interface Ronda {
     id?: number;
     residencial: string;
     inicio: string;
-    termino?: string;
-    duracao?: number;
-    status: 'iniciada' | 'finalizada';
+    termino?: string; // Made optional
+    duracao?: number; // Made optional
+    status: 'iniciada' | 'finalizada'; // Added status
+}
+
+interface Condominio {
+    id: number;
+    nome: string;
 }
 
 export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
@@ -27,8 +33,12 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const [contador, setContador] = useState<number>(1200); // 20 minutos em segundos
     const [contadorAtivo, setContadorAtivo] = useState<boolean>(false);
     const [dataPlantao, setDataPlantao] = useState<string>(new Date().toISOString().split('T')[0]);
-    const [escalaPlantao, setEscalaPlantao] = useState<string>('18 às 06');
-    const [rondaAtual, setRondaAtual] = useState<Ronda | null>(null);
+    const [escalaPlantao, setEscalaPlantao] = useState<string>('18 às 06'); // Added
+    const [rondaAtual, setRondaAtual] = useState<Ronda | null>(null); // Added
+
+    // Estados para condomínios
+    const [condominioId, setCondominioId] = useState<number>(1);
+    const [condominioNome, setCondominioNome] = useState<string>('');
 
     // Contador regressivo
     useEffect(() => {
@@ -137,7 +147,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             for (const ronda of rondas) {
                 if (ronda.termino && ronda.duracao) {
                     await salvarRondaCompleta(token, {
-                        condominio_id: 1, // ID do condomínio (pode ser ajustado)
+                        condominio_id: condominioId, // Usar o condomínio selecionado
                         user_id: 1, // ID do usuário
                         data_plantao: dataPlantao,
                         hora_entrada: ronda.inicio,
@@ -257,12 +267,34 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Residencial
+                                Condomínio
                             </label>
-                            <Input
-                                value={residencial}
-                                onChange={(e) => setResidencial(e.target.value)}
-                                placeholder="Nome do residencial"
+                            <AutoComplete
+                                placeholder="Digite o nome do condomínio"
+                                value={condominioNome}
+                                onChange={setCondominioNome}
+                                onSelect={(condominio) => {
+                                    console.log('Condomínio selecionado:', condominio);
+                                    setCondominioId(condominio.id);
+                                    setCondominioNome(condominio.nome);
+                                    setResidencial(condominio.nome); // Usar o nome do condomínio como residencial
+                                }}
+                                searchFunction={async (query: string) => {
+                                    try {
+                                        const response = await buscarCondominios(query, token);
+                                        return response.condominios || [];
+                                    } catch (error) {
+                                        console.error('Erro ao buscar condomínios:', error);
+                                        return [];
+                                    }
+                                }}
+                                displayField="nome"
+                                token={token}
+                                style={{
+                                    backgroundColor: '#FFFFFF',
+                                    color: '#000000',
+                                    border: '2px solid #007bff'
+                                }}
                             />
                         </div>
 
@@ -279,12 +311,11 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                     </div>
 
                     <Button
+                        title="▶️ Iniciar Ronda"
                         onClick={iniciarRonda}
                         disabled={loading || !residencial || !inicioRonda}
                         style={{ backgroundColor: colors.success, marginRight: '10px' }}
-                    >
-                        ▶️ Iniciar Ronda
-                    </Button>
+                    />
                 </div>
 
                 {/* Ronda Atual */}
@@ -319,12 +350,11 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                             </div>
 
                             <Button
+                                title="⏹️ Finalizar Ronda"
                                 onClick={finalizarRonda}
                                 disabled={loading || !terminoRonda}
                                 style={{ backgroundColor: colors.danger, marginTop: '20px' }}
-                            >
-                                ⏹️ Finalizar Ronda
-                            </Button>
+                            />
                         </div>
                     </div>
                 )}
@@ -353,19 +383,17 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
 
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                         <Button
+                            title="▶️ Iniciar"
                             onClick={iniciarContador}
                             disabled={contadorAtivo}
                             style={{ backgroundColor: colors.success }}
-                        >
-                            ▶️ Iniciar
-                        </Button>
+                        />
                         <Button
+                            title="⏹️ Parar"
                             onClick={pararContador}
                             disabled={!contadorAtivo}
                             style={{ backgroundColor: colors.danger }}
-                        >
-                            ⏹️ Parar
-                        </Button>
+                        />
                     </div>
                 </div>
 
@@ -402,11 +430,10 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                         </span>
                                     </div>
                                     <Button
+                                        title="❌"
                                         onClick={() => removerRonda(index)}
                                         style={{ backgroundColor: colors.danger, padding: '5px 10px' }}
-                                    >
-                                        ❌
-                                    </Button>
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -425,20 +452,18 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}>
                         <Button
+                            title="💾 Salvar Rondas"
                             onClick={salvarRondas}
                             disabled={loading}
                             style={{ backgroundColor: colors.primary }}
-                        >
-                            💾 Salvar Rondas
-                        </Button>
+                        />
 
                         <Button
+                            title="📱 Enviar WhatsApp"
                             onClick={enviarWhatsApp}
                             disabled={loading}
                             style={{ backgroundColor: colors.success }}
-                        >
-                            📱 Enviar WhatsApp
-                        </Button>
+                        />
                     </div>
                 )}
             </div>

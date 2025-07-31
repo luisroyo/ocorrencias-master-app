@@ -13,8 +13,9 @@ interface Ronda {
     id?: number;
     residencial: string;
     inicio: string;
-    termino: string;
-    duracao: number; // em minutos
+    termino?: string;
+    duracao?: number;
+    status: 'iniciada' | 'finalizada';
 }
 
 export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
@@ -26,6 +27,8 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const [contador, setContador] = useState<number>(1200); // 20 minutos em segundos
     const [contadorAtivo, setContadorAtivo] = useState<boolean>(false);
     const [dataPlantao, setDataPlantao] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [escalaPlantao, setEscalaPlantao] = useState<string>('18 às 06');
+    const [rondaAtual, setRondaAtual] = useState<Ronda | null>(null);
 
     // Contador regressivo
     useEffect(() => {
@@ -49,43 +52,64 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const calcularDuracao = (inicio: string, termino: string): number => {
         const [horaInicio, minInicio] = inicio.split(':').map(Number);
         const [horaTermino, minTermino] = termino.split(':').map(Number);
-        
+
         let minutosInicio = horaInicio * 60 + minInicio;
         let minutosTermino = horaTermino * 60 + minTermino;
-        
+
         // Se o término for menor que o início, significa que passou da meia-noite
         if (minutosTermino < minutosInicio) {
             minutosTermino += 24 * 60; // Adiciona 24 horas
         }
-        
+
         return minutosTermino - minutosInicio;
     };
 
-    const adicionarRonda = () => {
-        if (!residencial || !inicioRonda || !terminoRonda) {
-            alert('Preencha todos os campos!');
+    const iniciarRonda = () => {
+        if (!residencial || !inicioRonda) {
+            alert('Preencha o residencial e horário de início!');
             return;
         }
 
-        const duracao = calcularDuracao(inicioRonda, terminoRonda);
-        
+        const novaRonda: Ronda = {
+            residencial,
+            inicio: inicioRonda,
+            status: 'iniciada'
+        };
+
+        setRondaAtual(novaRonda);
+        setInicioRonda('');
+        setContador(1200); // Reset do contador
+        setContadorAtivo(true);
+
+        alert('Ronda iniciada! Agora você pode finalizar quando terminar.');
+    };
+
+    const finalizarRonda = () => {
+        if (!rondaAtual || !terminoRonda) {
+            alert('Preencha o horário de término!');
+            return;
+        }
+
+        const duracao = calcularDuracao(rondaAtual.inicio, terminoRonda);
+
         if (duracao <= 0) {
             alert('O horário de término deve ser posterior ao início!');
             return;
         }
-        
-        const novaRonda: Ronda = {
-            residencial,
-            inicio: inicioRonda,
+
+        const rondaFinalizada: Ronda = {
+            ...rondaAtual,
             termino: terminoRonda,
-            duracao
+            duracao,
+            status: 'finalizada'
         };
 
-        setRondas(prev => [...prev, novaRonda]);
-        setInicioRonda('');
+        setRondas(prev => [...prev, rondaFinalizada]);
+        setRondaAtual(null);
         setTerminoRonda('');
-        setContador(1200); // Reset do contador
         setContadorAtivo(false);
+
+        alert('Ronda finalizada e adicionada à lista!');
     };
 
     const removerRonda = (index: number) => {
@@ -111,16 +135,18 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
         try {
             // Salvar cada ronda como esporádica completa
             for (const ronda of rondas) {
-                await salvarRondaCompleta(token, {
-                    condominio_id: 1, // ID do condomínio (pode ser ajustado)
-                    user_id: 1, // ID do usuário
-                    data_plantao: dataPlantao,
-                    hora_entrada: ronda.inicio,
-                    hora_saida: ronda.termino,
-                    escala_plantao: "18 às 06", // Pode ser ajustado
-                    turno: "Noite",
-                    observacoes: `Ronda no residencial ${ronda.residencial}`
-                });
+                if (ronda.termino && ronda.duracao) {
+                    await salvarRondaCompleta(token, {
+                        condominio_id: 1, // ID do condomínio (pode ser ajustado)
+                        user_id: 1, // ID do usuário
+                        data_plantao: dataPlantao,
+                        hora_entrada: ronda.inicio,
+                        hora_saida: ronda.termino,
+                        escala_plantao: escalaPlantao,
+                        turno: escalaPlantao === "18 às 06" ? "Noite" : "Dia",
+                        observacoes: `Ronda no residencial ${ronda.residencial}`
+                    });
+                }
             }
 
             alert('Rondas salvas com sucesso!');
@@ -144,7 +170,11 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             const resultado = await enviarRelatorioRondasWhatsApp(token, {
                 data_plantao: dataPlantao,
                 residencial: residencial,
-                rondas: rondas
+                rondas: rondas.filter(r => r.termino && r.duracao).map(r => ({
+                    inicio: r.inicio,
+                    termino: r.termino!,
+                    duracao: r.duracao!
+                }))
             });
 
             if (resultado.sucesso) {
@@ -153,7 +183,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             } else {
                 alert(`Erro: ${resultado.message}`);
             }
-            
+
         } catch (error) {
             console.error('Erro ao enviar WhatsApp:', error);
             alert('Erro ao enviar WhatsApp!');
@@ -165,20 +195,66 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     return (
         <BaseScreen title="Controle de Rondas" subtitle="Registro de rondas esporádicas">
             <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-                
+
+                {/* Configurações do Plantão */}
+                <div style={{
+                    backgroundColor: colors.surface,
+                    padding: '20px',
+                    borderRadius: '8px',
+                    marginBottom: '20px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ margin: '0 0 20px 0', color: colors.headingText }}>
+                        ⚙️ Configurações do Plantão
+                    </h3>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                                Data do Plantão
+                            </label>
+                            <Input
+                                type="date"
+                                value={dataPlantao}
+                                onChange={(e) => setDataPlantao(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                                Escala do Plantão
+                            </label>
+                            <select
+                                value={escalaPlantao}
+                                onChange={(e) => setEscalaPlantao(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '8px',
+                                    border: '1px solid #ced4da',
+                                    borderRadius: '4px',
+                                    backgroundColor: 'white'
+                                }}
+                            >
+                                <option value="18 às 06">18 às 06 (Noite)</option>
+                                <option value="06 às 18">06 às 18 (Dia)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Formulário de Nova Ronda */}
-                <div style={{ 
-                    backgroundColor: colors.surface, 
-                    padding: '20px', 
-                    borderRadius: '8px', 
+                <div style={{
+                    backgroundColor: colors.surface,
+                    padding: '20px',
+                    borderRadius: '8px',
                     marginBottom: '20px',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                 }}>
                     <h3 style={{ margin: '0 0 20px 0', color: colors.headingText }}>
                         🚀 Nova Ronda
                     </h3>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                                 Residencial
@@ -189,10 +265,10 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                 placeholder="Nome do residencial"
                             />
                         </div>
-                        
+
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Início
+                                Horário de Início
                             </label>
                             <Input
                                 type="time"
@@ -200,42 +276,64 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                 onChange={(e) => setInicioRonda(e.target.value)}
                             />
                         </div>
-                        
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Término
-                            </label>
-                            <Input
-                                type="time"
-                                value={terminoRonda}
-                                onChange={(e) => setTerminoRonda(e.target.value)}
-                            />
-                        </div>
                     </div>
-                    
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        <Button onClick={adicionarRonda} disabled={loading}>
-                            ➕ Adicionar Ronda
-                        </Button>
-                        
-                        <div style={{ marginLeft: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Data do Plantão
-                            </label>
-                            <Input
-                                type="date"
-                                value={dataPlantao}
-                                onChange={(e) => setDataPlantao(e.target.value)}
-                            />
-                        </div>
-                    </div>
+
+                    <Button
+                        onClick={iniciarRonda}
+                        disabled={loading || !residencial || !inicioRonda}
+                        style={{ backgroundColor: colors.success, marginRight: '10px' }}
+                    >
+                        ▶️ Iniciar Ronda
+                    </Button>
                 </div>
 
+                {/* Ronda Atual */}
+                {rondaAtual && (
+                    <div style={{
+                        backgroundColor: colors.success,
+                        padding: '20px',
+                        borderRadius: '8px',
+                        marginBottom: '20px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        color: 'white'
+                    }}>
+                        <h3 style={{ margin: '0 0 15px 0' }}>
+                            🔄 Ronda em Andamento
+                        </h3>
+
+                        <div style={{ marginBottom: '15px' }}>
+                            <strong>Residencial:</strong> {rondaAtual.residencial}<br />
+                            <strong>Início:</strong> {rondaAtual.inicio}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                                    Horário de Término
+                                </label>
+                                <Input
+                                    type="time"
+                                    value={terminoRonda}
+                                    onChange={(e) => setTerminoRonda(e.target.value)}
+                                />
+                            </div>
+
+                            <Button
+                                onClick={finalizarRonda}
+                                disabled={loading || !terminoRonda}
+                                style={{ backgroundColor: colors.danger, marginTop: '20px' }}
+                            >
+                                ⏹️ Finalizar Ronda
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Contador Regressivo */}
-                <div style={{ 
-                    backgroundColor: colors.surface, 
-                    padding: '20px', 
-                    borderRadius: '8px', 
+                <div style={{
+                    backgroundColor: colors.surface,
+                    padding: '20px',
+                    borderRadius: '8px',
                     marginBottom: '20px',
                     textAlign: 'center',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -243,26 +341,26 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                     <h3 style={{ margin: '0 0 15px 0', color: colors.headingText }}>
                         ⏰ Contador Regressivo (20 min)
                     </h3>
-                    
-                    <div style={{ 
-                        fontSize: '48px', 
-                        fontWeight: 'bold', 
+
+                    <div style={{
+                        fontSize: '48px',
+                        fontWeight: 'bold',
                         color: contador < 300 ? colors.danger : colors.headingText,
                         marginBottom: '15px'
                     }}>
                         {formatarTempo(contador)}
                     </div>
-                    
+
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        <Button 
-                            onClick={iniciarContador} 
+                        <Button
+                            onClick={iniciarContador}
                             disabled={contadorAtivo}
                             style={{ backgroundColor: colors.success }}
                         >
                             ▶️ Iniciar
                         </Button>
-                        <Button 
-                            onClick={pararContador} 
+                        <Button
+                            onClick={pararContador}
                             disabled={!contadorAtivo}
                             style={{ backgroundColor: colors.danger }}
                         >
@@ -273,17 +371,17 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
 
                 {/* Lista de Rondas */}
                 {rondas.length > 0 && (
-                    <div style={{ 
-                        backgroundColor: colors.surface, 
-                        padding: '20px', 
-                        borderRadius: '8px', 
+                    <div style={{
+                        backgroundColor: colors.surface,
+                        padding: '20px',
+                        borderRadius: '8px',
                         marginBottom: '20px',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}>
                         <h3 style={{ margin: '0 0 20px 0', color: colors.headingText }}>
                             📋 Rondas Registradas ({rondas.length})
                         </h3>
-                        
+
                         <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                             {rondas.map((ronda, index) => (
                                 <div key={index} style={{
@@ -303,7 +401,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                             {ronda.inicio} - {ronda.termino} ({ronda.duracao} min)
                                         </span>
                                     </div>
-                                    <Button 
+                                    <Button
                                         onClick={() => removerRonda(index)}
                                         style={{ backgroundColor: colors.danger, padding: '5px 10px' }}
                                     >
@@ -317,25 +415,25 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
 
                 {/* Botões de Ação */}
                 {rondas.length > 0 && (
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: '15px', 
+                    <div style={{
+                        display: 'flex',
+                        gap: '15px',
                         justifyContent: 'center',
                         padding: '20px',
                         backgroundColor: colors.surface,
                         borderRadius: '8px',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}>
-                        <Button 
-                            onClick={salvarRondas} 
+                        <Button
+                            onClick={salvarRondas}
                             disabled={loading}
                             style={{ backgroundColor: colors.primary }}
                         >
                             💾 Salvar Rondas
                         </Button>
-                        
-                        <Button 
-                            onClick={enviarWhatsApp} 
+
+                        <Button
+                            onClick={enviarWhatsApp}
                             disabled={loading}
                             style={{ backgroundColor: colors.success }}
                         >

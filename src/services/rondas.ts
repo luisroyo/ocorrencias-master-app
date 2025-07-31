@@ -168,14 +168,14 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
         }, token);
 
         console.log('Resposta da busca de rondas executadas:', response);
-        
+
         // Filtrar rondas do condomínio e período específicos
         let rondas = response.rondas || [];
-        
+
         if (condominioId) {
             rondas = rondas.filter((ronda: any) => ronda.condominio_id === condominioId);
         }
-        
+
         if (dataInicio && dataFim) {
             const inicio = new Date(dataInicio);
             const fim = new Date(dataFim);
@@ -184,7 +184,7 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
                 return dataRonda >= inicio && dataRonda <= fim;
             });
         }
-        
+
         return { rondas };
     } catch (error: any) {
         console.error('Erro ao buscar rondas executadas:', error);

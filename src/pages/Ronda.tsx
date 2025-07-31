@@ -179,13 +179,18 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             // Calcular período do plantão
             const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
             
-            const resultado = await buscarRondasExecutadas(token, condominioId, periodo.inicio, periodo.fim);
+            // Temporariamente desabilitado até API estar funcionando
+            console.log('Busca de rondas executadas temporariamente desabilitada - API em manutenção');
+            setRondasExecutadas([]);
             
-            if (resultado.rondas) {
-                setRondasExecutadas(resultado.rondas);
-            }
+            // TODO: Reativar quando API estiver funcionando
+            // const resultado = await buscarRondasExecutadas(token, condominioId, periodo.inicio, periodo.fim);
+            // if (resultado.rondas) {
+            //     setRondasExecutadas(resultado.rondas);
+            // }
         } catch (error) {
             console.error('Erro ao buscar rondas executadas:', error);
+            setRondasExecutadas([]);
         } finally {
             setLoadingRondasExecutadas(false);
         }
@@ -481,7 +486,12 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                             </div>
                         ) : (
                             <div style={{ textAlign: 'center', padding: '20px', color: colors.mutedText }}>
-                                📭 Nenhuma ronda executada encontrada nos últimos 30 dias
+                                <div style={{ marginBottom: '10px' }}>
+                                    📭 Nenhuma ronda executada encontrada
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#888' }}>
+                                    <em>Histórico temporariamente indisponível - API em manutenção</em>
+                                </div>
                             </div>
                         )}
                     </div>

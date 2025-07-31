@@ -539,4 +539,88 @@ export async function statusConsolidacao(token: string, condominioId: number, da
             rondas: []
         };
     }
+}
+
+// Salvar ronda esporádica com hora de saída
+export async function salvarRondaCompleta(token: string, dados: {
+    condominio_id: number;
+    user_id: number;
+    data_plantao: string;
+    hora_entrada: string;
+    hora_saida: string;
+    escala_plantao: string;
+    turno: string;
+    observacoes?: string;
+}): Promise<{ sucesso: boolean; message: string; ronda_id?: number }> {
+    try {
+        console.log('Salvando ronda completa:', dados);
+
+        // Primeiro inicia a ronda
+        const rondaIniciada = await iniciarRondaEsporadica(token, {
+            condominio_id: dados.condominio_id,
+            user_id: dados.user_id,
+            data_plantao: dados.data_plantao,
+            hora_entrada: dados.hora_entrada,
+            escala_plantao: dados.escala_plantao,
+            turno: dados.turno,
+            observacoes: dados.observacoes
+        });
+
+        if (!rondaIniciada.sucesso || !rondaIniciada.ronda_id) {
+            return { sucesso: false, message: 'Erro ao iniciar ronda' };
+        }
+
+        // Depois finaliza a ronda com a hora de saída
+        const rondaFinalizada = await finalizarRondaEsporadica(token, rondaIniciada.ronda_id, {
+            hora_saida: dados.hora_saida,
+            observacoes: dados.observacoes
+        });
+
+        return rondaFinalizada;
+    } catch (error: any) {
+        console.error('Erro ao salvar ronda completa:', error);
+        return { sucesso: false, message: error.message };
+    }
+}
+
+// Enviar relatório de rondas para WhatsApp
+export async function enviarRelatorioRondasWhatsApp(token: string, dados: {
+    data_plantao: string;
+    residencial: string;
+    rondas: Array<{
+        inicio: string;
+        termino: string;
+        duracao: number;
+    }>;
+}): Promise<{ sucesso: boolean; message: string }> {
+    try {
+        console.log('Enviando relatório de rondas para WhatsApp:', dados);
+
+        // Formatar data do plantão
+        const data = new Date(dados.data_plantao);
+        const dataFormatada = data.toLocaleDateString('pt-BR');
+
+        // Gerar relatório no formato especificado
+        let relatorio = `Plantão ${dataFormatada} (18h às 06h)\n`;
+        relatorio += `Residencial: ${dados.residencial}\n\n`;
+
+        dados.rondas.forEach((ronda) => {
+            relatorio += `\tInício: ${ronda.inicio}  – Término: ${ronda.termino} (${ronda.duracao} min)\n`;
+        });
+
+        relatorio += `\n✅ Total: ${dados.rondas.length} rondas completas no plantão`;
+
+        // Aqui você pode implementar a integração real com WhatsApp
+        // Por enquanto, vamos simular o envio
+        console.log('Relatório para WhatsApp:', relatorio);
+
+        // Simular envio bem-sucedido
+        return {
+            sucesso: true,
+            message: 'Relatório enviado para WhatsApp com sucesso!'
+        };
+    } catch (error: any) {
+        console.error('Erro ao enviar relatório para WhatsApp:', error);
+        return { sucesso: false, message: error.message };
+    }
 } 

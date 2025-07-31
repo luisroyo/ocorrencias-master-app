@@ -61,12 +61,26 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const [condominiosPendentes, setCondominiosPendentes] = useState<string[]>([]);
     const [rondasSalvas, setRondasSalvas] = useState<Ronda[]>([]);
 
+    // Recalcular período quando data ou escala mudar
+    useEffect(() => {
+        if (dataPlantao && escalaPlantao) {
+            const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
+            setPeriodoInicio(periodo.inicio);
+            setPeriodoFim(periodo.fim);
+            
+            // Se já tem um condomínio selecionado, buscar rondas do novo período
+            if (condominioId > 1) {
+                buscarRondasDoCondominio(condominioId);
+            }
+        }
+    }, [dataPlantao, escalaPlantao]);
+
     // Função para calcular período do plantão (18h-06h = 12 horas)
     const calcularPeriodoPlantao = (data: string, escala: string) => {
-        const dataPlantao = new Date(data);
+        const dataPlantao = new Date(data + 'T00:00:00'); // Usar a data selecionada
         
         if (escala === '18 às 06') {
-            // Plantão noturno: 18h do dia atual até 06h do dia seguinte
+            // Plantão noturno: 18h do dia selecionado até 06h do dia seguinte
             const inicio = new Date(dataPlantao);
             inicio.setHours(18, 0, 0, 0);
             
@@ -81,7 +95,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                 fimFormatado: fim.toLocaleString('pt-BR')
             };
         } else {
-            // Plantão diurno: 06h até 18h do mesmo dia
+            // Plantão diurno: 06h até 18h do dia selecionado
             const inicio = new Date(dataPlantao);
             inicio.setHours(6, 0, 0, 0);
             

@@ -163,12 +163,20 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
         if (dataInicio) params.append('data_inicio', dataInicio);
         if (dataFim) params.append('data_fim', dataFim);
 
-        const response = await apiFetch(`/api/rondas-esporadicas/executadas?${params.toString()}`, {}, token);
+        // Usar método GET simples para evitar CORS
+        const response = await apiFetch(`/api/rondas-esporadicas/executadas?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }, token);
 
         console.log('Resposta da busca de rondas executadas:', response);
         return { rondas: response.rondas || [] };
     } catch (error: any) {
         console.error('Erro ao buscar rondas executadas:', error);
+        // Retornar array vazio em caso de erro para não quebrar a interface
         return { rondas: [], error: error.message };
     }
 }

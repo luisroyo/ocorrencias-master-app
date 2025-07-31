@@ -153,6 +153,26 @@ export async function buscarCondominios(nome: string, token?: string): Promise<{
     }
 }
 
+// Buscar rondas já executadas de um condomínio
+export async function buscarRondasExecutadas(token: string, condominioId: number, dataInicio?: string, dataFim?: string): Promise<{ rondas: RondaEsporadica[], error?: string }> {
+    try {
+        console.log('Buscando rondas executadas:', { condominioId, dataInicio, dataFim });
+
+        const params = new URLSearchParams();
+        params.append('condominio_id', condominioId.toString());
+        if (dataInicio) params.append('data_inicio', dataInicio);
+        if (dataFim) params.append('data_fim', dataFim);
+
+        const response = await apiFetch(`/api/rondas-esporadicas/executadas?${params.toString()}`, {}, token);
+
+        console.log('Resposta da busca de rondas executadas:', response);
+        return { rondas: response.rondas || [] };
+    } catch (error: any) {
+        console.error('Erro ao buscar rondas executadas:', error);
+        return { rondas: [], error: error.message };
+    }
+}
+
 // ===== COLABORADORES =====
 
 export async function listarColaboradores(token: string): Promise<ListaColaboradores> {

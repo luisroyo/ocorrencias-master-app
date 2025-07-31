@@ -4,7 +4,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { AutoComplete } from '../components/AutoComplete';
 import { colors } from '../theme/colors';
-import { salvarRondaCompleta, enviarRelatorioRondasWhatsApp, buscarCondominios } from '../services/rondas';
+import { salvarRondaCompleta, enviarRelatorioRondasWhatsApp, buscarCondominios, buscarRondasExecutadas } from '../services/rondas';
 
 interface RondaScreenProps {
     token: string;
@@ -24,6 +24,17 @@ interface Condominio {
     nome: string;
 }
 
+interface RondaExecutada {
+    id: number;
+    data_plantao: string;
+    hora_entrada: string;
+    hora_saida?: string; // Made optional to match RondaEsporadica
+    duracao_minutos?: number; // Made optional
+    escala_plantao: string;
+    turno: string;
+    observacoes?: string;
+}
+
 export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const [rondas, setRondas] = useState<Ronda[]>([]);
     const [residencial, setResidencial] = useState<string>('');
@@ -35,10 +46,37 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const [dataPlantao, setDataPlantao] = useState<string>(new Date().toISOString().split('T')[0]);
     const [escalaPlantao, setEscalaPlantao] = useState<string>('18 às 06'); // Added
     const [rondaAtual, setRondaAtual] = useState<Ronda | null>(null); // Added
-
+    
     // Estados para condomínios
     const [condominioId, setCondominioId] = useState<number>(1);
     const [condominioNome, setCondominioNome] = useState<string>('');
+    
+    // Estados para rondas executadas
+    const [rondasExecutadas, setRondasExecutadas] = useState<RondaExecutada[]>([]);
+    const [loadingRondasExecutadas, setLoadingRondasExecutadas] = useState<boolean>(false);
+
+    // Função para buscar rondas executadas
+    const buscarRondasDoCondominio = async (condominioId: number) => {
+        if (!condominioId) return;
+        
+        setLoadingRondasExecutadas(true);
+        try {
+            // Buscar rondas dos últimos 30 dias
+            const dataInicio = new Date();
+            dataInicio.setDate(dataInicio.getDate() - 30);
+            const dataFim = new Date();
+            
+            const resultado = await buscarRondasExecutadas(token, condominioId, dataInicio.toISOString().split('T')[0], dataFim.toISOString().split('T')[0]);
+            
+            if (resultado.rondas) {
+                setRondasExecutadas(resultado.rondas);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar rondas executadas:', error);
+        } finally {
+            setLoadingRondasExecutadas(false);
+        }
+    };
 
     // Contador regressivo
     useEffect(() => {
@@ -252,6 +290,62 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                     </div>
                 </div>
 
+                {/* Rondas Executadas */}
+                {condominioId > 1 && (
+                    <div style={{
+                        backgroundColor: colors.surface,
+                        padding: '20px',
+                        borderRadius: '8px',
+                        marginBottom: '20px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                        <h3 style={{ margin: '0 0 20px 0', color: colors.headingText }}>
+                            📋 Rondas Executadas em {condominioNome}
+                        </h3>
+
+                        {loadingRondasExecutadas ? (
+                            <div style={{ textAlign: 'center', padding: '20px', color: colors.mutedText }}>
+                                🔄 Carregando rondas executadas...
+                            </div>
+                        ) : rondasExecutadas.length > 0 ? (
+                            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                {rondasExecutadas.map((ronda, index) => (
+                                    <div key={ronda.id || index} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '10px',
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: '4px',
+                                        marginBottom: '10px',
+                                        backgroundColor: 'white'
+                                    }}>
+                                        <div>
+                                            <strong>Data: {new Date(ronda.data_plantao).toLocaleDateString('pt-BR')}</strong>
+                                            <br />
+                                            <span style={{ color: '#666' }}>
+                                                {ronda.hora_entrada} - {ronda.hora_saida || 'Em andamento'} 
+                                                {ronda.duracao_minutos && ` (${ronda.duracao_minutos} min)`}
+                                            </span>
+                                            <br />
+                                            <span style={{ color: '#888', fontSize: '12px' }}>
+                                                {ronda.escala_plantao} | {ronda.turno}
+                                            </span>
+                                        </div>
+                                        <div style={{ color: '#28a745', fontSize: '12px', fontWeight: 'bold' }}>
+                                            ✅ Executada
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '20px', color: colors.mutedText }}>
+                                📭 Nenhuma ronda executada encontrada nos últimos 30 dias
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Formulário de Nova Ronda */}
                 <div style={{
                     backgroundColor: colors.surface,
@@ -278,6 +372,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                     setCondominioId(condominio.id);
                                     setCondominioNome(condominio.nome);
                                     setResidencial(condominio.nome); // Usar o nome do condomínio como residencial
+                                    buscarRondasDoCondominio(condominio.id); // Buscar rondas executadas ao selecionar condomínio
                                 }}
                                 searchFunction={async (query: string) => {
                                     try {

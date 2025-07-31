@@ -1,13 +1,17 @@
 import {
     listarCondominios,
-    listarColaboradores,
+    buscarCondominios,
     validarHorarioEntrada,
     iniciarRonda,
     finalizarRonda,
+    atualizarRonda,
     gerarRelatorioRonda,
     enviarRondaWhatsApp,
     iniciarRondaEsporadica,
     finalizarRondaEsporadica,
+    atualizarRondaEsporadica,
+    verificarRondaEsporadicaEmAndamento,
+    listarRondasEsporadicasDoDia,
     consolidarTurnoRondasEsporadicas,
     processoCompletoConsolidacao,
     marcarRondasProcessadas,
@@ -16,7 +20,7 @@ import {
     ConsolidacaoResultado,
     StatusConsolidacao,
     ListaCondominios,
-    ListaColaboradores
+    Condominio
 } from '../services/rondas';
 
 export const useRondaActions = (token: string, setLoading: (loading: boolean) => void) => {
@@ -33,14 +37,14 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
         }
     };
 
-    const handleListarColaboradores = async (): Promise<ListaColaboradores> => {
+    const handleBuscarCondominios = async (nome: string): Promise<{ condominios: Condominio[], error?: string }> => {
         try {
             setLoading(true);
-            const resultado = await listarColaboradores(token);
+            const resultado = await buscarCondominios(nome, token);
             return resultado;
         } catch (error) {
-            console.error('Erro ao listar colaboradores:', error);
-            return { sucesso: false, colaboradores: [], total: 0 };
+            console.error('Erro ao buscar condomínios:', error);
+            return { condominios: [], error: 'Erro ao buscar condomínios' };
         } finally {
             setLoading(false);
         }
@@ -357,7 +361,7 @@ export const useRondaActions = (token: string, setLoading: (loading: boolean) =>
 
     return {
         handleListarCondominios,
-        handleListarColaboradores,
+        handleBuscarCondominios,
         handleValidarHorario,
         handleIniciarRonda,
         handleFinalizarRonda,

@@ -133,6 +133,26 @@ export async function listarCondominios(token: string): Promise<ListaCondominios
     }
 }
 
+// Buscar condomínios com autocompletar
+export async function buscarCondominios(nome: string, token?: string): Promise<{ condominios: Condominio[], error?: string }> {
+    try {
+        console.log('Buscando condomínios:', { nome });
+
+        const params = new URLSearchParams();
+        if (nome) {
+            params.append('nome', nome);
+        }
+
+        const response = await apiFetch(`/api/condominios?${params.toString()}`, {}, token);
+
+        console.log('Resposta da busca de condomínios:', response);
+        return { condominios: response.condominios || [] };
+    } catch (error: any) {
+        console.error('Erro ao buscar condomínios:', error);
+        return { condominios: [], error: error.message };
+    }
+}
+
 // ===== COLABORADORES =====
 
 export async function listarColaboradores(token: string): Promise<ListaColaboradores> {

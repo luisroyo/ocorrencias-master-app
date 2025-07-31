@@ -13,6 +13,7 @@ export const useRondaState = (token: string) => {
     // Estados para Condomínios
     const [condominios, setCondominios] = useState<Condominio[]>([]);
     const [condominiosLoading, setCondominiosLoading] = useState(false);
+    const [condominioNome, setCondominioNome] = useState<string>('');
 
     // Estados para Colaboradores
     const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
@@ -127,6 +128,8 @@ export const useRondaState = (token: string) => {
         setCondominios,
         condominiosLoading,
         setCondominiosLoading,
+        condominioNome,
+        setCondominioNome,
         carregarCondominios,
         // Estados de Colaboradores
         colaboradores,

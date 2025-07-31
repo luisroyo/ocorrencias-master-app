@@ -3,7 +3,7 @@ import { Input } from '../Input';
 import { Button } from '../Button';
 import { AutoComplete } from '../AutoComplete';
 import { colors } from '../../theme/colors';
-import { Condominio, Colaborador, buscarColaboradores } from '../../services/rondas';
+import { Condominio, Colaborador, buscarColaboradores, buscarCondominios } from '../../services/rondas';
 
 interface RondaConfiguracoesProps {
     tipoRonda: 'regular' | 'esporadica';
@@ -11,6 +11,8 @@ interface RondaConfiguracoesProps {
     condominiosLoading: boolean;
     condominioId: number;
     setCondominioId: (id: number) => void;
+    condominioNome: string;
+    setCondominioNome: (nome: string) => void;
     colaboradores: Colaborador[];
     colaboradoresLoading: boolean;
     dataPlantao: string;
@@ -43,6 +45,8 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
     condominiosLoading,
     condominioId,
     setCondominioId,
+    condominioNome,
+    setCondominioNome,
     colaboradores,
     colaboradoresLoading,
     dataPlantao,
@@ -93,23 +97,32 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
                             Carregando condomínios...
                         </div>
                     ) : (
-                        <select
-                            value={condominioId}
-                            onChange={(e) => setCondominioId(Number(e.target.value))}
-                            style={{
-                                width: '100%',
-                                padding: '8px',
-                                border: '1px solid #ced4da',
-                                borderRadius: '4px',
-                                backgroundColor: 'white'
+                        <AutoComplete
+                            placeholder="Digite o nome do condomínio"
+                            value={condominioNome}
+                            onChange={setCondominioNome}
+                            onSelect={(condominio) => {
+                                console.log('Condomínio selecionado:', condominio);
+                                setCondominioId(condominio.id);
+                                setCondominioNome(condominio.nome);
                             }}
-                        >
-                            {condominios.map((condominio) => (
-                                <option key={condominio.id} value={condominio.id}>
-                                    {condominio.nome}
-                                </option>
-                            ))}
-                        </select>
+                            searchFunction={async (query: string) => {
+                                try {
+                                    const response = await buscarCondominios(query, token);
+                                    return response.condominios || [];
+                                } catch (error) {
+                                    console.error('Erro ao buscar condomínios:', error);
+                                    return [];
+                                }
+                            }}
+                            displayField="nome"
+                            token={token}
+                            style={{
+                                backgroundColor: '#FFFFFF',
+                                color: '#000000',
+                                border: '2px solid #007bff'
+                            }}
+                        />
                     )}
                 </div>
                 <div>

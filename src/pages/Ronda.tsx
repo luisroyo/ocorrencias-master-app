@@ -208,11 +208,11 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                 console.log('❌ DEBUG - Nenhuma ronda encontrada');
                 setRondasExecutadas([]);
             }
-            
-            // DEBUG: Buscar todas as rondas do condomínio para verificar se existem
-            console.log('🔍 DEBUG - Buscando TODAS as rondas do condomínio para debug...');
-            const todasRondas = await buscarTodasRondasCondominio(token, condominioId);
-            console.log('📊 DEBUG - Todas as rondas do condomínio:', todasRondas);
+
+            // DEBUG: Comentado temporariamente devido a erro CORS
+            // console.log('🔍 DEBUG - Buscando TODAS as rondas do condomínio para debug...');
+            // const todasRondas = await buscarTodasRondasCondominio(token, condominioId);
+            // console.log('📊 DEBUG - Todas as rondas do condomínio:', todasRondas);
         } catch (error) {
             console.error('🚨 DEBUG - Erro ao buscar rondas executadas:', error);
             setRondasExecutadas([]);

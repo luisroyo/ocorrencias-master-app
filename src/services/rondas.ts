@@ -156,7 +156,7 @@ export async function buscarCondominios(nome: string, token?: string): Promise<{
 // Buscar rondas já executadas de um condomínio
 export async function buscarRondasExecutadas(token: string, condominioId: number, dataInicio?: string, dataFim?: string): Promise<{ rondas: RondaEsporadica[], error?: string }> {
     try {
-        console.log('Buscando rondas executadas:', { condominioId, dataInicio, dataFim });
+        console.log('🔍 DEBUG - Iniciando busca de rondas executadas:', { condominioId, dataInicio, dataFim });
 
         // Usar o endpoint correto da API
         const params = new URLSearchParams();
@@ -164,7 +164,10 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
         if (dataInicio) params.append('data_inicio', dataInicio);
         if (dataFim) params.append('data_fim', dataFim);
 
-        const response = await apiFetch(`/api/rondas-esporadicas/executadas?${params.toString()}`, {
+        const url = `/api/rondas-esporadicas/executadas?${params.toString()}`;
+        console.log('🌐 DEBUG - URL da requisição:', url);
+
+        const response = await apiFetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -172,16 +175,17 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
             }
         }, token);
 
-        console.log('Resposta da busca de rondas executadas:', response);
-
+        console.log('📊 DEBUG - Resposta completa da API:', response);
+        
         if (response.sucesso) {
+            console.log('✅ DEBUG - API retornou sucesso, rondas:', response.rondas);
             return { rondas: response.rondas || [] };
         } else {
-            console.error('Erro na API:', response.message);
+            console.error('❌ DEBUG - API retornou erro:', response.message);
             return { rondas: [], error: response.message };
         }
     } catch (error: any) {
-        console.error('Erro ao buscar rondas executadas:', error);
+        console.error('🚨 DEBUG - Erro na requisição:', error);
         // Retornar array vazio em caso de erro para não quebrar a interface
         return { rondas: [], error: error.message };
     }
@@ -676,5 +680,36 @@ export async function enviarRelatorioRondasWhatsApp(token: string, dados: {
     } catch (error: any) {
         console.error('Erro ao enviar relatório para WhatsApp:', error);
         return { sucesso: false, message: error.message };
+    }
+} 
+
+// Buscar todas as rondas de um condomínio (para debug)
+export async function buscarTodasRondasCondominio(token: string, condominioId: number): Promise<{ rondas: RondaEsporadica[], error?: string }> {
+    try {
+        console.log('🔍 DEBUG - Buscando TODAS as rondas do condomínio:', condominioId);
+
+        const url = `/api/rondas-esporadicas?condominio_id=${condominioId}`;
+        console.log('🌐 DEBUG - URL para todas as rondas:', url);
+
+        const response = await apiFetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }, token);
+
+        console.log('📊 DEBUG - Todas as rondas do condomínio:', response);
+        
+        if (response.sucesso) {
+            console.log('✅ DEBUG - Encontradas rondas totais:', response.rondas?.length || 0);
+            return { rondas: response.rondas || [] };
+        } else {
+            console.error('❌ DEBUG - Erro ao buscar todas as rondas:', response.message);
+            return { rondas: [], error: response.message };
+        }
+    } catch (error: any) {
+        console.error('🚨 DEBUG - Erro na busca de todas as rondas:', error);
+        return { rondas: [], error: error.message };
     }
 } 

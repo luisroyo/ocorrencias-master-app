@@ -4,7 +4,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { AutoComplete } from '../components/AutoComplete';
 import { colors } from '../theme/colors';
-import { salvarRondaCompleta, enviarRelatorioRondasWhatsApp, buscarCondominios, buscarRondasExecutadas } from '../services/rondas';
+import { salvarRondaCompleta, enviarRelatorioRondasWhatsApp, buscarCondominios, buscarRondasExecutadas, buscarTodasRondasCondominio } from '../services/rondas';
 
 interface RondaScreenProps {
     token: string;
@@ -173,19 +173,19 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     // Função para buscar rondas executadas
     const buscarRondasDoCondominio = async (condominioId: number) => {
         if (!condominioId) return;
-        
+
         setLoadingRondasExecutadas(true);
         try {
             // Calcular período do plantão
             const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
-            
+
             // Converter datas para formato YYYY-MM-DD (sem timezone)
             const dataInicio = new Date(periodo.inicio).toISOString().split('T')[0];
             const dataFim = new Date(periodo.fim).toISOString().split('T')[0];
-            
-            console.log('🔍 DEBUG - Buscando rondas executadas:', { 
-                condominioId, 
-                dataInicio, 
+
+            console.log('🔍 DEBUG - Buscando rondas executadas:', {
+                condominioId,
+                dataInicio,
                 dataFim,
                 dataPlantao,
                 escalaPlantao,
@@ -196,11 +196,11 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                     fimFormatado: periodo.fimFormatado
                 }
             });
-            
+
             const resultado = await buscarRondasExecutadas(token, condominioId, dataInicio, dataFim);
-            
+
             console.log('📊 DEBUG - Resultado da busca:', resultado);
-            
+
             if (resultado.rondas) {
                 console.log('✅ DEBUG - Rondas encontradas:', resultado.rondas.length);
                 setRondasExecutadas(resultado.rondas);
@@ -208,6 +208,11 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                 console.log('❌ DEBUG - Nenhuma ronda encontrada');
                 setRondasExecutadas([]);
             }
+            
+            // DEBUG: Buscar todas as rondas do condomínio para verificar se existem
+            console.log('🔍 DEBUG - Buscando TODAS as rondas do condomínio para debug...');
+            const todasRondas = await buscarTodasRondasCondominio(token, condominioId);
+            console.log('📊 DEBUG - Todas as rondas do condomínio:', todasRondas);
         } catch (error) {
             console.error('🚨 DEBUG - Erro ao buscar rondas executadas:', error);
             setRondasExecutadas([]);
@@ -340,9 +345,9 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                         turno: escalaPlantao === "18 às 06" ? "Noite" : "Dia",
                         observacoes: `Ronda no residencial ${ronda.residencial}`
                     };
-                    
+
                     console.log('💾 DEBUG - Salvando ronda:', dadosRonda);
-                    
+
                     const resultado = await salvarRondaCompleta(token, dadosRonda);
                     console.log('✅ DEBUG - Ronda salva:', resultado);
                 }
@@ -350,13 +355,13 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
 
             // Adicionar às rondas salvas
             setRondasSalvas(prev => [...prev, ...rondas]);
-            
+
             alert('Rondas salvas com sucesso!');
             setRondas([]);
-            
+
             // Verificar condomínios pendentes
             verificarCondominiosPendentes();
-            
+
             // Buscar rondas executadas novamente para atualizar a lista
             if (condominioId > 1) {
                 console.log('🔄 DEBUG - Buscando rondas executadas após salvar...');

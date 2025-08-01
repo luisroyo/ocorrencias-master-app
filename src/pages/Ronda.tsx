@@ -179,15 +179,17 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             // Calcular período do plantão
             const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
             
-            // Temporariamente desabilitado até API estar funcionando
-            console.log('Busca de rondas executadas temporariamente desabilitada - API em manutenção');
-            setRondasExecutadas([]);
+            // Converter datas para formato YYYY-MM-DD (sem timezone)
+            const dataInicio = new Date(periodo.inicio).toISOString().split('T')[0];
+            const dataFim = new Date(periodo.fim).toISOString().split('T')[0];
             
-            // TODO: Reativar quando API estiver funcionando
-            // const resultado = await buscarRondasExecutadas(token, condominioId, periodo.inicio, periodo.fim);
-            // if (resultado.rondas) {
-            //     setRondasExecutadas(resultado.rondas);
-            // }
+            console.log('Buscando rondas executadas:', { condominioId, dataInicio, dataFim });
+            
+            const resultado = await buscarRondasExecutadas(token, condominioId, dataInicio, dataFim);
+            
+            if (resultado.rondas) {
+                setRondasExecutadas(resultado.rondas);
+            }
         } catch (error) {
             console.error('Erro ao buscar rondas executadas:', error);
             setRondasExecutadas([]);
@@ -490,7 +492,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                     📭 Nenhuma ronda executada encontrada
                                 </div>
                                 <div style={{ fontSize: '12px', color: '#888' }}>
-                                    <em>Histórico temporariamente indisponível - API em manutenção</em>
+                                    <em>Nenhuma ronda foi encontrada para este período</em>
                                 </div>
                             </div>
                         )}

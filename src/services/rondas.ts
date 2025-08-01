@@ -158,8 +158,13 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
     try {
         console.log('Buscando rondas executadas:', { condominioId, dataInicio, dataFim });
 
-        // Usar a API existente de rondas esporádicas
-        const response = await apiFetch(`/api/rondas-esporadicas`, {
+        // Usar o endpoint correto da API
+        const params = new URLSearchParams();
+        params.append('condominio_id', condominioId.toString());
+        if (dataInicio) params.append('data_inicio', dataInicio);
+        if (dataFim) params.append('data_fim', dataFim);
+
+        const response = await apiFetch(`/api/rondas-esporadicas/executadas?${params.toString()}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -168,24 +173,13 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
         }, token);
 
         console.log('Resposta da busca de rondas executadas:', response);
-
-        // Filtrar rondas do condomínio e período específicos
-        let rondas = response.rondas || [];
-
-        if (condominioId) {
-            rondas = rondas.filter((ronda: any) => ronda.condominio_id === condominioId);
+        
+        if (response.sucesso) {
+            return { rondas: response.rondas || [] };
+        } else {
+            console.error('Erro na API:', response.message);
+            return { rondas: [], error: response.message };
         }
-
-        if (dataInicio && dataFim) {
-            const inicio = new Date(dataInicio);
-            const fim = new Date(dataFim);
-            rondas = rondas.filter((ronda: any) => {
-                const dataRonda = new Date(ronda.data_plantao);
-                return dataRonda >= inicio && dataRonda <= fim;
-            });
-        }
-
-        return { rondas };
     } catch (error: any) {
         console.error('Erro ao buscar rondas executadas:', error);
         // Retornar array vazio em caso de erro para não quebrar a interface

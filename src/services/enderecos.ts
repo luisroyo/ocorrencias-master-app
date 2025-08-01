@@ -21,12 +21,25 @@ export async function buscarEnderecos(nome: string, token?: string): Promise<{ e
             params.append('nome', nome);
         }
 
-        const response = await apiFetch(`/api/logradouros_view?${params.toString()}`, {}, token);
+        const response = await apiFetch(`/api/logradouros_view?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }, token);
 
         console.log('Resposta da busca de endereços:', response);
-        return { enderecos: response.logradouros || [] };
+        
+        if (response && response.logradouros) {
+            return { enderecos: response.logradouros };
+        } else {
+            console.warn('Resposta inesperada da API de endereços:', response);
+            return { enderecos: [] };
+        }
     } catch (error: any) {
         console.error('Erro ao buscar endereços:', error);
+        // Retornar array vazio em caso de erro para não quebrar a interface
         return { enderecos: [], error: error.message };
     }
 }

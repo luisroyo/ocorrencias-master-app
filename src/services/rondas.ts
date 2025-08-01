@@ -173,7 +173,7 @@ export async function buscarRondasExecutadas(token: string, condominioId: number
         }, token);
 
         console.log('Resposta da busca de rondas executadas:', response);
-        
+
         if (response.sucesso) {
             return { rondas: response.rondas || [] };
         } else {

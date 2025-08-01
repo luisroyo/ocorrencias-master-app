@@ -46,15 +46,15 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const [dataPlantao, setDataPlantao] = useState<string>(new Date().toISOString().split('T')[0]);
     const [escalaPlantao, setEscalaPlantao] = useState<string>('18 às 06'); // Added
     const [rondaAtual, setRondaAtual] = useState<Ronda | null>(null); // Added
-    
+
     // Estados para condomínios
     const [condominioId, setCondominioId] = useState<number>(1);
     const [condominioNome, setCondominioNome] = useState<string>('');
-    
+
     // Estados para rondas executadas
     const [rondasExecutadas, setRondasExecutadas] = useState<RondaExecutada[]>([]);
     const [loadingRondasExecutadas, setLoadingRondasExecutadas] = useState<boolean>(false);
-    
+
     // Estados para controle inteligente
     const [periodoInicio, setPeriodoInicio] = useState<string>('');
     const [periodoFim, setPeriodoFim] = useState<string>('');
@@ -67,7 +67,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
             setPeriodoInicio(periodo.inicio);
             setPeriodoFim(periodo.fim);
-            
+
             // Se já tem um condomínio selecionado, buscar rondas do novo período
             if (condominioId > 1) {
                 buscarRondasDoCondominio(condominioId);
@@ -78,16 +78,16 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     // Função para calcular período do plantão (18h-06h = 12 horas)
     const calcularPeriodoPlantao = (data: string, escala: string) => {
         const dataPlantao = new Date(data + 'T00:00:00'); // Usar a data selecionada
-        
+
         if (escala === '18 às 06') {
             // Plantão noturno: 18h do dia selecionado até 06h do dia seguinte
             const inicio = new Date(dataPlantao);
             inicio.setHours(18, 0, 0, 0);
-            
+
             const fim = new Date(dataPlantao);
             fim.setDate(fim.getDate() + 1); // Próximo dia
             fim.setHours(6, 0, 0, 0);
-            
+
             return {
                 inicio: inicio.toISOString(),
                 fim: fim.toISOString(),
@@ -98,10 +98,10 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             // Plantão diurno: 06h até 18h do dia selecionado
             const inicio = new Date(dataPlantao);
             inicio.setHours(6, 0, 0, 0);
-            
+
             const fim = new Date(dataPlantao);
             fim.setHours(18, 0, 0, 0);
-            
+
             return {
                 inicio: inicio.toISOString(),
                 fim: fim.toISOString(),
@@ -121,7 +121,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
         const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
         let mensagem = `Plantão ${dataPlantao} (${escalaPlantao})\n`;
         mensagem += `Período: ${periodo.inicioFormatado} - ${periodo.fimFormatado}\n\n`;
-        
+
         rondasParaEnviar.forEach((ronda, index) => {
             mensagem += `${index + 1}. ${ronda.residencial}\n`;
             mensagem += `   Início: ${ronda.inicio} - Fim: ${ronda.termino || 'Em andamento'}\n`;
@@ -130,7 +130,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             }
             mensagem += '\n';
         });
-        
+
         mensagem += `✅ Total: ${rondasParaEnviar.length} rondas no plantão`;
 
         // Tentar enviar para WhatsApp Mobile primeiro
@@ -158,13 +158,13 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
     const verificarCondominiosPendentes = () => {
         const condominiosComRondas = Array.from(new Set(rondasSalvas.map(r => r.residencial)));
         const condominiosExecutados = Array.from(new Set(rondasExecutadas.map(r => r.observacoes || '')));
-        
-        const pendentes = condominiosComRondas.filter(cond => 
+
+        const pendentes = condominiosComRondas.filter(cond =>
             !condominiosExecutados.includes(cond)
         );
-        
+
         setCondominiosPendentes(pendentes);
-        
+
         if (pendentes.length > 0) {
             alert(`⚠️ ATENÇÃO: Faltam enviar rondas dos condomínios:\n${pendentes.join('\n')}`);
         }
@@ -183,15 +183,33 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             const dataInicio = new Date(periodo.inicio).toISOString().split('T')[0];
             const dataFim = new Date(periodo.fim).toISOString().split('T')[0];
             
-            console.log('Buscando rondas executadas:', { condominioId, dataInicio, dataFim });
+            console.log('🔍 DEBUG - Buscando rondas executadas:', { 
+                condominioId, 
+                dataInicio, 
+                dataFim,
+                dataPlantao,
+                escalaPlantao,
+                periodo: {
+                    inicio: periodo.inicio,
+                    fim: periodo.fim,
+                    inicioFormatado: periodo.inicioFormatado,
+                    fimFormatado: periodo.fimFormatado
+                }
+            });
             
             const resultado = await buscarRondasExecutadas(token, condominioId, dataInicio, dataFim);
             
+            console.log('📊 DEBUG - Resultado da busca:', resultado);
+            
             if (resultado.rondas) {
+                console.log('✅ DEBUG - Rondas encontradas:', resultado.rondas.length);
                 setRondasExecutadas(resultado.rondas);
+            } else {
+                console.log('❌ DEBUG - Nenhuma ronda encontrada');
+                setRondasExecutadas([]);
             }
         } catch (error) {
-            console.error('Erro ao buscar rondas executadas:', error);
+            console.error('🚨 DEBUG - Erro ao buscar rondas executadas:', error);
             setRondasExecutadas([]);
         } finally {
             setLoadingRondasExecutadas(false);
@@ -301,19 +319,32 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
 
         setLoading(true);
         try {
+            console.log('💾 DEBUG - Salvando rondas:', {
+                totalRondas: rondas.length,
+                condominioId,
+                dataPlantao,
+                escalaPlantao,
+                rondas: rondas
+            });
+
             // Salvar cada ronda como esporádica completa
             for (const ronda of rondas) {
                 if (ronda.termino && ronda.duracao) {
-                    await salvarRondaCompleta(token, {
-                        condominio_id: condominioId, // Usar o condomínio selecionado
-                        user_id: 1, // ID do usuário
+                    const dadosRonda = {
+                        condominio_id: condominioId,
+                        user_id: 1,
                         data_plantao: dataPlantao,
                         hora_entrada: ronda.inicio,
                         hora_saida: ronda.termino,
                         escala_plantao: escalaPlantao,
                         turno: escalaPlantao === "18 às 06" ? "Noite" : "Dia",
                         observacoes: `Ronda no residencial ${ronda.residencial}`
-                    });
+                    };
+                    
+                    console.log('💾 DEBUG - Salvando ronda:', dadosRonda);
+                    
+                    const resultado = await salvarRondaCompleta(token, dadosRonda);
+                    console.log('✅ DEBUG - Ronda salva:', resultado);
                 }
             }
 
@@ -325,8 +356,14 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
             
             // Verificar condomínios pendentes
             verificarCondominiosPendentes();
+            
+            // Buscar rondas executadas novamente para atualizar a lista
+            if (condominioId > 1) {
+                console.log('🔄 DEBUG - Buscando rondas executadas após salvar...');
+                await buscarRondasDoCondominio(condominioId);
+            }
         } catch (error) {
-            console.error('Erro ao salvar rondas:', error);
+            console.error('🚨 DEBUG - Erro ao salvar rondas:', error);
             alert('Erro ao salvar rondas!');
         } finally {
             setLoading(false);
@@ -345,12 +382,12 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                 status: 'finalizada' as const
             })));
         }
-        
+
         // Depois enviar rondas atuais se houver
         if (rondas.length > 0) {
             await enviarWhatsAppInteligente(rondas);
         }
-        
+
         // Verificar condomínios pendentes
         verificarCondominiosPendentes();
     };
@@ -370,7 +407,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                     <h3 style={{ margin: '0 0 20px 0', color: colors.headingText }}>
                         ⚙️ Configurações do Plantão
                     </h3>
-                    
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
@@ -472,7 +509,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                             <strong>Data: {new Date(ronda.data_plantao).toLocaleDateString('pt-BR')}</strong>
                                             <br />
                                             <span style={{ color: '#666' }}>
-                                                {ronda.hora_entrada} - {ronda.hora_saida || 'Em andamento'} 
+                                                {ronda.hora_entrada} - {ronda.hora_saida || 'Em andamento'}
                                                 {ronda.duracao_minutos && ` (${ronda.duracao_minutos} min)`}
                                             </span>
                                             <br />

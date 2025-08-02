@@ -1,130 +1,62 @@
 import React from 'react';
 import { Input } from '../Input';
-import { Button } from '../Button';
 import { AutoComplete } from '../AutoComplete';
 import { colors } from '../../theme/colors';
-import { Condominio, Colaborador, buscarColaboradores, buscarCondominios } from '../../services/rondas';
+import { buscarCondominios } from '../../services/domains/condominios';
 
 interface RondaConfiguracoesProps {
-    tipoRonda: 'regular' | 'esporadica';
-    condominios: Condominio[];
-    condominiosLoading: boolean;
-    condominioId: number;
-    setCondominioId: (id: number) => void;
-    condominioNome: string;
-    setCondominioNome: (nome: string) => void;
-    colaboradores: Colaborador[];
-    colaboradoresLoading: boolean;
     dataPlantao: string;
     setDataPlantao: (data: string) => void;
     escalaPlantao: string;
     setEscalaPlantao: (escala: string) => void;
-    logBruto: string;
-    setLogBruto: (log: string) => void;
-    observacoes: string;
-    setObservacoes: (obs: string) => void;
-    horaEntrada: string;
-    setHoraEntrada: (hora: string) => void;
-    horaSaida: string;
-    setHoraSaida: (hora: string) => void;
-    turno: string;
-    setTurno: (turno: string) => void;
-    userId: number;
-    setUserId: (id: number) => void;
-    colaboradorNome: string;
-    setColaboradorNome: (nome: string) => void;
-    validacaoHorario: any;
-    onValidarHorario: () => void;
-    loading: boolean;
-    token?: string;
+    condominioNome: string;
+    setCondominioNome: (nome: string) => void;
+    setCondominioId: (id: number) => void;
+    setResidencial: (residencial: string) => void;
+    buscarRondasDoCondominio: (id: number) => Promise<void>;
+    periodoInicio: string;
+    periodoFim: string;
+    condominiosPendentes: string[];
+    token: string;
 }
 
 export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
-    tipoRonda,
-    condominios,
-    condominiosLoading,
-    condominioId,
-    setCondominioId,
-    condominioNome,
-    setCondominioNome,
-    colaboradores,
-    colaboradoresLoading,
     dataPlantao,
     setDataPlantao,
     escalaPlantao,
     setEscalaPlantao,
-    logBruto,
-    setLogBruto,
-    observacoes,
-    setObservacoes,
-    horaEntrada,
-    setHoraEntrada,
-    horaSaida,
-    setHoraSaida,
-    turno,
-    setTurno,
-    userId,
-    setUserId,
-    colaboradorNome,
-    setColaboradorNome,
-    validacaoHorario,
-    onValidarHorario,
-    loading,
-    token,
+    condominioNome,
+    setCondominioNome,
+    setCondominioId,
+    setResidencial,
+    buscarRondasDoCondominio,
+    periodoInicio,
+    periodoFim,
+    condominiosPendentes,
+    token
 }) => {
+    const calcularPeriodoFormatado = () => {
+        if (!periodoInicio || !periodoFim) return '';
+        
+        const inicio = new Date(periodoInicio);
+        const fim = new Date(periodoFim);
+        
+        return `${inicio.toLocaleString('pt-BR')} - ${fim.toLocaleString('pt-BR')}`;
+    };
+
     return (
         <div style={{
-            backgroundColor: '#f8f9fa',
+            backgroundColor: colors.surface,
             padding: '20px',
             borderRadius: '8px',
-            marginBottom: '20px'
+            marginBottom: '20px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-            <h3 style={{
-                color: colors.primary,
-                marginBottom: '16px',
-                fontSize: '18px',
-                fontWeight: 'bold'
-            }}>
-                ⚙️ Configurações
+            <h3 style={{ margin: '0 0 20px 0', color: colors.headingText }}>
+                ⚙️ Configurações do Plantão
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                        Condomínio
-                    </label>
-                    {condominiosLoading ? (
-                        <div style={{ padding: '8px', backgroundColor: '#e9ecef', borderRadius: '4px', textAlign: 'center' }}>
-                            Carregando condomínios...
-                        </div>
-                    ) : (
-                        <AutoComplete
-                            placeholder="Digite o nome do condomínio"
-                            value={condominioNome}
-                            onChange={setCondominioNome}
-                            onSelect={(condominio) => {
-                                console.log('Condomínio selecionado:', condominio);
-                                setCondominioId(condominio.id);
-                                setCondominioNome(condominio.nome);
-                            }}
-                            searchFunction={async (query: string) => {
-                                try {
-                                    const response = await buscarCondominios(query, token);
-                                    return response.condominios || [];
-                                } catch (error) {
-                                    console.error('Erro ao buscar condomínios:', error);
-                                    return [];
-                                }
-                            }}
-                            displayField="nome"
-                            token={token}
-                            style={{
-                                backgroundColor: '#FFFFFF',
-                                color: '#000000',
-                                border: '2px solid #007bff'
-                            }}
-                        />
-                    )}
-                </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                         Data do Plantão
@@ -133,8 +65,10 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
                         type="date"
                         value={dataPlantao}
                         onChange={(e) => setDataPlantao(e.target.value)}
+                        style={{ width: '100%' }}
                     />
                 </div>
+
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                         Escala do Plantão
@@ -144,115 +78,79 @@ export const RondaConfiguracoes: React.FC<RondaConfiguracoesProps> = ({
                         onChange={(e) => setEscalaPlantao(e.target.value)}
                         style={{
                             width: '100%',
-                            padding: '8px',
-                            border: '1px solid #ced4da',
+                            padding: '10px',
+                            border: '2px solid #007bff',
                             borderRadius: '4px',
-                            backgroundColor: 'white'
+                            fontSize: '16px'
                         }}
                     >
-                        <option value="">Selecione a escala</option>
                         <option value="06 às 18">06 às 18</option>
                         <option value="18 às 06">18 às 06</option>
                     </select>
                 </div>
-                {tipoRonda === 'esporadica' && (
-                    <>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Colaborador
-                            </label>
-                            {colaboradoresLoading ? (
-                                <div style={{ padding: '10px', backgroundColor: colors.lightGray, borderRadius: '4px' }}>
-                                    Carregando colaboradores...
-                                </div>
-                            ) : (
-                                <>
-                                    <AutoComplete
-                                        placeholder="Digite o nome do colaborador"
-                                        value={colaboradorNome}
-                                        onChange={setColaboradorNome}
-                                        onSelect={(colaborador) => {
-                                            console.log('Colaborador selecionado:', colaborador);
-                                            setUserId(colaborador.id);
-                                            setColaboradorNome(colaborador.nome_completo);
-                                        }}
-                                        searchFunction={async (query: string) => {
-                                            try {
-                                                const response = await buscarColaboradores(query, token);
-                                                return response.colaboradores || [];
-                                            } catch (error) {
-                                                console.error('Erro ao buscar colaboradores:', error);
-                                                return [];
-                                            }
-                                        }}
-                                        displayField="nome_completo"
-                                        token={token}
-                                        style={{
-                                            backgroundColor: '#FFFFFF',
-                                            color: '#000000',
-                                            border: '2px solid #007bff'
-                                        }}
-                                    />
-                                    <div style={{ marginTop: '5px', fontSize: '12px', color: '#666' }}>
-                                        Valor atual: "{colaboradorNome}"
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Hora de Entrada
-                            </label>
-                            <Input
-                                type="time"
-                                value={horaEntrada}
-                                onChange={(e) => setHoraEntrada(e.target.value)}
-                                placeholder="HH:MM"
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                Turno
-                            </label>
-                            <Input
-                                type="text"
-                                value={turno}
-                                onChange={(e) => setTurno(e.target.value)}
-                                placeholder="Ex: Manhã, Tarde, Noite"
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                                User ID
-                            </label>
-                            <Input
-                                type="number"
-                                value={userId}
-                                onChange={(e) => setUserId(Number(e.target.value))}
-                                placeholder="ID do usuário"
-                            />
-                        </div>
-                    </>
-                )}
-            </div>
-            {tipoRonda === 'esporadica' && (
-                <div style={{ marginTop: '16px' }}>
-                    <Button
-                        title="✅ Validar Horário"
-                        onClick={onValidarHorario}
-                        disabled={loading || !horaEntrada}
-                        variant="success"
-                        style={{ marginRight: '12px' }}
+
+                <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                        Condomínio
+                    </label>
+                    <AutoComplete
+                        placeholder="Digite o nome do condomínio"
+                        value={condominioNome}
+                        onChange={setCondominioNome}
+                        onSelect={(condominio) => {
+                            console.log('Condomínio selecionado:', condominio);
+                            setCondominioId(condominio.id);
+                            setCondominioNome(condominio.nome);
+                            setResidencial(condominio.nome);
+                            buscarRondasDoCondominio(condominio.id);
+                        }}
+                        searchFunction={async (query: string) => {
+                            try {
+                                const response = await buscarCondominios(query, token);
+                                return response.condominios || [];
+                            } catch (error) {
+                                console.error('Erro ao buscar condomínios:', error);
+                                return [];
+                            }
+                        }}
+                        displayField="nome"
+                        token={token}
+                        style={{
+                            backgroundColor: '#FFFFFF',
+                            color: '#000000',
+                            border: '2px solid #007bff'
+                        }}
                     />
-                    {validacaoHorario && (
-                        <span style={{
-                            color: validacaoHorario.horario_valido ? '#28a745' : '#dc3545',
-                            fontSize: '14px',
-                            fontWeight: 'bold'
-                        }}>
-                            {validacaoHorario.mensagem}
-                        </span>
-                    )}
+                </div>
+            </div>
+
+            {/* Período Calculado */}
+            {dataPlantao && escalaPlantao && (
+                <div style={{
+                    marginTop: '15px',
+                    padding: '15px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '4px',
+                    border: '1px solid #dee2e6'
+                }}>
+                    <strong>📅 Período do Plantão:</strong>
+                    <br />
+                    {calcularPeriodoFormatado()}
+                </div>
+            )}
+
+            {/* Condomínios Pendentes */}
+            {condominiosPendentes.length > 0 && (
+                <div style={{
+                    marginTop: '15px',
+                    padding: '15px',
+                    backgroundColor: '#fff3cd',
+                    borderRadius: '4px',
+                    border: '1px solid #ffeaa7'
+                }}>
+                    <strong>⚠️ Condomínios Pendentes:</strong>
+                    <br />
+                    {condominiosPendentes.join(', ')}
                 </div>
             )}
         </div>

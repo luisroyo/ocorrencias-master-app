@@ -1,161 +1,194 @@
 import { useState, useEffect } from 'react';
-import {
-    verificarRondaEmAndamento,
-    verificarRondaEsporadicaEmAndamento,
-    listarCondominios,
-    listarColaboradores,
-    RondaEmAndamento,
-    Condominio,
-    Colaborador
-} from '../services/rondas';
+import { buscarRondasExecutadas } from '../services/domains/rondasEsporadicas';
+import { buscarCondominios } from '../services/domains/condominios';
+
+// Interfaces baseadas na estrutura domains/
+interface Ronda {
+    id?: number;
+    residencial: string;
+    inicio: string;
+    termino?: string;
+    duracao?: number;
+    status: 'iniciada' | 'finalizada';
+}
+
+interface Condominio {
+    id: number;
+    nome: string;
+}
+
+interface RondaExecutada {
+    id: number;
+    data_plantao: string;
+    hora_entrada: string;
+    hora_saida?: string;
+    duracao_minutos?: number;
+    escala_plantao: string;
+    turno: string;
+    observacoes?: string;
+}
+
+interface PeriodoPlantao {
+    inicio: string;
+    fim: string;
+    inicioFormatado: string;
+    fimFormatado: string;
+}
 
 export const useRondaState = (token: string) => {
-    // Estados para Condomínios
-    const [condominios, setCondominios] = useState<Condominio[]>([]);
-    const [condominiosLoading, setCondominiosLoading] = useState(false);
+    // Estados principais
+    const [rondas, setRondas] = useState<Ronda[]>([]);
+    const [residencial, setResidencial] = useState<string>('');
+    const [inicioRonda, setInicioRonda] = useState<string>('');
+    const [terminoRonda, setTerminoRonda] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [rondaAtual, setRondaAtual] = useState<Ronda | null>(null);
+
+    // Estados de configuração
+    const [dataPlantao, setDataPlantao] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [escalaPlantao, setEscalaPlantao] = useState<string>('18 às 06');
+    const [condominioId, setCondominioId] = useState<number>(1);
     const [condominioNome, setCondominioNome] = useState<string>('');
 
-    // Estados para Colaboradores
-    const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
-    const [colaboradoresLoading, setColaboradoresLoading] = useState(false);
+    // Estados de rondas executadas
+    const [rondasExecutadas, setRondasExecutadas] = useState<RondaExecutada[]>([]);
+    const [loadingRondasExecutadas, setLoadingRondasExecutadas] = useState<boolean>(false);
 
-    // Estados para Rondas Regulares
-    const [condominioId, setCondominioId] = useState<number>(1);
-    const [dataPlantao, setDataPlantao] = useState<string>('');
-    const [escalaPlantao, setEscalaPlantao] = useState<string>('');
-    const [logBruto, setLogBruto] = useState<string>('');
-    const [observacoes, setObservacoes] = useState<string>('');
-    const [rondaEmAndamento, setRondaEmAndamento] = useState<RondaEmAndamento | null>(null);
+    // Estados de controle inteligente
+    const [periodoInicio, setPeriodoInicio] = useState<string>('');
+    const [periodoFim, setPeriodoFim] = useState<string>('');
+    const [condominiosPendentes, setCondominiosPendentes] = useState<string[]>([]);
+    const [rondasSalvas, setRondasSalvas] = useState<Ronda[]>([]);
 
-    // Estados para Rondas Esporádicas
-    const [tipoRonda, setTipoRonda] = useState<'regular' | 'esporadica'>('regular');
-    const [horaEntrada, setHoraEntrada] = useState<string>('');
-    const [horaSaida, setHoraSaida] = useState<string>('');
-    const [turno, setTurno] = useState<string>('');
-    const [userId, setUserId] = useState<number>(1);
-    const [colaboradorNome, setColaboradorNome] = useState<string>('');
-    const [rondaEsporadicaEmAndamento, setRondaEsporadicaEmAndamento] = useState<RondaEmAndamento | null>(null);
+    // Estados do contador
+    const [contador, setContador] = useState<number>(1200); // 20 minutos
+    const [contadorAtivo, setContadorAtivo] = useState<boolean>(false);
 
-    // Estados para Consolidação
-    const [dataInicioConsolidacao, setDataInicioConsolidacao] = useState<string>('');
-    const [dataFimConsolidacao, setDataFimConsolidacao] = useState<string>('');
+    // Função para calcular período do plantão
+    const calcularPeriodoPlantao = (data: string, escala: string): PeriodoPlantao => {
+        const dataPlantao = new Date(data + 'T00:00:00');
 
-    // Estados de UI
-    const [loading, setLoading] = useState(false);
+        if (escala === '18 às 06') {
+            const inicio = new Date(dataPlantao);
+            inicio.setHours(18, 0, 0, 0);
 
-    // Inicializar datas
-    useEffect(() => {
-        const hoje = new Date();
-        const dataFormatada = hoje.toISOString().split('T')[0];
-        setDataPlantao(dataFormatada);
-        setDataInicioConsolidacao(dataFormatada);
-        setDataFimConsolidacao(dataFormatada);
-    }, []);
+            const fim = new Date(dataPlantao);
+            fim.setDate(fim.getDate() + 1);
+            fim.setHours(6, 0, 0, 0);
 
-    // Carregar condomínios na inicialização
-    useEffect(() => {
-        carregarCondominios();
-        carregarColaboradores();
-    }, []);
+            return {
+                inicio: inicio.toISOString(),
+                fim: fim.toISOString(),
+                inicioFormatado: inicio.toLocaleString('pt-BR'),
+                fimFormatado: fim.toLocaleString('pt-BR')
+            };
+        } else {
+            const inicio = new Date(dataPlantao);
+            inicio.setHours(6, 0, 0, 0);
 
-    // Verificar ronda atual
-    useEffect(() => {
-        if (dataPlantao) {
-            verificarRondaAtual();
-        }
-    }, [dataPlantao, tipoRonda]);
+            const fim = new Date(dataPlantao);
+            fim.setHours(18, 0, 0, 0);
 
-    const carregarCondominios = async () => {
-        try {
-            setCondominiosLoading(true);
-            const resultado = await listarCondominios(token);
-            if (resultado.sucesso) {
-                setCondominios(resultado.condominios);
-                // Se não há condomínios selecionados, selecionar o primeiro
-                if (resultado.condominios.length > 0 && condominioId === 1) {
-                    setCondominioId(resultado.condominios[0].id);
-                }
-            }
-        } catch (error) {
-            console.error('Erro ao carregar condomínios:', error);
-        } finally {
-            setCondominiosLoading(false);
+            return {
+                inicio: inicio.toISOString(),
+                fim: fim.toISOString(),
+                inicioFormatado: inicio.toLocaleString('pt-BR'),
+                fimFormatado: fim.toLocaleString('pt-BR')
+            };
         }
     };
 
-    const carregarColaboradores = async () => {
-        try {
-            setColaboradoresLoading(true);
-            const resultado = await listarColaboradores(token);
-            if (resultado.sucesso) {
-                setColaboradores(resultado.colaboradores);
-                // Se não há colaboradores selecionados, selecionar o primeiro
-                if (resultado.colaboradores.length > 0 && userId === 1) {
-                    setUserId(resultado.colaboradores[0].id);
-                }
-            }
-        } catch (error) {
-            console.error('Erro ao carregar colaboradores:', error);
-        } finally {
-            setColaboradoresLoading(false);
-        }
-    };
+    // Buscar rondas executadas
+    const buscarRondasDoCondominio = async (condominioId: number) => {
+        if (!condominioId) return;
 
-    const verificarRondaAtual = async () => {
+        setLoadingRondasExecutadas(true);
         try {
-            setLoading(true);
-            let resultado;
+            const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
+            const dataInicio = new Date(periodo.inicio).toISOString().split('T')[0];
+            const dataFim = new Date(periodo.fim).toISOString().split('T')[0];
 
-            if (tipoRonda === 'regular') {
-                resultado = await verificarRondaEmAndamento(token, condominioId);
-                setRondaEmAndamento(resultado);
+            console.log('🔍 DEBUG - Buscando rondas executadas:', {
+                condominioId, dataInicio, dataFim, dataPlantao, escalaPlantao
+            });
+
+            const resultado = await buscarRondasExecutadas(token, condominioId, dataInicio, dataFim);
+
+            if (resultado.rondas) {
+                setRondasExecutadas(resultado.rondas);
             } else {
-                resultado = await verificarRondaEsporadicaEmAndamento(token, condominioId, dataPlantao);
-                setRondaEsporadicaEmAndamento(resultado);
+                setRondasExecutadas([]);
             }
         } catch (error) {
-            console.error('Erro ao verificar ronda:', error);
+            console.error('🚨 DEBUG - Erro ao buscar rondas executadas:', error);
+            setRondasExecutadas([]);
         } finally {
-            setLoading(false);
+            setLoadingRondasExecutadas(false);
         }
     };
 
-    const rondaAtiva = tipoRonda === 'regular' ? rondaEmAndamento : rondaEsporadicaEmAndamento;
+    // Verificar condomínios pendentes
+    const verificarCondominiosPendentes = () => {
+        const condominiosComRondas = Array.from(new Set(rondasSalvas.map(r => r.residencial)));
+        const condominiosExecutados = Array.from(new Set(rondasExecutadas.map(r => r.observacoes || '')));
+
+        const pendentes = condominiosComRondas.filter(cond =>
+            !condominiosExecutados.includes(cond)
+        );
+
+        setCondominiosPendentes(pendentes);
+        return pendentes;
+    };
+
+    // Recalcular período quando data ou escala mudar
+    useEffect(() => {
+        if (dataPlantao && escalaPlantao) {
+            const periodo = calcularPeriodoPlantao(dataPlantao, escalaPlantao);
+            setPeriodoInicio(periodo.inicio);
+            setPeriodoFim(periodo.fim);
+
+            if (condominioId > 1) {
+                buscarRondasDoCondominio(condominioId);
+            }
+        }
+    }, [dataPlantao, escalaPlantao]);
+
+    // Contador regressivo
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (contadorAtivo && contador > 0) {
+            interval = setInterval(() => {
+                setContador(prev => prev - 1);
+            }, 1000);
+        } else if (contador === 0) {
+            setContadorAtivo(false);
+        }
+        return () => clearInterval(interval);
+    }, [contadorAtivo, contador]);
 
     return {
-        // Estados de Condomínios
-        condominios,
-        setCondominios,
-        condominiosLoading,
-        setCondominiosLoading,
-        condominioNome,
-        setCondominioNome,
-        carregarCondominios,
-        // Estados de Colaboradores
-        colaboradores,
-        setColaboradores,
-        colaboradoresLoading,
-        setColaboradoresLoading,
-        carregarColaboradores,
         // Estados
-        condominioId, setCondominioId,
+        rondas, setRondas,
+        residencial, setResidencial,
+        inicioRonda, setInicioRonda,
+        terminoRonda, setTerminoRonda,
+        loading, setLoading,
+        rondaAtual, setRondaAtual,
         dataPlantao, setDataPlantao,
         escalaPlantao, setEscalaPlantao,
-        logBruto, setLogBruto,
-        observacoes, setObservacoes,
-        rondaEmAndamento, setRondaEmAndamento,
-        tipoRonda, setTipoRonda,
-        horaEntrada, setHoraEntrada,
-        horaSaida, setHoraSaida,
-        turno, setTurno,
-        userId, setUserId,
-        colaboradorNome, setColaboradorNome,
-        rondaEsporadicaEmAndamento, setRondaEsporadicaEmAndamento,
-        dataInicioConsolidacao, setDataInicioConsolidacao,
-        dataFimConsolidacao, setDataFimConsolidacao,
-        loading, setLoading,
-        rondaAtiva,
+        condominioId, setCondominioId,
+        condominioNome, setCondominioNome,
+        rondasExecutadas, setRondasExecutadas,
+        loadingRondasExecutadas,
+        periodoInicio, periodoFim,
+        condominiosPendentes, setCondominiosPendentes,
+        rondasSalvas, setRondasSalvas,
+        contador, setContador,
+        contadorAtivo, setContadorAtivo,
+
         // Funções
-        verificarRondaAtual
+        calcularPeriodoPlantao,
+        buscarRondasDoCondominio,
+        verificarCondominiosPendentes
     };
 }; 

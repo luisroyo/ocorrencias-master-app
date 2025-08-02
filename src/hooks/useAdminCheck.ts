@@ -13,10 +13,16 @@ export const useAdminCheck = (token: string | null) => {
             }
 
             try {
-                // Por enquanto, permitir acesso para todos os usuários logados
-                // TODO: Implementar verificação real de admin na API
-                console.log('Token recebido:', token);
-                setIsAdmin(true); // Temporariamente permitir acesso
+                // Verificar se está em ambiente de desenvolvimento
+                const isDevelopment = process.env.NODE_ENV === 'development';
+
+                if (isDevelopment) {
+                    console.log('🔧 Ambiente de desenvolvimento - Permitindo acesso à tela de Ronda');
+                    setIsAdmin(true);
+                } else {
+                    console.log('🚀 Ambiente de produção - Bloqueando acesso à tela de Ronda');
+                    setIsAdmin(false);
+                }
             } catch (error) {
                 console.error('Erro ao verificar status de administrador:', error);
                 setIsAdmin(false);

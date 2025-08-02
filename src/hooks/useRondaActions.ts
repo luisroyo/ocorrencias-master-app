@@ -1,375 +1,313 @@
-import {
-    listarCondominios,
-    buscarCondominios,
-    validarHorarioEntrada,
-    iniciarRonda,
-    finalizarRonda,
-    atualizarRonda,
-    gerarRelatorioRonda,
-    enviarRondaWhatsApp,
-    iniciarRondaEsporadica,
-    finalizarRondaEsporadica,
-    atualizarRondaEsporadica,
-    verificarRondaEsporadicaEmAndamento,
-    listarRondasEsporadicasDoDia,
-    consolidarTurnoRondasEsporadicas,
-    processoCompletoConsolidacao,
-    marcarRondasProcessadas,
-    statusConsolidacao,
-    ValidacaoHorario,
-    ConsolidacaoResultado,
-    StatusConsolidacao,
-    ListaCondominios,
-    Condominio
-} from '../services/rondas';
+import { salvarRondaCompleta } from '../services/domains/rondasEsporadicas';
 
-export const useRondaActions = (token: string, setLoading: (loading: boolean) => void) => {
-    const handleListarCondominios = async (): Promise<ListaCondominios> => {
-        try {
-            setLoading(true);
-            const resultado = await listarCondominios(token);
-            return resultado;
-        } catch (error) {
-            console.error('Erro ao listar condomínios:', error);
-            return { sucesso: false, condominios: [], total: 0 };
-        } finally {
-            setLoading(false);
-        }
+// Interfaces baseadas na estrutura domains/
+interface Ronda {
+    id?: number;
+    residencial: string;
+    inicio: string;
+    termino?: string;
+    duracao?: number;
+    status: 'iniciada' | 'finalizada';
+}
+
+interface RondaExecutada {
+    id: number;
+    data_plantao: string;
+    hora_entrada: string;
+    hora_saida?: string;
+    duracao_minutos?: number;
+    escala_plantao: string;
+    turno: string;
+    observacoes?: string;
+}
+
+export const useRondaActions = (token: string) => {
+    // Funções utilitárias
+    const formatarTempo = (segundos: number): string => {
+        const minutos = Math.floor(segundos / 60);
+        const segs = segundos % 60;
+        return `${minutos.toString().padStart(2, '0')}:${segs.toString().padStart(2, '0')}`;
     };
 
-    const handleBuscarCondominios = async (nome: string): Promise<{ condominios: Condominio[], error?: string }> => {
-        try {
-            setLoading(true);
-            const resultado = await buscarCondominios(nome, token);
-            return resultado;
-        } catch (error) {
-            console.error('Erro ao buscar condomínios:', error);
-            return { condominios: [], error: 'Erro ao buscar condomínios' };
-        } finally {
-            setLoading(false);
+    const calcularDuracao = (inicio: string, termino: string): number => {
+        const [horaInicio, minInicio] = inicio.split(':').map(Number);
+        const [horaTermino, minTermino] = termino.split(':').map(Number);
+
+        let minutosInicio = horaInicio * 60 + minInicio;
+        let minutosTermino = horaTermino * 60 + minTermino;
+
+        // Se o término for menor que o início, significa que passou da meia-noite
+        if (minutosTermino < minutosInicio) {
+            minutosTermino += 24 * 60; // Adiciona 24 horas
         }
+
+        return minutosTermino - minutosInicio;
     };
 
-    const handleValidarHorario = async (horaEntrada: string) => {
-        if (!horaEntrada) {
-            alert('Por favor, informe a hora de entrada.');
-            return null;
+    // Função inteligente para enviar WhatsApp
+    const enviarWhatsAppInteligente = async (rondasParaEnviar: Ronda[], dataPlantao: string, escalaPlantao: string) => {
+        if (rondasParaEnviar.length === 0) {
+            alert('Nenhuma ronda para enviar!');
+            return;
         }
 
-        try {
-            setLoading(true);
-            const resultado = await validarHorarioEntrada(token, horaEntrada);
+        // Calcular período do plantão
+        const dataPlantaoObj = new Date(dataPlantao + 'T00:00:00');
+        let inicio, fim;
 
-            if (!resultado.horario_valido) {
-                alert(resultado.mensagem);
-            } else {
-                alert('Horário válido!');
+        if (escalaPlantao === '18 às 06') {
+            inicio = new Date(dataPlantaoObj);
+            inicio.setHours(18, 0, 0, 0);
+
+            fim = new Date(dataPlantaoObj);
+            fim.setDate(fim.getDate() + 1);
+            fim.setHours(6, 0, 0, 0);
+        } else {
+            inicio = new Date(dataPlantaoObj);
+            inicio.setHours(6, 0, 0, 0);
+
+            fim = new Date(dataPlantaoObj);
+            fim.setHours(18, 0, 0, 0);
+        }
+
+        let mensagem = `Plantão ${dataPlantao} (${escalaPlantao})\n`;
+        mensagem += `Período: ${inicio.toLocaleString('pt-BR')} - ${fim.toLocaleString('pt-BR')}\n\n`;
+
+        rondasParaEnviar.forEach((ronda, index) => {
+            mensagem += `${index + 1}. ${ronda.residencial}\n`;
+            mensagem += `   Início: ${ronda.inicio} - Fim: ${ronda.termino || 'Em andamento'}\n`;
+            if (ronda.duracao) {
+                mensagem += `   Duração: ${ronda.duracao} minutos\n`;
             }
+            mensagem += '\n';
+        });
 
-            return resultado;
-        } catch (error) {
-            console.error('Erro ao validar horário:', error);
-            alert('Erro ao validar horário.');
-            return null;
-        } finally {
-            setLoading(false);
-        }
-    };
+        mensagem += `✅ Total: ${rondasParaEnviar.length} rondas no plantão`;
 
-    const handleIniciarRonda = async (
-        tipoRonda: 'regular' | 'esporadica',
-        dados: {
-            condominioId: number;
-            dataPlantao: string;
-            escalaPlantao: string;
-            horaEntrada?: string;
-            turno?: string;
-            userId?: number;
-            observacoes?: string;
-        }
-    ) => {
-        if (!dados.dataPlantao || !dados.escalaPlantao) {
-            alert('Por favor, preencha todos os campos obrigatórios.');
-            return false;
-        }
-
+        // Tentar enviar para WhatsApp Mobile primeiro
         try {
-            setLoading(true);
-            let resultado;
-
-            if (tipoRonda === 'regular') {
-                resultado = await iniciarRonda(token, {
-                    condominio_id: dados.condominioId,
-                    data_plantao: dados.dataPlantao,
-                    escala_plantao: dados.escalaPlantao,
-                    user_id: dados.userId
+            if (navigator.share) {
+                await navigator.share({
+                    title: 'Relatório de Rondas',
+                    text: mensagem
                 });
+                alert('Relatório enviado via WhatsApp Mobile!');
             } else {
-                if (!dados.horaEntrada || !dados.turno) {
-                    alert('Para rondas esporádicas, hora de entrada e turno são obrigatórios.');
-                    return false;
-                }
-                resultado = await iniciarRondaEsporadica(token, {
-                    condominio_id: dados.condominioId,
-                    user_id: dados.userId || 1,
-                    data_plantao: dados.dataPlantao,
-                    hora_entrada: dados.horaEntrada,
-                    escala_plantao: dados.escalaPlantao,
-                    turno: dados.turno,
-                    observacoes: dados.observacoes
-                });
-            }
-
-            if (resultado.sucesso) {
-                alert('Ronda iniciada com sucesso!');
-                return true;
-            } else {
-                alert(resultado.message);
-                return false;
-            }
-        } catch (error) {
-            console.error('Erro ao iniciar ronda:', error);
-            alert('Erro ao iniciar ronda.');
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleFinalizarRonda = async (
-        tipoRonda: 'regular' | 'esporadica',
-        rondaId: number,
-        dados: {
-            logBruto?: string;
-            horaSaida?: string;
-            observacoes?: string;
-        }
-    ) => {
-        try {
-            setLoading(true);
-            let resultado;
-
-            if (tipoRonda === 'regular') {
-                resultado = await finalizarRonda(token, rondaId, {
-                    log_bruto: dados.logBruto,
-                    observacoes: dados.observacoes
-                });
-            } else {
-                if (!dados.horaSaida) {
-                    alert('Para rondas esporádicas, hora de saída é obrigatória.');
-                    return false;
-                }
-                resultado = await finalizarRondaEsporadica(token, rondaId, {
-                    hora_saida: dados.horaSaida,
-                    observacoes: dados.observacoes
-                });
-            }
-
-            if (resultado.sucesso) {
-                alert('Ronda finalizada com sucesso!');
-                return true;
-            } else {
-                alert(resultado.message);
-                return false;
-            }
-        } catch (error) {
-            console.error('Erro ao finalizar ronda:', error);
-            alert('Erro ao finalizar ronda.');
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleGerarRelatorio = async (condominioId: number, dataPlantao: string) => {
-        if (!dataPlantao) {
-            alert('Por favor, informe a data do plantão.');
-            return false;
-        }
-
-        try {
-            setLoading(true);
-            const resultado = await gerarRelatorioRonda(token, condominioId, dataPlantao);
-
-            if (resultado.sucesso && resultado.relatorio) {
-                navigator.clipboard.writeText(resultado.relatorio);
-                alert('Relatório copiado para a área de transferência!');
-                return true;
-            } else {
-                alert(resultado.message);
-                return false;
-            }
-        } catch (error) {
-            console.error('Erro ao gerar relatório:', error);
-            alert('Erro ao gerar relatório.');
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleEnviarWhatsApp = async (condominioId: number, dataPlantao: string) => {
-        if (!dataPlantao) {
-            alert('Por favor, informe a data do plantão.');
-            return false;
-        }
-
-        try {
-            setLoading(true);
-            const resultado = await enviarRondaWhatsApp(token, condominioId, dataPlantao);
-
-            if (resultado.sucesso) {
-                alert('Relatório enviado via WhatsApp!');
-                return true;
-            } else {
-                alert(resultado.message);
-                return false;
+                // Fallback para WhatsApp Web
+                const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+                window.open(url, '_blank');
+                alert('Relatório aberto no WhatsApp Web!');
             }
         } catch (error) {
             console.error('Erro ao enviar WhatsApp:', error);
-            alert('Erro ao enviar WhatsApp.');
+            alert('Erro ao enviar WhatsApp!');
+        }
+    };
+
+    // Ações de ronda
+    const iniciarRonda = (
+        residencial: string,
+        inicioRonda: string,
+        setRondaAtual: (ronda: Ronda | null) => void,
+        setInicioRonda: (valor: string) => void,
+        setContador: (valor: number) => void,
+        setContadorAtivo: (valor: boolean) => void
+    ) => {
+        if (!residencial || !inicioRonda) {
+            alert('Preencha o residencial e horário de início!');
+            return false;
+        }
+
+        const novaRonda: Ronda = {
+            residencial,
+            inicio: inicioRonda,
+            status: 'iniciada'
+        };
+
+        setRondaAtual(novaRonda);
+        setInicioRonda('');
+        setContador(1200); // Reset do contador
+        setContadorAtivo(true);
+
+        alert('Ronda iniciada! Agora você pode finalizar quando terminar.');
+        return true;
+    };
+
+    const finalizarRonda = (
+        rondaAtual: Ronda | null,
+        terminoRonda: string,
+        setRondas: React.Dispatch<React.SetStateAction<Ronda[]>>,
+        setRondaAtual: (ronda: Ronda | null) => void,
+        setTerminoRonda: (valor: string) => void,
+        setContadorAtivo: (valor: boolean) => void
+    ) => {
+        if (!rondaAtual || !terminoRonda) {
+            alert('Preencha o horário de término!');
+            return false;
+        }
+
+        const duracao = calcularDuracao(rondaAtual.inicio, terminoRonda);
+
+        if (duracao <= 0) {
+            alert('O horário de término deve ser posterior ao início!');
+            return false;
+        }
+
+        const rondaFinalizada: Ronda = {
+            ...rondaAtual,
+            termino: terminoRonda,
+            duracao,
+            status: 'finalizada'
+        };
+
+        setRondas(prev => [...prev, rondaFinalizada]);
+        setRondaAtual(null);
+        setTerminoRonda('');
+        setContadorAtivo(false);
+
+        alert('Ronda finalizada e adicionada à lista!');
+        return true;
+    };
+
+    const removerRonda = (
+        index: number,
+        setRondas: React.Dispatch<React.SetStateAction<Ronda[]>>
+    ) => {
+        setRondas(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Ações do contador
+    const iniciarContador = (
+        setContadorAtivo: (valor: boolean) => void,
+        setContador: (valor: number) => void
+    ) => {
+        setContadorAtivo(true);
+        setContador(1200); // 20 minutos
+    };
+
+    const pararContador = (setContadorAtivo: (valor: boolean) => void) => {
+        setContadorAtivo(false);
+    };
+
+    // Salvar rondas
+    const salvarRondas = async (
+        rondas: Ronda[],
+        condominioId: number,
+        dataPlantao: string,
+        escalaPlantao: string,
+        setLoading: (valor: boolean) => void,
+        setRondasSalvas: React.Dispatch<React.SetStateAction<Ronda[]>>,
+        setRondas: React.Dispatch<React.SetStateAction<Ronda[]>>,
+        verificarCondominiosPendentes: () => string[],
+        buscarRondasDoCondominio: (id: number) => Promise<void>
+    ) => {
+        if (rondas.length === 0) {
+            alert('Adicione pelo menos uma ronda!');
+            return false;
+        }
+
+        setLoading(true);
+        try {
+            console.log('💾 DEBUG - Salvando rondas:', {
+                totalRondas: rondas.length,
+                condominioId,
+                dataPlantao,
+                escalaPlantao,
+                rondas: rondas
+            });
+
+            // Salvar cada ronda como esporádica completa
+            for (const ronda of rondas) {
+                if (ronda.termino && ronda.duracao) {
+                    const dadosRonda = {
+                        condominio_id: condominioId,
+                        user_id: 1,
+                        data_plantao: dataPlantao,
+                        hora_entrada: ronda.inicio,
+                        hora_saida: ronda.termino,
+                        escala_plantao: escalaPlantao,
+                        turno: escalaPlantao === "18 às 06" ? "Noite" : "Dia",
+                        observacoes: `Ronda no residencial ${ronda.residencial}`
+                    };
+
+                    console.log('💾 DEBUG - Salvando ronda:', dadosRonda);
+
+                    const resultado = await salvarRondaCompleta(token, dadosRonda);
+                    console.log('✅ DEBUG - Ronda salva:', resultado);
+                }
+            }
+
+            // Adicionar às rondas salvas
+            setRondasSalvas(prev => [...prev, ...rondas]);
+
+            alert('Rondas salvas com sucesso!');
+            setRondas([]);
+
+            // Verificar condomínios pendentes
+            verificarCondominiosPendentes();
+
+            // Buscar rondas executadas novamente para atualizar a lista
+            if (condominioId > 1) {
+                console.log('🔄 DEBUG - Buscando rondas executadas após salvar...');
+                await buscarRondasDoCondominio(condominioId);
+            }
+
+            return true;
+        } catch (error) {
+            console.error('🚨 DEBUG - Erro ao salvar rondas:', error);
+            alert('Erro ao salvar rondas!');
             return false;
         } finally {
             setLoading(false);
         }
     };
 
-    const handleConsolidarTurno = async (condominioId: number, dataPlantao: string) => {
-        if (!dataPlantao) {
-            alert('Por favor, informe a data.');
-            return null;
+    // Enviar WhatsApp
+    const enviarWhatsApp = async (
+        rondasExecutadas: RondaExecutada[],
+        rondas: Ronda[],
+        dataPlantao: string,
+        escalaPlantao: string,
+        verificarCondominiosPendentes: () => string[]
+    ) => {
+        // Enviar rondas esporádicas já salvas primeiro
+        if (rondasExecutadas.length > 0) {
+            await enviarWhatsAppInteligente(rondasExecutadas.map(r => ({
+                id: r.id,
+                residencial: r.observacoes || 'Condomínio',
+                inicio: r.hora_entrada,
+                termino: r.hora_saida,
+                duracao: r.duracao_minutos,
+                status: 'finalizada' as const
+            })), dataPlantao, escalaPlantao);
         }
 
-        try {
-            setLoading(true);
-            const resultado = await consolidarTurnoRondasEsporadicas(token, condominioId, dataPlantao);
-
-            if (resultado.sucesso) {
-                alert('Turno consolidado com sucesso!');
-            } else {
-                alert(resultado.message);
-            }
-
-            return resultado;
-        } catch (error) {
-            console.error('Erro ao consolidar turno:', error);
-            alert('Erro ao consolidar turno.');
-            return null;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleProcessoCompleto = async (condominioId: number, dataPlantao: string) => {
-        if (!dataPlantao) {
-            alert('Por favor, informe a data.');
-            return null;
+        // Depois enviar rondas atuais se houver
+        if (rondas.length > 0) {
+            await enviarWhatsAppInteligente(rondas, dataPlantao, escalaPlantao);
         }
 
-        try {
-            setLoading(true);
-            const resultado = await processoCompletoConsolidacao(token, condominioId, dataPlantao);
-
-            if (resultado.sucesso) {
-                alert('Processo completo executado com sucesso!');
-            } else {
-                alert(resultado.message);
-            }
-
-            return resultado;
-        } catch (error) {
-            console.error('Erro no processo completo:', error);
-            alert('Erro no processo completo.');
-            return null;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleMarcarProcessadas = async (condominioId: number, dataPlantao: string) => {
-        if (!dataPlantao) {
-            alert('Por favor, informe a data.');
-            return false;
-        }
-
-        try {
-            setLoading(true);
-            const resultado = await marcarRondasProcessadas(token, condominioId, dataPlantao);
-
-            if (resultado.sucesso) {
-                alert('Rondas marcadas como processadas!');
-                return true;
-            } else {
-                alert(resultado.message);
-                return false;
-            }
-        } catch (error) {
-            console.error('Erro ao marcar processadas:', error);
-            alert('Erro ao marcar processadas.');
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleStatusConsolidacao = async (condominioId: number, dataPlantao: string): Promise<StatusConsolidacao> => {
-        if (!dataPlantao) {
-            alert('Por favor, informe a data.');
-            return {
-                sucesso: false,
-                data: dataPlantao,
-                condominio_id: condominioId,
-                status: {
-                    total_rondas_esporadicas: 0,
-                    rondas_finalizadas: 0,
-                    rondas_processadas: 0,
-                    duracao_total_minutos: 0,
-                    ronda_principal_criada: false,
-                    pode_consolidar: false,
-                    ja_consolidado: false
-                },
-                rondas: []
-            };
-        }
-
-        try {
-            setLoading(true);
-            const resultado = await statusConsolidacao(token, condominioId, dataPlantao);
-            return resultado;
-        } catch (error) {
-            console.error('Erro ao verificar status de consolidação:', error);
-            alert('Erro ao verificar status de consolidação.');
-            return {
-                sucesso: false,
-                data: dataPlantao,
-                condominio_id: condominioId,
-                status: {
-                    total_rondas_esporadicas: 0,
-                    rondas_finalizadas: 0,
-                    rondas_processadas: 0,
-                    duracao_total_minutos: 0,
-                    ronda_principal_criada: false,
-                    pode_consolidar: false,
-                    ja_consolidado: false
-                },
-                rondas: []
-            };
-        } finally {
-            setLoading(false);
-        }
+        // Verificar condomínios pendentes
+        verificarCondominiosPendentes();
     };
 
     return {
-        handleListarCondominios,
-        handleBuscarCondominios,
-        handleValidarHorario,
-        handleIniciarRonda,
-        handleFinalizarRonda,
-        handleGerarRelatorio,
-        handleEnviarWhatsApp,
-        handleConsolidarTurno,
-        handleProcessoCompleto,
-        handleMarcarProcessadas,
-        handleStatusConsolidacao
+        // Funções utilitárias
+        formatarTempo,
+        calcularDuracao,
+        enviarWhatsAppInteligente,
+
+        // Ações de ronda
+        iniciarRonda,
+        finalizarRonda,
+        removerRonda,
+
+        // Ações do contador
+        iniciarContador,
+        pararContador,
+
+        // Ações de persistência
+        salvarRondas,
+        enviarWhatsApp
     };
 }; 

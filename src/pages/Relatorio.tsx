@@ -6,7 +6,7 @@ import { BaseScreen } from '../components/BaseScreen';
 import { AutoComplete } from '../components/AutoComplete';
 import { colors } from '../theme/colors';
 import { analisarRelatorio } from '../services/relatorios';
-import { buscarColaboradores } from '../services/colaboradores';
+import { listarColaboradores, buscarColaboradores } from '../services/domains/colaboradores';
 import { buscarEnderecos } from '../services/enderecos';
 
 interface RelatorioScreenProps {

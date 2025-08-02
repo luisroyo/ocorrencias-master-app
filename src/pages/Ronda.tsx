@@ -413,7 +413,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                         ⚙️ Configurações do Plantão
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                                 Data do Plantão
@@ -553,7 +553,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                         🚀 Nova Ronda
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                                 Condomínio
@@ -627,7 +627,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                             <strong>Início:</strong> {rondaAtual.inicio}
                         </div>
 
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
                                     Horário de Término
@@ -643,7 +643,7 @@ export const RondaScreen: React.FC<RondaScreenProps> = ({ token }) => {
                                 title="⏹️ Finalizar Ronda"
                                 onClick={finalizarRonda}
                                 disabled={loading || !terminoRonda}
-                                style={{ backgroundColor: colors.danger, marginTop: '20px' }}
+                                style={{ backgroundColor: colors.danger }}
                             />
                         </div>
                     </div>

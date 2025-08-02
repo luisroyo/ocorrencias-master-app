@@ -1,7 +1,7 @@
-// Para produção (Render), use o endereço abaixo:
-const API_BASE_URL = 'https://processador-relatorios-ia.onrender.com'; // Backend Flask Render
-// Para desenvolvimento local, troque para:
-// const API_BASE_URL = 'http://localhost:5000';
+// Configuração automática baseada no ambiente
+const API_BASE_URL = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5000'  // Backend local em desenvolvimento
+    : 'https://processador-relatorios-ia.onrender.com'; // Backend de produção
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}, token?: string) {
     const headers: HeadersInit = {

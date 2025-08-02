@@ -136,19 +136,35 @@ export async function listarCondominios(token: string): Promise<ListaCondominios
 // Buscar condomínios com autocompletar
 export async function buscarCondominios(nome: string, token?: string): Promise<{ condominios: Condominio[], error?: string }> {
     try {
-        console.log('Buscando condomínios:', { nome });
+        console.log('🔍 DEBUG - Buscando condomínios:', { nome });
 
         const params = new URLSearchParams();
         if (nome) {
             params.append('nome', nome);
         }
 
-        const response = await apiFetch(`/api/condominios?${params.toString()}`, {}, token);
+        const url = `/api/condominios?${params.toString()}`;
+        console.log('🌐 DEBUG - URL da requisição:', url);
 
-        console.log('Resposta da busca de condomínios:', response);
-        return { condominios: response.condominios || [] };
+        const response = await apiFetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }, token);
+
+        console.log('📊 DEBUG - Resposta da busca de condomínios:', response);
+
+        if (response && response.condominios) {
+            console.log('✅ DEBUG - Condomínios encontrados:', response.condominios.length);
+            return { condominios: response.condominios };
+        } else {
+            console.warn('⚠️ DEBUG - Resposta inesperada da API de condomínios:', response);
+            return { condominios: [] };
+        }
     } catch (error: any) {
-        console.error('Erro ao buscar condomínios:', error);
+        console.error('🚨 DEBUG - Erro ao buscar condomínios:', error);
         return { condominios: [], error: error.message };
     }
 }
@@ -208,19 +224,35 @@ export async function listarColaboradores(token: string): Promise<ListaColaborad
 // Buscar colaboradores com autocompletar (igual ao usado em ocorrências)
 export async function buscarColaboradores(nome: string, token?: string): Promise<{ colaboradores: Colaborador[], error?: string }> {
     try {
-        console.log('Buscando colaboradores:', { nome });
+        console.log('🔍 DEBUG - Buscando colaboradores:', { nome });
 
         const params = new URLSearchParams();
         if (nome) {
             params.append('nome', nome);
         }
 
-        const response = await apiFetch(`/api/colaboradores?${params.toString()}`, {}, token);
+        const url = `/api/colaboradores?${params.toString()}`;
+        console.log('🌐 DEBUG - URL da requisição:', url);
 
-        console.log('Resposta da busca de colaboradores:', response);
-        return { colaboradores: response.colaboradores || [] };
+        const response = await apiFetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }, token);
+
+        console.log('📊 DEBUG - Resposta da busca de colaboradores:', response);
+
+        if (response && response.colaboradores) {
+            console.log('✅ DEBUG - Colaboradores encontrados:', response.colaboradores.length);
+            return { colaboradores: response.colaboradores };
+        } else {
+            console.warn('⚠️ DEBUG - Resposta inesperada da API de colaboradores:', response);
+            return { colaboradores: [] };
+        }
     } catch (error: any) {
-        console.error('Erro ao buscar colaboradores:', error);
+        console.error('🚨 DEBUG - Erro ao buscar colaboradores:', error);
         return { colaboradores: [], error: error.message };
     }
 }

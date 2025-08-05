@@ -14,7 +14,7 @@ interface RelatorioScreenProps {
     onRelatorioCorrigido?: (relatorio: string) => void;
 }
 
-export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token = 'mock-token', onRelatorioCorrigido }) => {
+export const RelatorioScreen: React.FC<RelatorioScreenProps> = ({ token, onRelatorioCorrigido }) => {
     const [data, setData] = useState<string>('');
     const [hora, setHora] = useState<string>('');
     const [endereco, setEndereco] = useState('');
@@ -153,6 +153,12 @@ Responsável pelo registro: [Nome do agente]`;
             return;
         }
 
+        // Verificar se o usuário colou o prompt de instruções por engano
+        if (relatorioBruto.includes('PROMPT PARA CORRIGIR RELATÓRIOS DE OCORRÊNCIA:')) {
+            alert('Você colou o prompt de instruções. Por favor, cole apenas o relatório bruto original.');
+            return;
+        }
+
         // Monta o texto com os campos preenchidos acima do relatório bruto
         const textoMontado = `
 Data: ${data || '[Preencher data]'}
@@ -164,6 +170,8 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
 
         setLoading(true);
         try {
+            console.log('Token sendo usado:', token ? 'Presente' : 'Ausente');
+            console.log('Texto sendo enviado:', textoMontado.substring(0, 200) + '...');
             const response = await analisarRelatorio(token, textoMontado);
             if (response?.sucesso && response.dados) {
                 const relatorioCorrigido = response.dados.relatorio_corrigido || response.dados.relatorio || response.relatorio_corrigido || response.relatorio;
@@ -354,8 +362,30 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
                             📄 Relatório Bruto
                         </label>
+                        <p style={{
+                            margin: '0 0 8px 0',
+                            color: colors.mutedText,
+                            fontSize: '14px',
+                            backgroundColor: '#fff3cd',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ffeaa7'
+                        }}>
+                            ⚠️ Cole apenas o relatório original, não cole o prompt de instruções!
+                        </p>
+                        <p style={{
+                            margin: '0 0 8px 0',
+                            color: colors.mutedText,
+                            fontSize: '12px',
+                            backgroundColor: '#e3f2fd',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #bbdefb'
+                        }}>
+                            💡 Exemplo: "Foi feito contato com o condutor do veículo placa ABC-1234 que estava estacionado irregularmente..."
+                        </p>
                         <textarea
-                            placeholder="Cole ou digite o relatório bruto aqui..."
+                            placeholder="Cole aqui APENAS o relatório bruto original (não cole o prompt de instruções)..."
                             value={relatorioBruto}
                             onChange={(e) => setRelatorioBruto(e.target.value)}
                             style={{

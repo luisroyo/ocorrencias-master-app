@@ -11,7 +11,10 @@ import { AdminRoute } from './components/AdminRoute';
 function App() {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
+    console.log('Token carregado do localStorage:', token ? 'Presente' : 'Ausente');
+
     const handleLogin = (newToken: string) => {
+        console.log('Salvando token:', newToken ? 'Presente' : 'Ausente');
         setToken(newToken);
         localStorage.setItem('token', newToken);
     };

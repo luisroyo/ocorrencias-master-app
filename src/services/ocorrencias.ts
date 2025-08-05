@@ -2,18 +2,23 @@ import { apiFetch } from './api';
 
 export interface Ocorrencia {
     id: number;
-    relatorio_final: string;
+    relatorio_final?: string; // Campo opcional, pode vir como 'descricao' do backend
+    descricao?: string; // Campo que o backend retorna
     data_hora_ocorrencia?: string;
     turno?: string;
     status: string;
-    endereco_especifico?: string;
+    endereco_especifico?: string; // Campo opcional, pode vir como 'endereco' do backend
+    endereco?: string; // Campo que o backend retorna
     condominio?: string;
     tipo?: string;
-    supervisor?: number;
-    colaboradores?: string[];
-    orgaos_acionados?: string[];
+    supervisor?: string; // Backend retorna string (nome do supervisor), não number
+    supervisor_id?: number; // ID do supervisor
+    registrado_por?: string; // Nome do usuário que registrou
+    registrado_por_user_id?: number; // ID do usuário que registrou
     data_criacao?: string;
     data_modificacao?: string;
+    colaboradores?: string[];
+    orgaos_acionados?: string[];
 }
 
 export interface FiltrosOcorrencia {
@@ -28,14 +33,44 @@ export interface FiltrosOcorrencia {
 // Analisar relatório (já existe, mas vou melhorar)
 export async function analisarRelatorio(token: string, texto_relatorio: string) {
     try {
-        console.log('Analisando relatório:', { texto_relatorio: texto_relatorio.substring(0, 100) + '...' });
+        if (!token) {
+            console.error('Token não fornecido para análise de relatório');
+            return { sucesso: false, message: 'Token de autenticação não fornecido' };
+        }
+
+        if (!texto_relatorio || texto_relatorio.trim() === '') {
+            console.error('Texto do relatório vazio');
+            return { sucesso: false, message: 'Texto do relatório é obrigatório' };
+        }
+
+        console.log('Analisando relatório:', {
+            token: token ? 'Presente' : 'Ausente',
+            texto_relatorio: texto_relatorio.substring(0, 100) + '...'
+        });
+
+        const requestBody = { relatorio_bruto: texto_relatorio };
+        console.log('Enviando para API:', JSON.stringify(requestBody, null, 2));
 
         const response = await apiFetch('/api/ocorrencias/analisar-relatorio', {
             method: 'POST',
-            body: JSON.stringify({ texto_relatorio }),
+            body: JSON.stringify(requestBody),
         }, token);
 
         console.log('Resposta da análise:', response);
+
+        // Verificar se a resposta tem a estrutura esperada
+        if (response.classificacao && response.relatorio_processado) {
+            return {
+                sucesso: true,
+                dados: {
+                    classificacao: response.classificacao,
+                    relatorio_corrigido: response.relatorio_processado,
+                    // Outros campos que podem vir do backend
+                    ...response
+                }
+            };
+        }
+
         return response;
     } catch (error) {
         console.error('Erro ao analisar relatório:', error);
@@ -61,7 +96,7 @@ export async function buscarHistoricoOcorrencias(token: string, filtros?: Filtro
         }, token);
 
         console.log('Resposta do histórico:', response);
-        return { historico: response.historico || [] };
+        return { historico: response.ocorrencias || [] };
     } catch (error: any) {
         console.error('Erro ao buscar histórico:', error);
         return { historico: [], error: error.message };

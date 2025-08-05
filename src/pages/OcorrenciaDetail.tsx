@@ -9,7 +9,7 @@ interface OcorrenciaDetailScreenProps {
     token?: string;
 }
 
-export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ token = 'mock-token' }) => {
+export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ token }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [ocorrencia, setOcorrencia] = useState<Ocorrencia | null>(null);
@@ -72,15 +72,17 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
     };
 
     const handleCopiar = () => {
-        if (ocorrencia?.relatorio_final) {
-            navigator.clipboard.writeText(ocorrencia.relatorio_final);
+        const relatorio = ocorrencia?.relatorio_final || ocorrencia?.descricao;
+        if (relatorio) {
+            navigator.clipboard.writeText(relatorio);
             alert('Relatório copiado para a área de transferência!');
         }
     };
 
     const handleEnviarWhatsApp = () => {
-        if (ocorrencia?.relatorio_final) {
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(ocorrencia.relatorio_final)}`;
+        const relatorio = ocorrencia?.relatorio_final || ocorrencia?.descricao;
+        if (relatorio) {
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(relatorio)}`;
             window.open(whatsappUrl, '_blank');
         }
     };
@@ -169,7 +171,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                                 📍 Local:
                             </p>
                             <p style={{ margin: '0', color: colors.mutedText }}>
-                                {ocorrencia.endereco_especifico || 'N/A'}
+                                {ocorrencia.endereco_especifico || ocorrencia.endereco || 'N/A'}
                             </p>
                         </div>
 
@@ -286,7 +288,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                         maxHeight: '400px',
                         overflowY: 'auto'
                     }}>
-                        {ocorrencia.relatorio_final || 'Nenhum relatório disponível'}
+                        {ocorrencia.relatorio_final || ocorrencia.descricao || 'Nenhum relatório disponível'}
                     </pre>
                 </div>
 
@@ -322,7 +324,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                         {ocorrencia.supervisor && (
                             <div>
                                 <p style={{ margin: '0 0 4px 0', color: colors.headingText, fontWeight: 'bold' }}>
-                                    Supervisor ID:
+                                    Supervisor:
                                 </p>
                                 <p style={{ margin: '0', color: colors.mutedText, fontSize: '14px' }}>
                                     {ocorrencia.supervisor}

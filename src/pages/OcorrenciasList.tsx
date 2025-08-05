@@ -10,7 +10,7 @@ interface OcorrenciasListScreenProps {
     token?: string;
 }
 
-export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ token = 'mock-token' }) => {
+export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ token }) => {
     const navigate = useNavigate();
     const [ocorrencias, setOcorrencias] = useState<Ocorrencia[]>([]);
     const [loading, setLoading] = useState(false);
@@ -19,8 +19,15 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
     const [dataFim, setDataFim] = useState('');
 
     const carregarOcorrencias = async () => {
+        if (!token) {
+            console.error('Token não fornecido');
+            return;
+        }
+
         setLoading(true);
         try {
+            console.log('Token sendo usado:', token ? 'Presente' : 'Ausente');
+
             const filtrosCompletos = {
                 ...filtros,
                 data_inicio: dataInicio || undefined,
@@ -237,7 +244,7 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                                             📍 Local:
                                         </p>
                                         <p style={{ margin: '0', color: colors.mutedText }}>
-                                            {ocorrencia.endereco_especifico || 'N/A'}
+                                            {ocorrencia.endereco_especifico || ocorrencia.endereco || 'N/A'}
                                         </p>
                                     </div>
 
@@ -264,7 +271,7 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                                             WebkitLineClamp: 3,
                                             WebkitBoxOrient: 'vertical'
                                         }}>
-                                            {ocorrencia.relatorio_final || 'N/A'}
+                                            {ocorrencia.relatorio_final || ocorrencia.descricao || 'N/A'}
                                         </p>
                                     </div>
 
@@ -291,7 +298,7 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                                         <Button
                                             title="📋 Copiar"
                                             onClick={() => {
-                                                navigator.clipboard.writeText(ocorrencia.relatorio_final || '');
+                                                navigator.clipboard.writeText(ocorrencia.relatorio_final || ocorrencia.descricao || '');
                                                 alert('Relatório copiado!');
                                             }}
                                             variant="success"

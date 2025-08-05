@@ -52,9 +52,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
             console.log('Resposta do login:', response);
 
-            if (response?.token) {
+            if (response?.access_token) {
                 localStorage.setItem('savedEmail', email);
-                onLogin(response.token);
+                onLogin(response.access_token);
             } else {
                 alert('E-mail ou senha inválidos.');
             }

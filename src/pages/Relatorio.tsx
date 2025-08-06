@@ -376,28 +376,6 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: colors.headingText }}>
                             📄 Relatório Bruto
                         </label>
-                        <p style={{
-                            margin: '0 0 8px 0',
-                            color: colors.mutedText,
-                            fontSize: '14px',
-                            backgroundColor: '#fff3cd',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: '1px solid #ffeaa7'
-                        }}>
-                            ⚠️ Cole apenas o relatório original, não cole o prompt de instruções!
-                        </p>
-                        <p style={{
-                            margin: '0 0 8px 0',
-                            color: colors.mutedText,
-                            fontSize: '12px',
-                            backgroundColor: '#e3f2fd',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: '1px solid #bbdefb'
-                        }}>
-                            💡 Exemplo: "Foi feito contato com o condutor do veículo placa ABC-1234 que estava estacionado irregularmente..."
-                        </p>
                         <textarea
                             placeholder="Cole aqui APENAS o relatório bruto original (não cole o prompt de instruções)..."
                             value={relatorioBruto}

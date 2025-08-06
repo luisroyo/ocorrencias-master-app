@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocorrencias-v1.0.2';
+const CACHE_NAME = 'ocorrencias-v1.0.3';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -19,6 +19,7 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         // Força a ativação imediata do novo Service Worker
+        console.log('Pulando espera e ativando imediatamente...');
         return self.skipWaiting();
       })
   );
@@ -69,6 +70,7 @@ self.addEventListener('activate', (event) => {
       );
     }).then(() => {
       // Toma controle de todas as páginas abertas
+      console.log('Tomando controle de todas as páginas...');
       return self.clients.claim();
     })
   );
@@ -76,8 +78,18 @@ self.addEventListener('activate', (event) => {
 
 // Listener para mensagens do app
 self.addEventListener('message', (event) => {
+  console.log('Mensagem recebida no Service Worker:', event.data);
+  
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('Recebida mensagem SKIP_WAITING');
-    self.skipWaiting();
+    console.log('Recebida mensagem SKIP_WAITING - pulando espera...');
+    self.skipWaiting().then(() => {
+      console.log('skipWaiting() executado com sucesso');
+      // Notifica todos os clientes sobre a atualização
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'UPDATE_READY' });
+        });
+      });
+    });
   }
 }); 

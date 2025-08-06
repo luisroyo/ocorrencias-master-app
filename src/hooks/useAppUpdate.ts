@@ -32,15 +32,39 @@ export const useAppUpdate = (): UpdateInfo => {
           });
 
           // Listener para quando o Service Worker é atualizado
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
+          const handleControllerChange = () => {
             console.log('Service Worker atualizado!');
             setHasUpdate(false);
             setIsUpdating(false);
             // Recarregar a página para aplicar as atualizações
             window.location.reload();
-          });
+          };
 
-          return () => clearInterval(interval);
+          // Listener para mensagens do Service Worker
+          const handleMessage = (event: MessageEvent) => {
+            console.log('Mensagem recebida do Service Worker:', event.data);
+            if (event.data && event.data.type === 'UPDATE_READY') {
+              console.log('Atualização pronta - recarregando...');
+              setHasUpdate(false);
+              setIsUpdating(false);
+              window.location.reload();
+            }
+          };
+
+          navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+          navigator.serviceWorker.addEventListener('message', handleMessage);
+
+          // Verificar se já há uma atualização pendente
+          if (registration.waiting) {
+            console.log('Atualização pendente encontrada!');
+            setHasUpdate(true);
+          }
+
+          return () => {
+            clearInterval(interval);
+            navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+            navigator.serviceWorker.removeEventListener('message', handleMessage);
+          };
         })
         .catch((registrationError) => {
           console.log('SW registration failed: ', registrationError);
@@ -50,9 +74,35 @@ export const useAppUpdate = (): UpdateInfo => {
 
   const updateApp = () => {
     setIsUpdating(true);
+    console.log('Iniciando atualização...');
+    
     // Forçar atualização do Service Worker
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    if ('serviceWorker' in navigator) {
+      if (navigator.serviceWorker.controller) {
+        // Se já temos um controller, envia mensagem para pular espera
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+        console.log('Mensagem SKIP_WAITING enviada');
+        
+        // Fallback: se não receber resposta em 3 segundos, recarrega
+        setTimeout(() => {
+          if (isUpdating) {
+            console.log('Fallback: timeout - recarregando página');
+            window.location.reload();
+          }
+        }, 3000);
+      } else {
+        // Fallback: recarrega a página diretamente
+        console.log('Fallback: recarregando página diretamente');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    } else {
+      // Fallback para navegadores sem Service Worker
+      console.log('Fallback: navegador sem Service Worker');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 

@@ -7,9 +7,12 @@ import { OcorrenciasListScreen } from './pages/OcorrenciasList';
 import { OcorrenciaDetailScreen } from './pages/OcorrenciaDetail';
 import Layout from './components/Layout';
 import { AdminRoute } from './components/AdminRoute';
+import { useAppUpdate } from './hooks/useAppUpdate';
+import { UpdateNotification } from './components/UpdateNotification';
 
 function App() {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const { hasUpdate, isUpdating, updateApp } = useAppUpdate();
 
     console.log('Token carregado do localStorage:', token ? 'Presente' : 'Ausente');
 
@@ -26,11 +29,25 @@ function App() {
 
     // Se não está logado, mostra a tela de login
     if (!token) {
-        return <LoginScreen onLogin={handleLogin} />;
+        return (
+            <>
+                <LoginScreen onLogin={handleLogin} />
+                <UpdateNotification 
+                    hasUpdate={hasUpdate} 
+                    isUpdating={isUpdating} 
+                    onUpdate={updateApp} 
+                />
+            </>
+        );
     }
 
     return (
         <div className="App">
+            <UpdateNotification 
+                hasUpdate={hasUpdate} 
+                isUpdating={isUpdating} 
+                onUpdate={updateApp} 
+            />
             <Routes>
                 <Route path="/" element={<Layout onLogout={handleLogout} token={token} />}>
                     <Route index element={<RelatorioScreen token={token} />} />

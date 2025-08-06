@@ -28,7 +28,10 @@ export const useAppUpdate = (): UpdateInfo => {
           // Listener para quando uma nova versão está disponível
           registration.addEventListener('updatefound', () => {
             console.log('Nova versão do app disponível!');
-            setHasUpdate(true);
+            // Só mostra a notificação se não estiver atualizando
+            if (!isUpdating) {
+              setHasUpdate(true);
+            }
           });
 
           // Listener para quando o Service Worker é atualizado
@@ -70,10 +73,11 @@ export const useAppUpdate = (): UpdateInfo => {
           console.log('SW registration failed: ', registrationError);
         });
     }
-  }, []);
+  }, [isUpdating]); // Adiciona isUpdating como dependência
 
   const updateApp = () => {
     setIsUpdating(true);
+    setHasUpdate(false); // Esconde a notificação imediatamente
     console.log('Iniciando atualização...');
     
     // Forçar atualização do Service Worker

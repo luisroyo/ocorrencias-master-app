@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocorrencias-v1.0.3';
+const CACHE_NAME = 'ocorrencias-v1.0.4';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -8,9 +8,15 @@ const urlsToCache = [
   '/assets/icon-1024.png'
 ];
 
+let isInstalling = false;
+
 // Install event - cache resources
 self.addEventListener('install', (event) => {
+  if (isInstalling) return; // Evita instalações duplicadas
+  
+  isInstalling = true;
   console.log('Service Worker instalando...');
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -21,6 +27,10 @@ self.addEventListener('install', (event) => {
         // Força a ativação imediata do novo Service Worker
         console.log('Pulando espera e ativando imediatamente...');
         return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('Erro na instalação:', error);
+        isInstalling = false;
       })
   );
 });
@@ -58,6 +68,8 @@ self.addEventListener('fetch', (event) => {
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   console.log('Service Worker ativando...');
+  isInstalling = false;
+  
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(

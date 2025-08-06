@@ -212,8 +212,22 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
             alert('Gere o relatório limpo antes de enviar.');
             return;
         }
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
-        window.open(whatsappUrl, '_blank');
+        
+        // Tenta primeiro o esquema nativo do WhatsApp
+        const whatsappNativeUrl = `whatsapp://send?text=${encodeURIComponent(relatorioLimpo)}`;
+        const whatsappWebUrl = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
+        
+        // Verifica se o esquema nativo está disponível
+        const link = document.createElement('a');
+        link.href = whatsappNativeUrl;
+        
+        // Tenta abrir o esquema nativo
+        try {
+            window.location.href = whatsappNativeUrl;
+        } catch (error) {
+            // Se falhar, abre o link web
+            window.open(whatsappWebUrl, '_blank');
+        }
     };
 
     const handleCopiar = () => {

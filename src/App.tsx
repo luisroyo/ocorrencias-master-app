@@ -11,23 +11,24 @@ import { useAppUpdate } from './hooks/useAppUpdate';
 import { UpdateNotification } from './components/UpdateNotification';
 
 function App() {
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [token, setToken] = useState<string | null>(null);
     const { hasUpdate, isUpdating, updateApp } = useAppUpdate();
 
-    console.log('Token carregado do localStorage:', token ? 'Presente' : 'Ausente');
+    console.log('Token atual:', token ? 'Presente' : 'Ausente');
 
     const handleLogin = (newToken: string) => {
-        console.log('Salvando token:', newToken ? 'Presente' : 'Ausente');
+        console.log('Login realizado - token:', newToken ? 'Presente' : 'Ausente');
         setToken(newToken);
-        localStorage.setItem('token', newToken);
+        // Não salva no localStorage - força login sempre
     };
 
     const handleLogout = () => {
+        console.log('Logout realizado');
         setToken(null);
-        localStorage.removeItem('token');
+        // Não remove do localStorage pois não salva
     };
 
-    // Se não está logado, mostra a tela de login
+    // Sempre mostra a tela de login se não estiver logado
     if (!token) {
         return (
             <>

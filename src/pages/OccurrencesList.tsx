@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { apiFetch } from '../services/api';
 
 interface Occurrence {
   id: number;
@@ -21,8 +21,8 @@ const OccurrencesList: React.FC = () => {
 
   const fetchOccurrences = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/ocorrencias');
-      setOccurrences(response.data.ocorrencias || []);
+      const data = await apiFetch('/api/ocorrencias');
+      setOccurrences(data.ocorrencias || []);
     } catch (error) {
       console.error('Erro ao buscar ocorrências:', error);
     } finally {

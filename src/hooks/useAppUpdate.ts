@@ -29,10 +29,7 @@ export const useAppUpdate = (): UpdateInfo => {
           // Listener para quando uma nova versão está disponível
           registration.addEventListener('updatefound', () => {
             console.log('Nova versão do app disponível!');
-            // Só mostra a notificação se não estiver atualizando
-            if (!isUpdating) {
-              setHasUpdate(true);
-            }
+            setHasUpdate(true);
           });
 
           // Listener para quando o Service Worker é atualizado
@@ -85,27 +82,27 @@ export const useAppUpdate = (): UpdateInfo => {
           console.log('SW registration failed: ', registrationError);
         });
     }
-  }, [isUpdating]); // Adiciona isUpdating como dependência
+  }, []); // Remove isUpdating da dependência
 
   const updateApp = () => {
-    setIsUpdating(true);
-    setHasUpdate(false); // Esconde a notificação imediatamente
     console.log('Iniciando atualização...');
-
+    setIsUpdating(true);
+    
+    // Esconder notificação imediatamente
+    setHasUpdate(false);
+    
     // Forçar atualização do Service Worker
     if ('serviceWorker' in navigator) {
       if (navigator.serviceWorker.controller) {
         // Se já temos um controller, envia mensagem para pular espera
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
         console.log('Mensagem SKIP_WAITING enviada');
-
-        // Fallback: se não receber resposta em 2 segundos, recarrega
+        
+        // Fallback: se não receber resposta em 3 segundos, recarrega
         setTimeout(() => {
-          if (isUpdating) {
-            console.log('Fallback: timeout - recarregando página');
-            window.location.reload();
-          }
-        }, 2000);
+          console.log('Fallback: timeout - recarregando página');
+          window.location.reload();
+        }, 3000);
       } else {
         // Fallback: recarrega a página diretamente
         console.log('Fallback: recarregando página diretamente');
@@ -123,10 +120,10 @@ export const useAppUpdate = (): UpdateInfo => {
   };
 
   const forceUpdate = () => {
+    console.log('Forçando atualização completa...');
     setIsUpdating(true);
     setHasUpdate(false);
-    console.log('Forçando atualização completa...');
-
+    
     // Limpar localStorage e sessionStorage
     try {
       localStorage.clear();
@@ -135,19 +132,21 @@ export const useAppUpdate = (): UpdateInfo => {
     } catch (error) {
       console.log('Erro ao limpar storage:', error);
     }
-
+    
     // Forçar atualização do Service Worker
     if ('serviceWorker' in navigator) {
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'FORCE_UPDATE' });
         console.log('Mensagem FORCE_UPDATE enviada');
-
-        // Fallback: recarrega em 2 segundos
+        
+        // Fallback: recarrega em 3 segundos
         setTimeout(() => {
+          console.log('Fallback: recarregando página');
           window.location.reload();
-        }, 2000);
+        }, 3000);
       } else {
         // Fallback: recarrega diretamente
+        console.log('Fallback: recarregando página diretamente');
         setTimeout(() => {
           window.location.reload();
         }, 1000);

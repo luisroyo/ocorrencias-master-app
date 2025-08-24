@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocorrencias-v1.0.5';
+const CACHE_NAME = 'ocorrencias-v1.0.6';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -126,6 +126,14 @@ self.addEventListener('message', (event) => {
           client.postMessage({ type: 'UPDATE_READY' });
         });
       });
+    }).catch((error) => {
+      console.error('Erro no skipWaiting:', error);
+      // Fallback: notifica erro
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'UPDATE_ERROR', error: error.message });
+        });
+      });
     });
   }
   
@@ -141,10 +149,21 @@ self.addEventListener('message', (event) => {
         })
       );
     }).then(() => {
+      // Força skipWaiting
+      return self.skipWaiting();
+    }).then(() => {
       // Notifica todos os clientes
       self.clients.matchAll().then((clients) => {
         clients.forEach((client) => {
           client.postMessage({ type: 'FORCE_UPDATE_READY' });
+        });
+      });
+    }).catch((error) => {
+      console.error('Erro na força atualização:', error);
+      // Fallback: notifica erro
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'FORCE_UPDATE_ERROR', error: error.message });
         });
       });
     });

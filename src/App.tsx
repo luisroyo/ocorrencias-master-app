@@ -12,7 +12,7 @@ import { UpdateNotification } from './components/UpdateNotification';
 
 function App() {
     const [token, setToken] = useState<string | null>(null);
-    const { hasUpdate, isUpdating, updateApp } = useAppUpdate();
+    const { hasUpdate, isUpdating, updateApp, forceUpdate } = useAppUpdate();
 
     console.log('Token atual:', token ? 'Presente' : 'Ausente');
 
@@ -21,7 +21,7 @@ function App() {
         console.log('Token recebido:', newToken);
         console.log('Token é string?', typeof newToken === 'string');
         console.log('Token tem conteúdo?', newToken && newToken.length > 0);
-        
+
         if (newToken && typeof newToken === 'string' && newToken.length > 0) {
             console.log('Definindo token no estado...');
             setToken(newToken);
@@ -42,10 +42,11 @@ function App() {
         return (
             <>
                 <LoginScreen onLogin={handleLogin} />
-                <UpdateNotification 
-                    hasUpdate={hasUpdate} 
-                    isUpdating={isUpdating} 
-                    onUpdate={updateApp} 
+                <UpdateNotification
+                    hasUpdate={hasUpdate}
+                    isUpdating={isUpdating}
+                    onUpdate={updateApp}
+                    onForceUpdate={forceUpdate}
                 />
             </>
         );
@@ -53,10 +54,11 @@ function App() {
 
     return (
         <div className="App">
-            <UpdateNotification 
-                hasUpdate={hasUpdate} 
-                isUpdating={isUpdating} 
-                onUpdate={updateApp} 
+            <UpdateNotification
+                hasUpdate={hasUpdate}
+                isUpdating={isUpdating}
+                onUpdate={updateApp}
+                onForceUpdate={forceUpdate}
             />
             <Routes>
                 <Route path="/" element={<Layout onLogout={handleLogout} token={token} />}>

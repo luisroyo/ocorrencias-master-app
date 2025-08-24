@@ -4,6 +4,7 @@ interface UpdateInfo {
   hasUpdate: boolean;
   isUpdating: boolean;
   updateApp: () => void;
+  forceUpdate: () => void;
 }
 
 export const useAppUpdate = (): UpdateInfo => {
@@ -17,13 +18,13 @@ export const useAppUpdate = (): UpdateInfo => {
         .then((registration) => {
           console.log('SW registered: ', registration);
 
-          // Verificar atualizações periodicamente
+          // Verificar atualizações mais frequentemente
           const checkForUpdates = () => {
             registration.update();
           };
 
-          // Verificar a cada 5 minutos
-          const interval = setInterval(checkForUpdates, 5 * 60 * 1000);
+          // Verificar a cada 2 minutos (mais agressivo)
+          const interval = setInterval(checkForUpdates, 2 * 60 * 1000);
 
           // Listener para quando uma nova versão está disponível
           registration.addEventListener('updatefound', () => {
@@ -52,6 +53,12 @@ export const useAppUpdate = (): UpdateInfo => {
               setIsUpdating(false);
               window.location.reload();
             }
+            if (event.data && event.data.type === 'FORCE_UPDATE_READY') {
+              console.log('Força atualização pronta - recarregando...');
+              setHasUpdate(false);
+              setIsUpdating(false);
+              window.location.reload();
+            }
           };
 
           navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
@@ -62,6 +69,11 @@ export const useAppUpdate = (): UpdateInfo => {
             console.log('Atualização pendente encontrada!');
             setHasUpdate(true);
           }
+
+          // Verificar atualizações na inicialização
+          setTimeout(() => {
+            registration.update();
+          }, 1000);
 
           return () => {
             clearInterval(interval);
@@ -79,21 +91,21 @@ export const useAppUpdate = (): UpdateInfo => {
     setIsUpdating(true);
     setHasUpdate(false); // Esconde a notificação imediatamente
     console.log('Iniciando atualização...');
-    
+
     // Forçar atualização do Service Worker
     if ('serviceWorker' in navigator) {
       if (navigator.serviceWorker.controller) {
         // Se já temos um controller, envia mensagem para pular espera
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
         console.log('Mensagem SKIP_WAITING enviada');
-        
-        // Fallback: se não receber resposta em 3 segundos, recarrega
+
+        // Fallback: se não receber resposta em 2 segundos, recarrega
         setTimeout(() => {
           if (isUpdating) {
             console.log('Fallback: timeout - recarregando página');
             window.location.reload();
           }
-        }, 3000);
+        }, 2000);
       } else {
         // Fallback: recarrega a página diretamente
         console.log('Fallback: recarregando página diretamente');
@@ -110,9 +122,48 @@ export const useAppUpdate = (): UpdateInfo => {
     }
   };
 
+  const forceUpdate = () => {
+    setIsUpdating(true);
+    setHasUpdate(false);
+    console.log('Forçando atualização completa...');
+
+    // Limpar localStorage e sessionStorage
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('Storage limpo');
+    } catch (error) {
+      console.log('Erro ao limpar storage:', error);
+    }
+
+    // Forçar atualização do Service Worker
+    if ('serviceWorker' in navigator) {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'FORCE_UPDATE' });
+        console.log('Mensagem FORCE_UPDATE enviada');
+
+        // Fallback: recarrega em 2 segundos
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        // Fallback: recarrega diretamente
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    } else {
+      // Fallback para navegadores sem Service Worker
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
+  };
+
   return {
     hasUpdate,
     isUpdating,
-    updateApp
+    updateApp,
+    forceUpdate
   };
 };

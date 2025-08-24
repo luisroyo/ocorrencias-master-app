@@ -4,12 +4,14 @@ interface UpdateNotificationProps {
   hasUpdate: boolean;
   isUpdating: boolean;
   onUpdate: () => void;
+  onForceUpdate?: () => void;
 }
 
 export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
   hasUpdate,
   isUpdating,
-  onUpdate
+  onUpdate,
+  onForceUpdate
 }) => {
   if (!hasUpdate) return null;
 
@@ -24,7 +26,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       zIndex: 1000,
-      maxWidth: '300px',
+      maxWidth: '350px',
       animation: 'slideIn 0.3s ease-out'
     }}>
       <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
@@ -33,23 +35,47 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
       <div style={{ fontSize: '14px', marginBottom: '12px' }}>
         Uma nova versão do app está disponível. Clique para atualizar.
       </div>
-      <button
-        onClick={onUpdate}
-        disabled={isUpdating}
-        style={{
-          backgroundColor: 'white',
-          color: '#2196F3',
-          border: 'none',
-          padding: '8px 16px',
-          borderRadius: '4px',
-          cursor: isUpdating ? 'not-allowed' : 'pointer',
-          fontWeight: 'bold',
-          opacity: isUpdating ? 0.7 : 1
-        }}
-      >
-        {isUpdating ? '🔄 Atualizando...' : 'Atualizar Agora'}
-      </button>
-      
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <button
+          onClick={onUpdate}
+          disabled={isUpdating}
+          style={{
+            backgroundColor: 'white',
+            color: '#2196F3',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: isUpdating ? 'not-allowed' : 'pointer',
+            fontWeight: 'bold',
+            opacity: isUpdating ? 0.7 : 1,
+            flex: 1
+          }}
+        >
+          {isUpdating ? '🔄 Atualizando...' : 'Atualizar Agora'}
+        </button>
+
+        {onForceUpdate && (
+          <button
+            onClick={onForceUpdate}
+            disabled={isUpdating}
+            style={{
+              backgroundColor: '#ff9800',
+              color: 'white',
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              cursor: isUpdating ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              opacity: isUpdating ? 0.7 : 1,
+              fontSize: '12px'
+            }}
+            title="Força atualização completa (limpa cache)"
+          >
+            🔥 Forçar
+          </button>
+        )}
+      </div>
+
       <style>{`
         @keyframes slideIn {
           from {

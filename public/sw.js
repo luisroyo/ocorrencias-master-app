@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocorrencias-v1.0.4';
+const CACHE_NAME = 'ocorrencias-v1.0.5';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -37,6 +37,30 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache if available
 self.addEventListener('fetch', (event) => {
+  // Para arquivos JavaScript e CSS, sempre busca da rede primeiro
+  if (event.request.url.includes('.js') || event.request.url.includes('.css')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cacheia a nova resposta
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Se falhar, tenta do cache
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Para outros recursos, usa estratégia cache-first
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -100,6 +124,27 @@ self.addEventListener('message', (event) => {
       self.clients.matchAll().then((clients) => {
         clients.forEach((client) => {
           client.postMessage({ type: 'UPDATE_READY' });
+        });
+      });
+    });
+  }
+  
+  // Nova mensagem para forçar atualização
+  if (event.data && event.data.type === 'FORCE_UPDATE') {
+    console.log('Forçando atualização...');
+    // Limpa todos os caches
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('Deletando cache:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      // Notifica todos os clientes
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'FORCE_UPDATE_READY' });
         });
       });
     });

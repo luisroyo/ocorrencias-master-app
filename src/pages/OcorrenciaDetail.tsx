@@ -26,7 +26,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
 
             try {
                 const ocorrenciaId = parseInt(id);
-                const detalhes = await buscarDetalhesOcorrencia(token, ocorrenciaId);
+                const detalhes = await buscarDetalhesOcorrencia(token!, ocorrenciaId);
 
                 if (detalhes) {
                     setOcorrencia(detalhes);
@@ -180,7 +180,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                                 🏢 Condomínio:
                             </p>
                             <p style={{ margin: '0', color: colors.mutedText }}>
-                                {ocorrencia.condominio || 'N/A'}
+                                {ocorrencia.condominio?.nome || 'N/A'}
                             </p>
                         </div>
 
@@ -189,7 +189,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                                 📋 Tipo:
                             </p>
                             <p style={{ margin: '0', color: colors.mutedText }}>
-                                {ocorrencia.tipo || 'N/A'}
+                                {ocorrencia.tipo?.nome || 'N/A'}
                             </p>
                         </div>
 
@@ -205,7 +205,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                 </div>
 
                 {/* Colaboradores e Órgãos */}
-                {(ocorrencia.colaboradores?.length > 0 || ocorrencia.orgaos_acionados?.length > 0) && (
+                {((ocorrencia.colaboradores && ocorrencia.colaboradores.length > 0) || (ocorrencia.orgaos_acionados && ocorrencia.orgaos_acionados.length > 0)) && (
                     <div style={{
                         backgroundColor: '#fff',
                         borderRadius: '12px',
@@ -218,7 +218,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                             👥 Envolvidos
                         </h3>
 
-                        {ocorrencia.colaboradores?.length > 0 && (
+                        {ocorrencia.colaboradores && ocorrencia.colaboradores.length > 0 && (
                             <div style={{ marginBottom: '16px' }}>
                                 <p style={{ margin: '0 0 8px 0', color: colors.headingText, fontWeight: 'bold' }}>
                                     Colaboradores:
@@ -232,14 +232,14 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                                             borderRadius: '16px',
                                             fontSize: '12px'
                                         }}>
-                                            {colaborador}
+                                            {colaborador.nome}
                                         </span>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {ocorrencia.orgaos_acionados?.length > 0 && (
+                        {ocorrencia.orgaos_acionados && ocorrencia.orgaos_acionados.length > 0 && (
                             <div>
                                 <p style={{ margin: '0 0 8px 0', color: colors.headingText, fontWeight: 'bold' }}>
                                     Órgãos Acionados:
@@ -253,7 +253,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                                             borderRadius: '16px',
                                             fontSize: '12px'
                                         }}>
-                                            {orgao}
+                                            {orgao.nome}
                                         </span>
                                     ))}
                                 </div>
@@ -327,7 +327,7 @@ export const OcorrenciaDetailScreen: React.FC<OcorrenciaDetailScreenProps> = ({ 
                                     Supervisor:
                                 </p>
                                 <p style={{ margin: '0', color: colors.mutedText, fontSize: '14px' }}>
-                                    {ocorrencia.supervisor}
+                                    {ocorrencia.supervisor?.username || 'N/A'}
                                 </p>
                             </div>
                         )}

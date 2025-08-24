@@ -253,7 +253,7 @@ export const OcorrenciasListScreen: React.FC<OcorrenciasListScreenProps> = ({ to
                                             🏢 Condomínio:
                                         </p>
                                         <p style={{ margin: '0', color: colors.mutedText }}>
-                                            {ocorrencia.condominio || 'N/A'}
+                                            {ocorrencia.condominio?.nome || 'N/A'}
                                         </p>
                                     </div>
 

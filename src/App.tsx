@@ -17,9 +17,18 @@ function App() {
     console.log('Token atual:', token ? 'Presente' : 'Ausente');
 
     const handleLogin = (newToken: string) => {
-        console.log('Login realizado - token:', newToken ? 'Presente' : 'Ausente');
-        setToken(newToken);
-        // Não salva no localStorage - força login sempre
+        console.log('=== APP: handleLogin chamado ===');
+        console.log('Token recebido:', newToken);
+        console.log('Token é string?', typeof newToken === 'string');
+        console.log('Token tem conteúdo?', newToken && newToken.length > 0);
+        
+        if (newToken && typeof newToken === 'string' && newToken.length > 0) {
+            console.log('Definindo token no estado...');
+            setToken(newToken);
+            console.log('Token definido com sucesso');
+        } else {
+            console.error('Token inválido recebido:', newToken);
+        }
     };
 
     const handleLogout = () => {

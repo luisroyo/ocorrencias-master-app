@@ -10,7 +10,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ onLogout, token }) => {
   const location = useLocation();
-  const { isAdmin, loading } = useAdminCheck(token);
+  const { isAdmin, loading } = useAdminCheck(token || null);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: colors.primaryBg }}>

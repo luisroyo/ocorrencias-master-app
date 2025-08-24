@@ -52,10 +52,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
             console.log('Resposta do login:', response);
 
-            if (response?.access_token) {
+            console.log('Verificando token na resposta:', {
+                hasData: !!response?.data,
+                hasAccessToken: !!response?.access_token,
+                hasDataAccessToken: !!response?.data?.access_token,
+                responseKeys: Object.keys(response || {}),
+                dataKeys: response?.data ? Object.keys(response.data) : []
+            });
+
+            if (response?.data?.access_token) {
+                console.log('Token encontrado em response.data.access_token');
+                localStorage.setItem('savedEmail', email);
+                onLogin(response.data.access_token);
+            } else if (response?.access_token) {
+                console.log('Token encontrado em response.access_token');
                 localStorage.setItem('savedEmail', email);
                 onLogin(response.access_token);
             } else {
+                console.error('Resposta da API não contém token:', response);
                 alert('E-mail ou senha inválidos.');
             }
         } catch (error: any) {
@@ -205,8 +219,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         Backend: https://processador-relatorios-ia.onrender.com<br />
                         <br />
                         <strong>Credenciais de Teste:</strong><br />
-                        Email: admin@master.com<br />
-                        Senha: 123456
+                        Email: luisroyo25@gmail.com<br />
+                        Senha: edu123cs
                     </div>
                 )}
             </div>

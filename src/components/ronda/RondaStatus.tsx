@@ -14,7 +14,7 @@ export const RondaStatus: React.FC<RondaStatusProps> = ({ rondaAtiva }) => {
             marginBottom: '20px'
         }}>
             <h3 style={{
-                color: colors.primary,
+                color: colors.primaryBg,
                 marginBottom: '16px',
                 fontSize: '18px',
                 fontWeight: 'bold'

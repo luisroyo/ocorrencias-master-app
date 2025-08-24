@@ -53,7 +53,14 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, toke
             console.error('API Error:', error);
             console.error('Response status:', response.status);
         }
-        throw new Error(error.message || 'Erro na requisição');
+
+        // Criar um erro que preserve o status HTTP
+        const httpError = new Error(error.message || 'Erro na requisição');
+        (httpError as any).status = response.status;
+        (httpError as any).statusText = response.statusText;
+        (httpError as any).originalError = error;
+
+        throw httpError;
     }
 
     return response.json();
@@ -62,6 +69,9 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, toke
 // Função para fazer login real
 export async function loginUser(email: string, password: string): Promise<any> {
     try {
+        console.log('[API] Iniciando login para:', email);
+        console.log('[API] URL da API:', `${API_BASE_URL}/api/auth/login`);
+
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
@@ -70,15 +80,28 @@ export async function loginUser(email: string, password: string): Promise<any> {
             body: JSON.stringify({ email, password }),
         });
 
+        console.log('[API] Status da resposta:', response.status);
+        console.log('[API] Response ok?', response.ok);
+
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
+            console.error('[API] Erro na resposta:', error);
             throw new Error(error.message || 'Credenciais inválidas');
         }
 
         const data = await response.json();
+        console.log('[API] Dados da resposta:', data);
+        console.log('[API] Estrutura da resposta:', {
+            hasSuccess: 'success' in data,
+            hasData: 'data' in data,
+            hasMessage: 'message' in data,
+            dataKeys: data.data ? Object.keys(data.data) : [],
+            hasAccessToken: data.data?.access_token ? true : false
+        });
+
         return data;
     } catch (error: any) {
-        if (!IS_PRODUCTION) console.error('Login error:', error);
+        console.error('[API] Erro no login:', error);
         throw error;
     }
 } 

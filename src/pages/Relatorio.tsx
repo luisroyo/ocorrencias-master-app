@@ -172,7 +172,7 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
         try {
             console.log('Token sendo usado:', token ? 'Presente' : 'Ausente');
             console.log('Texto sendo enviado:', textoMontado.substring(0, 200) + '...');
-            const response = await analisarRelatorio(token, textoMontado);
+            const response = await analisarRelatorio(token!, textoMontado);
             if (response?.sucesso && response.dados) {
                 const relatorioCorrigido = response.dados.relatorio_corrigido || response.dados.relatorio || response.relatorio_corrigido || response.relatorio;
                 if (relatorioCorrigido) {
@@ -212,15 +212,15 @@ Viatura/VTR: ${vtr || '[Preencher viatura]'}
             alert('Gere o relatório limpo antes de enviar.');
             return;
         }
-        
+
         // Tenta primeiro o esquema nativo do WhatsApp
         const whatsappNativeUrl = `whatsapp://send?text=${encodeURIComponent(relatorioLimpo)}`;
         const whatsappWebUrl = `https://wa.me/?text=${encodeURIComponent(relatorioLimpo)}`;
-        
+
         // Verifica se o esquema nativo está disponível
         const link = document.createElement('a');
         link.href = whatsappNativeUrl;
-        
+
         // Tenta abrir o esquema nativo
         try {
             window.location.href = whatsappNativeUrl;

@@ -11,15 +11,15 @@ interface ButtonProps {
     type?: 'button' | 'submit' | 'reset';
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-    title, 
-    variant = 'primary', 
-    style, 
-    textStyle, 
+export const Button: React.FC<ButtonProps> = ({
+    title,
+    variant = 'primary',
+    style,
+    textStyle,
     onClick,
     disabled = false,
     type = 'button',
-    ...props 
+    ...props
 }) => {
     const getVariantStyle = () => {
         switch (variant) {
@@ -42,7 +42,8 @@ export const Button: React.FC<ButtonProps> = ({
                 padding: '14px 24px',
                 borderRadius: '8px',
                 alignItems: 'center',
-                marginVertical: '8px',
+                marginTop: '8px',
+                marginBottom: '8px',
                 border: 'none',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.6 : 1,

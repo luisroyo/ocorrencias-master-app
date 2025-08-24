@@ -42,7 +42,7 @@ export const RondaControles: React.FC<RondaControlesProps> = ({
             marginBottom: '20px'
         }}>
             <h3 style={{
-                color: colors.primary,
+                color: colors.primaryBg,
                 marginBottom: '16px',
                 fontSize: '18px',
                 fontWeight: 'bold'
@@ -89,7 +89,7 @@ export const RondaControles: React.FC<RondaControlesProps> = ({
                     border: '1px solid #dee2e6'
                 }}>
                     <h4 style={{
-                        color: colors.primary,
+                        color: colors.primaryBg,
                         marginBottom: '12px',
                         fontSize: '16px',
                         fontWeight: 'bold'

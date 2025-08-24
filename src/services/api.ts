@@ -71,6 +71,8 @@ export async function loginUser(email: string, password: string): Promise<any> {
     try {
         console.log('[API] Iniciando login para:', email);
         console.log('[API] URL da API:', `${API_BASE_URL}/api/auth/login`);
+        console.log('[API] NODE_ENV:', process.env.NODE_ENV);
+        console.log('[API] API_BASE_URL:', API_BASE_URL);
 
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
@@ -82,6 +84,7 @@ export async function loginUser(email: string, password: string): Promise<any> {
 
         console.log('[API] Status da resposta:', response.status);
         console.log('[API] Response ok?', response.ok);
+        console.log('[API] Response headers:', Object.fromEntries(response.headers.entries()));
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
@@ -90,13 +93,15 @@ export async function loginUser(email: string, password: string): Promise<any> {
         }
 
         const data = await response.json();
-        console.log('[API] Dados da resposta:', data);
+        console.log('[API] Dados da resposta COMPLETOS:', JSON.stringify(data, null, 2));
         console.log('[API] Estrutura da resposta:', {
             hasSuccess: 'success' in data,
             hasData: 'data' in data,
             hasMessage: 'message' in data,
             dataKeys: data.data ? Object.keys(data.data) : [],
-            hasAccessToken: data.data?.access_token ? true : false
+            hasAccessToken: data.data?.access_token ? true : false,
+            responseType: typeof data,
+            isArray: Array.isArray(data)
         });
 
         return data;

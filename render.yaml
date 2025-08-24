@@ -5,4 +5,14 @@ services:
     startCommand: npx serve -s build -l $PORT --config serve.json
     envVars:
       - key: NODE_ENV
-        value: production 
+        value: production
+      - key: REACT_APP_API_BASE_URL
+        value: https://processador-relatorios-ia.onrender.com
+    buildFilter:
+      paths:
+        - src/**
+        - public/**
+        - package.json
+        - package-lock.json
+        - tsconfig.json
+        - render.yaml 

@@ -1,8 +1,8 @@
-// Configuração automática baseada no ambiente
+// Configuração da API
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || (
     process.env.NODE_ENV === 'development'
-        ? 'https://processador-relatorios-ia.onrender.com'  // Backend de produção sempre
-        : 'https://processador-relatorios-ia.onrender.com' // Backend de produção
+        ? '/api'  // URL relativa para usar o proxy do Vercel
+        : '/api'  // URL relativa para usar o proxy do Vercel
 );
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';

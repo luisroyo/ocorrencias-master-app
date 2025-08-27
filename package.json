@@ -10,6 +10,7 @@
     "eject": "react-scripts eject",
     "serve": "serve -s build --config serve.json",
     "render-build": "npm install && npm run build",
+    "vercel-build": "npm run build",
     "deploy:render": "npm run render-build && echo 'Build concluído para Render.com'",
     "deploy:vercel": "vercel --prod",
     "security:check": "npm audit && npm audit fix",

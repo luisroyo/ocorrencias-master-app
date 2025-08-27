@@ -1,7 +1,7 @@
 // Configuração automática baseada no ambiente
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || (
     process.env.NODE_ENV === 'development'
-        ? 'http://localhost:5000'  // Backend local em desenvolvimento
+        ? 'https://processador-relatorios-ia.onrender.com'  // Backend de produção sempre
         : 'https://processador-relatorios-ia.onrender.com' // Backend de produção
 );
 
@@ -41,8 +41,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, toke
     }
 
     if (response.status === 401) {
-        if (!IS_PRODUCTION) console.warn('API 401 - Não autorizado. Redirecionando para login.');
-        // Força retorno à tela inicial (login) – App exige login sempre
+        if (!IS_PRODUCTION) console.warn('API 401 - Não autorizado. Redirecionando para tela inicial.');
+        // Força retorno à tela inicial (tela inicial) – App exige tela inicial sempre
         try { window.location.assign('/'); } catch { /* noop */ }
         throw new Error('Não autorizado');
     }
@@ -66,10 +66,10 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, toke
     return response.json();
 }
 
-// Função para fazer login real
+// Função para fazer autenticação real
 export async function loginUser(email: string, password: string): Promise<any> {
     try {
-        console.log('[API] Iniciando login para:', email);
+        console.log('[API] Iniciando autenticação para:', email);
         console.log('[API] URL da API:', `${API_BASE_URL}/api/auth/login`);
         console.log('[API] NODE_ENV:', process.env.NODE_ENV);
         console.log('[API] API_BASE_URL:', API_BASE_URL);
@@ -106,7 +106,7 @@ export async function loginUser(email: string, password: string): Promise<any> {
 
         return data;
     } catch (error: any) {
-        console.error('[API] Erro no login:', error);
+        console.error('[API] Erro na autenticação:', error);
         throw error;
     }
 } 

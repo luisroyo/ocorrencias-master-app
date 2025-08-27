@@ -9,7 +9,11 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serve": "serve -s build --config serve.json",
-    "render-build": "npm install && npm run build"
+    "render-build": "npm install && npm run build",
+    "deploy:render": "npm run render-build && echo 'Build concluído para Render.com'",
+    "deploy:vercel": "vercel --prod",
+    "security:check": "npm audit && npm audit fix",
+    "build:secure": "GENERATE_SOURCEMAP=false npm run build"
   },
   "dependencies": {
     "axios": "^1.6.0",
@@ -36,5 +40,23 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luisroyo/ocorrencias-master-app.git"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "pwa",
+    "segurança",
+    "ocorrências",
+    "rondas"
+  ],
+  "author": "Luis Royo",
+  "license": "MIT"
 }

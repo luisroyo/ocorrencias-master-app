@@ -1,8 +1,8 @@
-// Configuração da API
+// Configuração automática baseada no ambiente
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || (
     process.env.NODE_ENV === 'development'
-        ? '/api'  // URL relativa para usar o proxy do Vercel
-        : '/api'  // URL relativa para usar o proxy do Vercel
+        ? 'http://localhost:5000'  // Backend local em desenvolvimento
+        : 'https://processador-relatorios-ia.onrender.com' // Backend de produção
 );
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -11,6 +11,31 @@ if (!IS_PRODUCTION) {
     console.log('[API] NODE_ENV:', process.env.NODE_ENV);
     console.log('[API] REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
     console.log('[API] Usando API_BASE_URL:', API_BASE_URL);
+}
+
+async function parseResponseSafely(response: Response): Promise<any> {
+    if (response.status === 204) return {};
+    const contentType = response.headers.get('content-type') || '';
+    const contentLength = response.headers.get('content-length');
+    if (contentLength === '0') return {};
+    if (contentType.includes('application/json')) {
+        try {
+            return await response.json();
+        } catch {
+            return {};
+        }
+    }
+    try {
+        const text = await response.text();
+        // Tenta JSON se texto parece JSON, senão retorna texto embrulhado
+        try {
+            return JSON.parse(text);
+        } catch {
+            return { raw: text };
+        }
+    } catch {
+        return {};
+    }
 }
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}, token?: string): Promise<any> {
@@ -41,39 +66,28 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, toke
     }
 
     if (response.status === 401) {
-        if (!IS_PRODUCTION) console.warn('API 401 - Não autorizado. Redirecionando para tela inicial.');
-        // Força retorno à tela inicial (tela inicial) – App exige tela inicial sempre
+        if (!IS_PRODUCTION) console.warn('API 401 - Não autorizado. Redirecionando para login.');
         try { window.location.assign('/'); } catch { /* noop */ }
         throw new Error('Não autorizado');
     }
 
+    const parsed = await parseResponseSafely(response);
+
     if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
+        const message = parsed?.message || parsed?.error || parsed?.detail || (parsed?.raw || `Erro na requisição (${response.status})`);
         if (!IS_PRODUCTION) {
-            console.error('API Error:', error);
+            console.error('API Error payload:', parsed);
             console.error('Response status:', response.status);
         }
-
-        // Criar um erro que preserve o status HTTP
-        const httpError = new Error(error.message || 'Erro na requisição');
-        (httpError as any).status = response.status;
-        (httpError as any).statusText = response.statusText;
-        (httpError as any).originalError = error;
-
-        throw httpError;
+        throw new Error(message);
     }
 
-    return response.json();
+    return parsed;
 }
 
-// Função para fazer autenticação real
+// Função para fazer login real
 export async function loginUser(email: string, password: string): Promise<any> {
     try {
-        console.log('[API] Iniciando autenticação para:', email);
-        console.log('[API] URL da API:', `${API_BASE_URL}/api/auth/login`);
-        console.log('[API] NODE_ENV:', process.env.NODE_ENV);
-        console.log('[API] API_BASE_URL:', API_BASE_URL);
-
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
@@ -82,31 +96,16 @@ export async function loginUser(email: string, password: string): Promise<any> {
             body: JSON.stringify({ email, password }),
         });
 
-        console.log('[API] Status da resposta:', response.status);
-        console.log('[API] Response ok?', response.ok);
-        console.log('[API] Response headers:', Object.fromEntries(response.headers.entries()));
+        const parsed = await parseResponseSafely(response);
 
         if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            console.error('[API] Erro na resposta:', error);
-            throw new Error(error.message || 'Credenciais inválidas');
+            const message = parsed?.message || parsed?.error || parsed?.detail || 'Credenciais inválidas';
+            throw new Error(message);
         }
 
-        const data = await response.json();
-        console.log('[API] Dados da resposta COMPLETOS:', JSON.stringify(data, null, 2));
-        console.log('[API] Estrutura da resposta:', {
-            hasSuccess: 'success' in data,
-            hasData: 'data' in data,
-            hasMessage: 'message' in data,
-            dataKeys: data.data ? Object.keys(data.data) : [],
-            hasAccessToken: data.data?.access_token ? true : false,
-            responseType: typeof data,
-            isArray: Array.isArray(data)
-        });
-
-        return data;
+        return parsed;
     } catch (error: any) {
-        console.error('[API] Erro na autenticação:', error);
+        if (!IS_PRODUCTION) console.error('Login error:', error);
         throw error;
     }
 } 

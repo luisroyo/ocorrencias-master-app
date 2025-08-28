@@ -33,15 +33,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
     const extractToken = (resp: any): string | null => {
         if (!resp) return null;
+        
+        console.log('=== EXTRACT TOKEN DEBUG ===');
+        console.log('Resposta completa:', resp);
+        console.log('resp.data:', resp?.data);
+        console.log('resp.data.token:', resp?.data?.token);
+        console.log('resp.token:', resp?.token);
+        
         const candidates = [
-            resp?.data?.access_token,
-            resp?.access_token,
-            resp?.data?.token,
-            resp?.token,
-            resp?.data?.jwt,
-            resp?.jwt,
+            resp?.data?.token,        // Novo formato: { data: { token: "..." } }
+            resp?.token,              // Formato antigo: { token: "..." }
+            resp?.data?.access_token, // Fallback
+            resp?.access_token,       // Fallback
+            resp?.data?.jwt,         // Fallback
+            resp?.jwt,               // Fallback
         ];
+        
         const token = candidates.find(Boolean);
+        console.log('Token encontrado:', token);
+        console.log('Token é válido?', typeof token === 'string' && token.length > 0);
+        
         return (typeof token === 'string' && token.length > 0) ? token : null;
     };
 

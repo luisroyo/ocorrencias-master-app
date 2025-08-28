@@ -12,7 +12,7 @@ import { UpdateNotification } from './components/UpdateNotification';
 
 function App() {
     const [token, setToken] = useState<string | null>(null);
-    const { hasUpdate, isUpdating, updateApp, forceUpdate } = useAppUpdate();
+    const { hasUpdate, isUpdating, updateApp, forceUpdate, checkForUpdates } = useAppUpdate();
 
     console.log('Token atual:', token ? 'Presente' : 'Ausente');
 
@@ -47,6 +47,7 @@ function App() {
                     isUpdating={isUpdating}
                     onUpdate={updateApp}
                     onForceUpdate={forceUpdate}
+                    onCheckForUpdates={checkForUpdates}
                 />
             </>
         );
@@ -59,6 +60,7 @@ function App() {
                 isUpdating={isUpdating}
                 onUpdate={updateApp}
                 onForceUpdate={forceUpdate}
+                onCheckForUpdates={checkForUpdates}
             />
             <Routes>
                 <Route path="/" element={<Layout onLogout={handleLogout} token={token} />}>

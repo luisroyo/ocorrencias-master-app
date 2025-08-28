@@ -5,6 +5,7 @@ interface UpdateInfo {
   isUpdating: boolean;
   updateApp: () => void;
   forceUpdate: () => void;
+  checkForUpdates: () => void; // Nova função para verificação manual
 }
 
 export const useAppUpdate = (): UpdateInfo => {
@@ -18,13 +19,11 @@ export const useAppUpdate = (): UpdateInfo => {
         .then((registration) => {
           console.log('SW registered: ', registration);
 
-          // Verificar atualizações mais frequentemente
-          const checkForUpdates = () => {
-            registration.update();
-          };
-
-          // Verificar a cada 2 minutos (mais agressivo)
-          const interval = setInterval(checkForUpdates, 2 * 60 * 1000);
+          // REMOVIDO: Verificação automática a cada 2 minutos (economiza banco!)
+          // const checkForUpdates = () => {
+          //   registration.update();
+          // };
+          // const interval = setInterval(checkForUpdates, 2 * 60 * 1000);
 
           // Listener para quando uma nova versão está disponível
           registration.addEventListener('updatefound', () => {
@@ -61,19 +60,19 @@ export const useAppUpdate = (): UpdateInfo => {
           navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
           navigator.serviceWorker.addEventListener('message', handleMessage);
 
-          // Verificar se já há uma atualização pendente
+          // Verificar se já há uma atualização pendente (apenas na inicialização)
           if (registration.waiting) {
             console.log('Atualização pendente encontrada!');
             setHasUpdate(true);
           }
 
-          // Verificar atualizações na inicialização
-          setTimeout(() => {
-            registration.update();
-          }, 1000);
+          // REMOVIDO: Verificação automática na inicialização (economiza banco!)
+          // setTimeout(() => {
+          //   registration.update();
+          // }, 1000);
 
           return () => {
-            clearInterval(interval);
+            // clearInterval(interval); // Não é mais necessário
             navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
             navigator.serviceWorker.removeEventListener('message', handleMessage);
           };
@@ -83,6 +82,18 @@ export const useAppUpdate = (): UpdateInfo => {
         });
     }
   }, []); // Remove isUpdating da dependência
+
+  // Nova função para verificação MANUAL de atualizações (economiza banco!)
+  const checkForUpdates = () => {
+    console.log('Verificação MANUAL de atualizações solicitada pelo usuário');
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((registration) => {
+        if (registration) {
+          registration.update();
+        }
+      });
+    }
+  };
 
   const updateApp = () => {
     console.log('Iniciando atualização...');
@@ -163,6 +174,7 @@ export const useAppUpdate = (): UpdateInfo => {
     hasUpdate,
     isUpdating,
     updateApp,
-    forceUpdate
+    forceUpdate,
+    checkForUpdates // Nova função para verificação manual
   };
 };

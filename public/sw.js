@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocorrencias-v1.0.6';
+const CACHE_NAME = 'ocorrencias-v1.0.7'; // Incrementado para forçar atualização
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -146,7 +146,7 @@ self.addEventListener('message', (event) => {
         cacheNames.map((cacheName) => {
           console.log('Deletando cache:', cacheName);
           return caches.delete(cacheName);
-        })
+        });
       );
     }).then(() => {
       // Força skipWaiting

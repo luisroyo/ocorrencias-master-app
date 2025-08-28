@@ -31,6 +31,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         return re.test(email.toLowerCase());
     };
 
+    const extractToken = (resp: any): string | null => {
+        if (!resp) return null;
+        const candidates = [
+            resp?.data?.access_token,
+            resp?.access_token,
+            resp?.data?.token,
+            resp?.token,
+            resp?.data?.jwt,
+            resp?.jwt,
+        ];
+        const token = candidates.find(Boolean);
+        return (typeof token === 'string' && token.length > 0) ? token : null;
+    };
+
     const handleLogin = async () => {
         if (!email || !password) {
             alert('Por favor, preencha todos os campos.');
@@ -52,26 +66,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
             console.log('Resposta do login:', response);
 
-            console.log('Verificando token na resposta:', {
-                hasData: !!response?.data,
-                hasAccessToken: !!response?.access_token,
-                hasDataAccessToken: !!response?.data?.access_token,
-                responseKeys: Object.keys(response || {}),
-                dataKeys: response?.data ? Object.keys(response.data) : []
-            });
-
-            if (response?.data?.access_token) {
-                console.log('Token encontrado em response.data.access_token');
+            const token = extractToken(response);
+            if (token) {
                 localStorage.setItem('savedEmail', email);
-                onLogin(response.data.access_token);
-            } else if (response?.access_token) {
-                console.log('Token encontrado em response.access_token');
-                localStorage.setItem('savedEmail', email);
-                onLogin(response.access_token);
-            } else {
-                console.error('Resposta da API não contém token:', response);
-                alert('E-mail ou senha inválidos.');
+                onLogin(token);
+                return;
             }
+
+            console.error('Resposta da API não contém token em campos esperados:', response);
+            alert('E-mail ou senha inválidos.');
         } catch (error: any) {
             console.error('Erro no login:', error);
             alert(error.message || 'Erro ao fazer login');
@@ -203,7 +206,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     }}
                 />
 
-                {/* Dica para desenvolvimento - Oculto em produção */}
                 {process.env.NODE_ENV === 'development' && (
                     <div style={{
                         marginTop: '16px',

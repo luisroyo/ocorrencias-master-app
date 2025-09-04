@@ -37,10 +37,30 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
             return;
         }
 
+        // Se o usuário está editando um item já selecionado, verificar se é apenas adição de números
+        if (selectedItem && value !== selectedItem[displayField]) {
+            const selectedValue = selectedItem[displayField];
+            
+            // Verificar se o valor atual contém o valor selecionado + números/complementos
+            const isAddingNumbers = value.startsWith(selectedValue) && 
+                                  (value.length > selectedValue.length) &&
+                                  /[0-9,-\s]/.test(value.substring(selectedValue.length));
+            
+            if (isAddingNumbers) {
+                // Usuário está apenas adicionando números ao endereço selecionado
+                // Não fazer busca, manter o item selecionado
+                setSuggestions([]);
+                setIsOpen(false);
+                return;
+            } else {
+                // Usuário está editando o nome do endereço, resetar selectedItem
+                setSelectedItem(null);
+            }
+        }
+
         if (value.length < 2) {
             setSuggestions([]);
             setIsOpen(false);
-            setSelectedItem(null);
             return;
         }
 
@@ -62,7 +82,7 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
             } finally {
                 setLoading(false);
             }
-        }, 300);
+        }, 500); // Aumentei o debounce para 500ms
 
         return () => {
             if (timeoutRef.current) {
@@ -77,6 +97,10 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
         onSelect(item);
         setIsOpen(false);
         setSuggestions([]);
+        // Limpar timeout para evitar busca após seleção
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
     };
 
     const handleBlur = () => {
